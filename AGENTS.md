@@ -38,7 +38,7 @@ owlbear-morkborg/
 │   └── deploy.yml          # Automated CI/CD: tests, builds, and deploys to gh-pages on push to main
 ├── public/
 │   ├── icon.svg            # OBR toolbar action icon (CRITICAL: must use transparent alpha masking)
-│   └── manifest.json       # OBR extension manifest (CRITICAL: must use relative URLs)
+│   └── manifest.json       # OBR extension manifest (CRITICAL: bump patch version before push; relative URLs)
 ├── src/
 │   ├── components/         # Art-punk styled React components
 │   │   ├── Header.tsx           # Name, class, rest triggers, scvmbirther, import/export
@@ -114,6 +114,11 @@ owlbear-morkborg/
 - The repository uses `.github/workflows/deploy.yml` which deploys `./dist` to the `gh-pages` branch on every push to `main`.
 - **Do not** introduce local manual git scripts that commit directly to `gh-pages`, as they will conflict with GitHub Actions commits.
 
+### F. Manifest Versioning
+- **Always bump the "patch" component** of the version string in `public/manifest.json` before pushing changes to `main` (e.g., `1.1.1` → `1.1.2`).
+- Also mirror this version bump in `package.json` to keep project metadata synchronized.
+- Owlbear Rodeo inspects the manifest version to detect updates for installed extensions. Bumping the patch version ensures OBR recognizes the extension update and room participants receive the latest code without caching stale assets.
+
 ---
 
 ## 5. MÖRK BORG Rules Cheat Sheet
@@ -186,8 +191,9 @@ Before pushing commits or finishing any task, run through this checklist:
    ```bash
    bun run build
    ```
-   Ensure `tsc` completes without type errors and Vite bundles the production output into `dist/`.
-3. **OBR Icon Integrity**:
+3. **Bump Manifest Version (Patch)**:
+   Increment the patch component of `"version"` in `public/manifest.json` (e.g., `1.1.1` → `1.1.2`) and mirror it in `package.json` before committing so Owlbear Rodeo recognizes the extension update.
+4. **OBR Icon Integrity**:
    Verify `public/icon.svg` has not been altered to add background fills or non-transparent backdrops.
-4. **Git Discipline**:
+5. **Git Discipline**:
    Push exclusively to `main`. GitHub Actions will automatically handle the build and deployment to `gh-pages`.
