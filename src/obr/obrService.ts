@@ -48,7 +48,7 @@ export class OBRService {
         id: CONTEXT_MENU_ID,
         icons: [
           {
-            icon: '/icon.svg',
+            icon: new URL('icon.svg', window.location.href).toString(),
             label: 'MÖRK BORG Sheet',
             filter: {
               every: [
