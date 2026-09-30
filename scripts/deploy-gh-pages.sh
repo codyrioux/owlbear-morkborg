@@ -5,7 +5,7 @@ echo "==> Building MÖRK BORG production bundle..."
 bun run build
 
 echo "==> Deploying dist/ to gh-pages branch..."
-TMP_INDEX=$(mktemp)
+TMP_INDEX=$(mktemp -u)
 export GIT_INDEX_FILE="$TMP_INDEX"
 trap 'rm -f "$TMP_INDEX"' EXIT
 
