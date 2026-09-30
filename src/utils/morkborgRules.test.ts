@@ -153,6 +153,28 @@ describe('MÖRK BORG Rules Engine', () => {
     expect(capTier0.shieldSlots).toBe(0);
     expect(capTier0.usedSlots).toBe(6);
 
+    // Now test weapons and scrolls slots
+    const testWeapons = [
+      { id: 'w1', name: 'Shortsword', type: 'melee' as const, damageDie: 'd6' },
+      { id: 'w2', name: 'Dagger', type: 'melee' as const, damageDie: 'd4' },
+    ];
+    const testScrolls = [
+      { id: 's1', name: "Palmaum's Step", type: 'unclean' as const, description: 'Fly' },
+    ];
+    const capWithWeaponsAndScrolls = calculateCarryingCapacity(
+      0,
+      mockCharacter.inventory,
+      mockCharacter.silver,
+      mockCharacter.armor,
+      testWeapons,
+      testScrolls
+    );
+    // items: 4, silver: 2, armor: 1, shield: 1, weapons: 2, scrolls: 1 -> total 11
+    expect(capWithWeaponsAndScrolls.weaponsSlots).toBe(2);
+    expect(capWithWeaponsAndScrolls.scrollsSlots).toBe(1);
+    expect(capWithWeaponsAndScrolls.usedSlots).toBe(11);
+    expect(capWithWeaponsAndScrolls.isOverencumbered).toBe(true);
+
     // Now exceed capacity with extra items
     const heavyInventory = [
       ...mockCharacter.inventory,

@@ -20,7 +20,9 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
     character.abilities.strength.modifier,
     character.inventory,
     character.silver,
-    character.armor
+    character.armor,
+    character.weapons,
+    character.scrolls
   );
 
   const handleAddItem = (e: React.FormEvent) => {
@@ -90,11 +92,13 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
               {capacity.usedSlots}
             </span>
             <span className="text-mb-white/50"> / {capacity.maxSlots} SLOTS</span>
-            {(capacity.armorSlots > 0 || capacity.shieldSlots > 0) && (
+            {(capacity.armorSlots > 0 || capacity.shieldSlots > 0 || capacity.weaponsSlots > 0 || capacity.scrollsSlots > 0) && (
               <span className="text-[10px] text-mb-white/60 font-punk ml-1">
                 ({[
                   capacity.armorSlots > 0 ? 'armor: 1' : null,
                   capacity.shieldSlots > 0 ? 'shield: 1' : null,
+                  capacity.weaponsSlots > 0 ? `weapons: ${capacity.weaponsSlots}` : null,
+                  capacity.scrollsSlots > 0 ? `scrolls: ${capacity.scrollsSlots}` : null,
                 ].filter(Boolean).join(', ')})
               </span>
             )}

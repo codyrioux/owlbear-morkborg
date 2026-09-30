@@ -492,12 +492,16 @@ export function performShortRest(character: Character): {
  * 100 silver counts as 1 normal item.
  * Armor of any tier (except 0, none) uses 1 inventory slot.
  * A shield uses 1 inventory slot.
+ * Each weapon uses 1 inventory slot.
+ * Each scroll uses 1 inventory slot.
  */
 export function calculateCarryingCapacity(
   strengthModifier: number,
   inventory: InventoryItem[],
   silver: number,
-  armor?: Armor
+  armor?: Armor,
+  weapons?: Weapon[],
+  scrolls?: Scroll[]
 ): {
   maxSlots: number;
   usedSlots: number;
@@ -505,13 +509,17 @@ export function calculateCarryingCapacity(
   penaltyDR: number;
   armorSlots: number;
   shieldSlots: number;
+  weaponsSlots: number;
+  scrollsSlots: number;
 } {
   const maxSlots = Math.max(8, strengthModifier + 8);
   const itemsSlots = inventory.reduce((acc, item) => acc + (item.slots * item.quantity), 0);
   const silverSlots = Math.floor(silver / 100);
   const armorSlots = armor && armor.tier > 0 ? 1 : 0;
   const shieldSlots = armor && armor.hasShield ? 1 : 0;
-  const usedSlots = itemsSlots + silverSlots + armorSlots + shieldSlots;
+  const weaponsSlots = weapons ? weapons.length : 0;
+  const scrollsSlots = scrolls ? scrolls.length : 0;
+  const usedSlots = itemsSlots + silverSlots + armorSlots + shieldSlots + weaponsSlots + scrollsSlots;
   const isOverencumbered = usedSlots > maxSlots;
 
   return {
@@ -521,6 +529,8 @@ export function calculateCarryingCapacity(
     penaltyDR: isOverencumbered ? 2 : 0,
     armorSlots,
     shieldSlots,
+    weaponsSlots,
+    scrollsSlots,
   };
 }
 

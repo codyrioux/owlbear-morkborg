@@ -62,7 +62,9 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
     character.abilities.strength.modifier,
     character.inventory,
     character.silver,
-    character.armor
+    character.armor,
+    character.weapons,
+    character.scrolls
   );
   const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
 
