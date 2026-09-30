@@ -3,11 +3,11 @@
   "name": "MÖRK BORG Character Sheet",
   "version": "1.0.0",
   "description": "MÖRK BORG character sheet extension for Owlbear Rodeo.",
-  "icon": "icon.svg",
+  "icon": "/icon.svg",
   "action": {
     "title": "MÖRK BORG Sheet",
-    "icon": "icon.svg",
-    "popover": "index.html",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
     "width": 520,
     "height": 760
   }
