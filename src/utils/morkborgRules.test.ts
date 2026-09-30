@@ -7,7 +7,8 @@ import {
   rollBrokenTable, 
   generateRandomCharacter,
   performArmorSoak,
-  performDefend
+  performDefend,
+  getAbilityDRPenalty
 } from './morkborgRules';
 import { Character } from '../types/morkborg';
 
@@ -127,26 +128,64 @@ describe('MÖRK BORG Rules Engine', () => {
     expect(rest.newHp).toBe(4 + rest.healedHp);
   });
 
-  it('calculateCarryingCapacity should handle STR + 8, items, and silver weight', () => {
+  it('calculateCarryingCapacity should handle STR + 8, items, silver weight, armor, and shield', () => {
     // STR modifier = 0 -> capacity = 8
     // Items: 2 torches (2 slots) + 1 heavy anvil (2 slots) = 4 slots
     // Silver: 250 silver -> floor(250/100) = 2 slots
-    // Total used slots = 6 / 8
-    const cap = calculateCarryingCapacity(0, mockCharacter.inventory, mockCharacter.silver);
-    expect(cap.maxSlots).toBe(8);
-    expect(cap.usedSlots).toBe(6);
-    expect(cap.isOverencumbered).toBe(false);
-    expect(cap.penaltyDR).toBe(0);
+    // Total used slots without armor = 6 / 8
+    const capWithoutArmor = calculateCarryingCapacity(0, mockCharacter.inventory, mockCharacter.silver);
+    expect(capWithoutArmor.maxSlots).toBe(8);
+    expect(capWithoutArmor.usedSlots).toBe(6);
+    expect(capWithoutArmor.isOverencumbered).toBe(false);
+    expect(capWithoutArmor.penaltyDR).toBe(0);
 
-    // Now exceed capacity
+    // Armor tier 1 (+1 slot) + shield (+1 slot) -> total 8 slots
+    const capWithArmorAndShield = calculateCarryingCapacity(0, mockCharacter.inventory, mockCharacter.silver, mockCharacter.armor);
+    expect(capWithArmorAndShield.armorSlots).toBe(1);
+    expect(capWithArmorAndShield.shieldSlots).toBe(1);
+    expect(capWithArmorAndShield.usedSlots).toBe(8);
+    expect(capWithArmorAndShield.isOverencumbered).toBe(false);
+
+    // Tier 0 armor (0 slots) without shield (0 slots)
+    const tier0Armor = { name: 'Rags', tier: 0 as const, damageReduction: '0', degraded: 0, hasShield: false };
+    const capTier0 = calculateCarryingCapacity(0, mockCharacter.inventory, mockCharacter.silver, tier0Armor);
+    expect(capTier0.armorSlots).toBe(0);
+    expect(capTier0.shieldSlots).toBe(0);
+    expect(capTier0.usedSlots).toBe(6);
+
+    // Now exceed capacity with extra items
     const heavyInventory = [
       ...mockCharacter.inventory,
-      { id: 'i3', name: 'Iron Chest', slots: 2, quantity: 2 }, // +4 slots -> total 10
+      { id: 'i3', name: 'Iron Chest', slots: 2, quantity: 2 }, // +4 slots
     ];
-    const overCap = calculateCarryingCapacity(0, heavyInventory, mockCharacter.silver);
-    expect(overCap.usedSlots).toBe(10);
+    const overCap = calculateCarryingCapacity(0, heavyInventory, mockCharacter.silver, mockCharacter.armor);
+    expect(overCap.usedSlots).toBe(12);
     expect(overCap.isOverencumbered).toBe(true);
     expect(overCap.penaltyDR).toBe(2);
+  });
+
+  it('getAbilityDRPenalty should accurately calculate penalties for armor tiers and encumbrance', () => {
+    const lightArmor = { name: 'Leather', tier: 1 as const, damageReduction: '-d2', degraded: 0, hasShield: false };
+    const mediumArmor = { name: 'Chainmail', tier: 2 as const, damageReduction: '-d4', degraded: 0, hasShield: false };
+    const heavyArmor = { name: 'Plate', tier: 3 as const, damageReduction: '-d6', degraded: 0, hasShield: false };
+
+    // Agility tests:
+    // Light: 0 DR penalty
+    expect(getAbilityDRPenalty('agility', lightArmor, false)).toBe(0);
+    // Medium (tier 2): +2 DR penalty
+    expect(getAbilityDRPenalty('agility', mediumArmor, false)).toBe(2);
+    // Heavy (tier 3): +4 DR penalty
+    expect(getAbilityDRPenalty('agility', heavyArmor, false)).toBe(4);
+
+    // Overencumbered adds +2 DR to Agility and Strength:
+    expect(getAbilityDRPenalty('agility', heavyArmor, true)).toBe(6); // 4 (armor) + 2 (encumbered)
+    expect(getAbilityDRPenalty('agility', mediumArmor, true)).toBe(4); // 2 (armor) + 2 (encumbered)
+    expect(getAbilityDRPenalty('strength', heavyArmor, true)).toBe(2); // 0 (armor) + 2 (encumbered)
+    expect(getAbilityDRPenalty('strength', heavyArmor, false)).toBe(0); // 0 (armor)
+
+    // Presence & Toughness never take armor or encumbrance DR penalties:
+    expect(getAbilityDRPenalty('presence', heavyArmor, true)).toBe(0);
+    expect(getAbilityDRPenalty('toughness', heavyArmor, true)).toBe(0);
   });
 
   it('rollBrokenTable should return a valid d4 outcome', () => {
@@ -179,8 +218,16 @@ describe('MÖRK BORG Rules Engine', () => {
   });
 
   it('performDefend should incorporate armor penalties', () => {
-    // Heavy armor (tier 3) adds +2 DR to defense
-    const def = performDefend('Wretched Test', 1, 3, 12);
-    expect(def.targetDR).toBe(14); // 12 + 2
+    // Light armor (tier 1): no defense penalty (DR 12)
+    const defLight = performDefend('Wretched Test', 1, 1, 12);
+    expect(defLight.targetDR).toBe(12);
+
+    // Medium armor (tier 2): +2 DR to defense (DR 14)
+    const defMed = performDefend('Wretched Test', 1, 2, 12);
+    expect(defMed.targetDR).toBe(14);
+
+    // Heavy armor (tier 3): +2 DR to defense (DR 14)
+    const defHvy = performDefend('Wretched Test', 1, 3, 12);
+    expect(defHvy.targetDR).toBe(14);
   });
 });

@@ -94,16 +94,17 @@ export const App: React.FC = () => {
   };
 
   // Roll Handlers
-  const handleRollAbility = (ability: AbilityName, modifier: number, targetDR: number) => {
-    const roll = performAbilityCheck(character.name, ability, modifier, targetDR);
+  const handleRollAbility = (ability: AbilityName, modifier: number, targetDR: number, drPenalty?: number) => {
+    const roll = performAbilityCheck(character.name, ability, modifier, targetDR, 0, drPenalty || 0);
     triggerRoll(roll);
   };
 
   const handleDefend = () => {
+    const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
     const roll = performDefend(
       character.name,
       character.abilities.agility.modifier,
-      character.armor.tier
+      effectiveTier
     );
     triggerRoll(roll);
 
@@ -136,6 +137,13 @@ export const App: React.FC = () => {
   };
 
   const handleInvokeScroll = (scroll: Scroll) => {
+    // Check armor restrictions (Medium or Heavy armor forbids powers/scrolls)
+    const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
+    if (effectiveTier >= 2) {
+      alert('You cannot channel occult powers or read scrolls while wearing Medium or Heavy armor!');
+      return;
+    }
+
     // Check powers availability
     if (character.powers.current <= 0) {
       const proceed = window.confirm(

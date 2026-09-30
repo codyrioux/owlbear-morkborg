@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Dices, Shield, Eye, Dumbbell, HeartPulse } from 'lucide-react';
 import { AbilityName, Character } from '../types/morkborg';
 import { formatModifier } from '../utils/dice';
+import { calculateCarryingCapacity, getAbilityDRPenalty } from '../utils/morkborgRules';
 
 interface AbilitiesGridProps {
   character: Character;
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
-  onRollAbility: (ability: AbilityName, modifier: number, targetDR: number) => void;
-  drPenalty?: number;
+  onRollAbility: (ability: AbilityName, modifier: number, targetDR: number, drPenalty?: number) => void;
 }
 
 const ABILITY_CONFIG: Record<
@@ -53,11 +53,18 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
   character,
   onUpdateCharacter,
   onRollAbility,
-  drPenalty = 0,
 }) => {
   const [targetDR, setTargetDR] = useState<number>(12);
 
   const abilities: AbilityName[] = ['agility', 'presence', 'strength', 'toughness'];
+
+  const capacity = calculateCarryingCapacity(
+    character.abilities.strength.modifier,
+    character.inventory,
+    character.silver,
+    character.armor
+  );
+  const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
 
   const handleModifierDirectChange = (ability: AbilityName, newMod: number) => {
     onUpdateCharacter((prev) => ({
@@ -83,9 +90,9 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
           <label className="font-brutal text-xs font-bold text-mb-white/80">
-            TEST DR:
+            BASE DR:
           </label>
           <select
             value={targetDR}
@@ -98,9 +105,19 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               </option>
             ))}
           </select>
-          {drPenalty > 0 && (
+          {effectiveTier === 2 && (
             <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-              +{drPenalty} DR PENALTY
+              +2 DR AGI (MED ARMOR)
+            </span>
+          )}
+          {effectiveTier >= 3 && (
+            <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
+              +4 DR AGI (HVY ARMOR)
+            </span>
+          )}
+          {capacity.isOverencumbered && (
+            <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
+              +2 DR ENCUMBERED
             </span>
           )}
         </div>
@@ -112,6 +129,8 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           const config = ABILITY_CONFIG[abilityKey];
           const ability = character.abilities[abilityKey];
           const modifier = ability.modifier;
+          const penalty = getAbilityDRPenalty(abilityKey, character.armor, capacity.isOverencumbered);
+          const effectiveDR = targetDR + penalty;
 
           return (
             <div
@@ -158,17 +177,25 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               </div>
 
               {/* Action Hints */}
-              <p className="font-punk text-[9px] text-mb-white/50 text-center mb-2 leading-tight">
+              <p className="font-punk text-[9px] text-mb-white/50 text-center mb-1.5 leading-tight">
                 {config.hints}
               </p>
 
+              {/* Ability Specific DR Penalty Badge */}
+              {penalty > 0 && (
+                <div className="flex items-center justify-center gap-1 text-[9px] font-bold text-mb-pink border border-mb-pink/40 bg-mb-pink/10 py-0.5 mb-1.5 font-mono">
+                  <span>+{penalty} DR PENALTY</span>
+                </div>
+              )}
+
               {/* Big ROLL Button */}
               <button
-                onClick={() => onRollAbility(abilityKey, modifier, targetDR + drPenalty)}
+                onClick={() => onRollAbility(abilityKey, modifier, effectiveDR, penalty)}
                 className="w-full mb-btn mb-btn-yellow text-xs py-1.5 flex items-center justify-center gap-1.5 shadow-brutal-sm"
+                title={`Roll d20 ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
               >
                 <Dices className="w-3.5 h-3.5" />
-                <span>ROLL {formatModifier(modifier)}</span>
+                <span>ROLL {formatModifier(modifier)} {penalty > 0 ? `(DR ${effectiveDR})` : ''}</span>
               </button>
             </div>
           );

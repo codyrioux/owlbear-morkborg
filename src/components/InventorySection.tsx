@@ -19,7 +19,8 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
   const capacity = calculateCarryingCapacity(
     character.abilities.strength.modifier,
     character.inventory,
-    character.silver
+    character.silver,
+    character.armor
   );
 
   const handleAddItem = (e: React.FormEvent) => {
@@ -89,6 +90,14 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
               {capacity.usedSlots}
             </span>
             <span className="text-mb-white/50"> / {capacity.maxSlots} SLOTS</span>
+            {(capacity.armorSlots > 0 || capacity.shieldSlots > 0) && (
+              <span className="text-[10px] text-mb-white/60 font-punk ml-1">
+                ({[
+                  capacity.armorSlots > 0 ? 'armor: 1' : null,
+                  capacity.shieldSlots > 0 ? 'shield: 1' : null,
+                ].filter(Boolean).join(', ')})
+              </span>
+            )}
           </div>
           {capacity.isOverencumbered && (
             <div className="flex items-center gap-1 bg-mb-pink text-mb-white text-[10px] font-bold px-1.5 py-0.5 border border-mb-pink animate-pulse">

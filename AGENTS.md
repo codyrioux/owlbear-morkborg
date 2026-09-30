@@ -133,8 +133,8 @@ When adding or modifying gameplay rules, adhere to official canon:
 | **Long Rest** | "A night's sleep". Heals **d6** HP. Rerolls **Omens** (character's omen die, d2 or d4). Rerolls **Powers** (Presence + d4, min 0). Starving: no HP heal. Infected: takes d6 damage, no heal. |
 | **Short Rest** | "Catch breath & drink". Heals **d4** HP. |
 | **Omens (5 Choices)** | 1) Deal max damage on attack. 2) Reroll any die. 3) Lower damage taken by d6. 4) Neutralize a Crit or Fumble. 5) Lower check DR by 4 before rolling. |
-| **Armor Tiers** | Tier 0: None (soak 0). Tier 1: Light (-d2 soak). Tier 2: Medium (-d4 soak, +2 DR Agility tests). Tier 3: Heavy (-d6 soak, +2 DR Agility tests, no power usage). Shields: -1 damage soak. |
-| **Carrying Capacity** | Normal capacity = `Strength + 8` slots. Weapons/armor/heavy items take 1 or 2 slots. Every 100 silver = 1 slot. Exceeding capacity adds +2 DR to Strength and Agility checks. |
+| **Armor Tiers** | Tier 0: None (soak 0, 0 slots). Tier 1: Light (-d2 soak, 1 slot). Tier 2: Medium (-d4 soak, 1 slot, +2 DR Agility tests incl. defence, no powers/scrolls). Tier 3: Heavy (-d6 soak, 1 slot, +4 DR Agility tests, defence is DR +2, no powers/scrolls). Shields: -1 damage soak (1 slot). |
+| **Carrying Capacity** | Normal capacity = `Strength + 8` slots. Armor of any tier (except 0) = 1 slot. Shield = 1 slot. Weapons/heavy items take 1 or 2 slots. Every 100 silver = 1 slot. Exceeding capacity adds +2 DR to Strength and Agility checks. |
 | **Broken Table (0 HP)** | Roll d4 when reduced to 0 HP: 1 = Fall unconscious d4 hours, wake with d4 HP. 2 = Crippled (lost limb/eye). 3 = Hemorrhaging (dies in d2 hours unless treated). 4 = Dead. |
 | **Scrolls & Catastrophes** | Invoking a scroll requires a Presence DR 12 check. Failure costs d2 HP and triggers 1-hour cooldown. Natural 1 triggers the 20-entry Arcane Catastrophes table. |
 

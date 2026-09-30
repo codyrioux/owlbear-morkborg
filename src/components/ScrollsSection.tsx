@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scroll as ScrollIcon, Plus, Trash2, Wand2, BookOpen } from 'lucide-react';
+import { Scroll as ScrollIcon, Plus, Trash2, Wand2, BookOpen, AlertTriangle } from 'lucide-react';
 import { Character, Scroll } from '../types/morkborg';
 
 interface ScrollsSectionProps {
@@ -29,9 +29,12 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   const [newScrollDesc, setNewScrollDesc] = useState('');
   const [showPresets, setShowPresets] = useState(false);
 
+  const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
+  const isArmorRestricted = effectiveTier >= 2;
+
   const handleAddScroll = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newScrollName.trim()) return;
+    if (isArmorRestricted || !newScrollName.trim()) return;
 
     const newScroll: Scroll = {
       id: crypto.randomUUID(),
@@ -50,6 +53,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   };
 
   const handleAddPreset = (preset: Omit<Scroll, 'id'>) => {
+    if (isArmorRestricted) return;
     const newScroll: Scroll = {
       id: crypto.randomUUID(),
       ...preset,
@@ -83,13 +87,34 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
         </div>
 
         <button
-          onClick={() => setShowPresets(!showPresets)}
-          className="text-xs font-bold text-mb-yellow hover:text-mb-white flex items-center gap-1 border border-mb-yellow/40 px-1.5 py-0.5"
+          disabled={isArmorRestricted}
+          onClick={() => !isArmorRestricted && setShowPresets(!showPresets)}
+          className={`text-xs font-bold flex items-center gap-1 border px-1.5 py-0.5 transition-colors ${
+            isArmorRestricted
+              ? 'text-mb-white/30 border-mb-charcoal cursor-not-allowed opacity-50'
+              : 'text-mb-yellow hover:text-mb-white border-mb-yellow/40'
+          }`}
+          title={isArmorRestricted ? 'Cannot use powers while wearing Medium or Heavy armor' : undefined}
         >
           <BookOpen className="w-3 h-3" />
           <span>{showPresets ? 'Close Library' : 'Scroll Library'}</span>
         </button>
       </div>
+
+      {/* Armor Restriction Banner */}
+      {isArmorRestricted && (
+        <div className="mb-3 p-2 bg-mb-pink/15 border-2 border-mb-pink text-mb-pink flex items-center gap-2 shadow-brutal-sm">
+          <AlertTriangle className="w-5 h-5 shrink-0 animate-pulse text-mb-pink" />
+          <div className="text-xs">
+            <span className="font-bold uppercase tracking-wider block text-mb-white">
+              SECTION DISABLED: {effectiveTier === 2 ? 'MEDIUM ARMOR' : 'HEAVY ARMOR'} EQUIPPED
+            </span>
+            <span className="font-punk text-[10px] text-mb-white/80">
+              MÖRK BORG rules forbid using Powers or reading Scrolls while encumbered by Medium or Heavy armor.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Preset Library Drawer */}
       {showPresets && (
@@ -126,7 +151,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       )}
 
       {/* Character Scrolls List */}
-      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 mb-2.5">
+      <div className={`space-y-1.5 max-h-48 overflow-y-auto pr-1 mb-2.5 ${isArmorRestricted ? 'opacity-50' : ''}`}>
         {character.scrolls.length === 0 ? (
           <p className="text-xs text-mb-white/40 italic py-2">
             No scrolls possessed. You wander through the darkness blind to magic.
@@ -160,9 +185,18 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
               {/* Action buttons */}
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => onInvokeScroll(scroll)}
-                  className="mb-btn mb-btn-yellow text-[10px] py-1 px-2.5"
-                  title="Test DR12 Presence to activate this power"
+                  disabled={isArmorRestricted}
+                  onClick={() => !isArmorRestricted && onInvokeScroll(scroll)}
+                  className={`text-[10px] py-1 px-2.5 flex items-center gap-1 font-brutal font-bold uppercase transition-all ${
+                    isArmorRestricted
+                      ? 'bg-mb-charcoal text-mb-white/30 border border-mb-charcoal cursor-not-allowed'
+                      : 'mb-btn mb-btn-yellow shadow-brutal-sm'
+                  }`}
+                  title={
+                    isArmorRestricted
+                      ? 'Cannot invoke powers while wearing Medium or Heavy armor'
+                      : 'Test DR12 Presence to activate this power'
+                  }
                 >
                   <Wand2 className="w-3 h-3" />
                   <span>INVOKE (DR12)</span>
@@ -181,33 +215,35 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       </div>
 
       {/* Add Custom Scroll Form */}
-      <form onSubmit={handleAddScroll} className="flex flex-wrap gap-1.5 pt-2 border-t border-mb-charcoal">
-        <input
-          type="text"
-          placeholder="Scroll name..."
-          value={newScrollName}
-          onChange={(e) => setNewScrollName(e.target.value)}
-          className="flex-1 min-w-[140px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
-        />
-        <select
-          value={newScrollType}
-          onChange={(e) => setNewScrollType(e.target.value as 'unclean' | 'sacred')}
-          className="bg-mb-black text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none"
-        >
-          <option value="unclean">Unclean</option>
-          <option value="sacred">Sacred</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Effect description..."
-          value={newScrollDesc}
-          onChange={(e) => setNewScrollDesc(e.target.value)}
-          className="flex-1 min-w-[180px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
-        />
-        <button type="submit" className="mb-btn mb-btn-yellow text-xs py-1 px-2">
-          <Plus className="w-3 h-3" />
-          <span>ADD</span>
-        </button>
+      <form onSubmit={handleAddScroll} className="pt-2 border-t border-mb-charcoal">
+        <fieldset disabled={isArmorRestricted} className={`flex flex-wrap gap-1.5 ${isArmorRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}>
+          <input
+            type="text"
+            placeholder={isArmorRestricted ? 'Powers disabled in armor...' : 'Scroll name...'}
+            value={newScrollName}
+            onChange={(e) => setNewScrollName(e.target.value)}
+            className="flex-1 min-w-[140px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+          />
+          <select
+            value={newScrollType}
+            onChange={(e) => setNewScrollType(e.target.value as 'unclean' | 'sacred')}
+            className="bg-mb-black text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none"
+          >
+            <option value="unclean">Unclean</option>
+            <option value="sacred">Sacred</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Effect description..."
+            value={newScrollDesc}
+            onChange={(e) => setNewScrollDesc(e.target.value)}
+            className="flex-1 min-w-[180px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+          />
+          <button type="submit" className="mb-btn mb-btn-yellow text-xs py-1 px-2">
+            <Plus className="w-3 h-3" />
+            <span>ADD</span>
+          </button>
+        </fieldset>
       </form>
     </section>
   );

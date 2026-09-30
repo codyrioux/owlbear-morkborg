@@ -12,10 +12,10 @@ interface CombatSectionProps {
 }
 
 const ARMOR_TIERS: { tier: ArmorTier; name: string; dr: string; penalty: string }[] = [
-  { tier: 0, name: 'Tier 0: None', dr: '0', penalty: 'No penalty' },
-  { tier: 1, name: 'Tier 1: Light', dr: '-d2', penalty: 'Leather / Gambeson' },
-  { tier: 2, name: 'Tier 2: Medium', dr: '-d4', penalty: '+2 DR to Agility tests' },
-  { tier: 3, name: 'Tier 3: Heavy', dr: '-d6', penalty: '+2 DR Agility, cannot use powers' },
+  { tier: 0, name: 'Tier 0: None', dr: '0', penalty: '0 slots • No penalty' },
+  { tier: 1, name: 'Tier 1: Light', dr: '-d2', penalty: '1 slot • Leather / Gambeson' },
+  { tier: 2, name: 'Tier 2: Medium', dr: '-d4', penalty: '1 slot • +2 DR Agility (incl. defence) • No powers' },
+  { tier: 3, name: 'Tier 3: Heavy', dr: '-d6', penalty: '1 slot • +4 DR Agility (defence +2 DR) • No powers' },
 ];
 
 export const CombatSection: React.FC<CombatSectionProps> = ({
@@ -87,9 +87,14 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                 ARMOR & DEFENSE
               </h3>
             </div>
-            {effectiveTier >= 2 && (
+            {effectiveTier === 2 && (
               <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-                +2 DR AGILITY
+                +2 DR AGILITY (DEFENCE +2) • NO POWERS
+              </span>
+            )}
+            {effectiveTier >= 3 && (
+              <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
+                +4 DR AGILITY (DEFENCE +2) • NO POWERS
               </span>
             )}
           </div>
@@ -127,7 +132,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                   }
                   className="accent-mb-yellow w-4 h-4"
                 />
-                <span className="font-bold">Shield (-1 damage / sacrifice)</span>
+                <span className="font-bold">Shield (-1 damage / sacrifice • 1 slot)</span>
               </label>
 
               {/* Degradation Counter */}
@@ -165,10 +170,10 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
             <button
               onClick={onDefend}
               className="mb-btn mb-btn-yellow text-xs py-2 flex items-center justify-center gap-1.5"
-              title="Roll d20 + Agility vs DR 12 (player rolls to evade attack)"
+              title={`Roll d20 + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
             >
               <Shield className="w-4 h-4" />
-              <span>DEFEND TEST</span>
+              <span>DEFEND TEST {effectiveTier >= 2 ? '(DR 14)' : '(DR 12)'}</span>
             </button>
 
             <button

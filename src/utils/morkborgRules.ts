@@ -12,12 +12,39 @@ import { rollDie, rollFormula, scoreToModifier } from './dice';
 /**
  * Perform an Ability test: d20 + modifier vs DR
  */
+/**
+ * Calculates the total DR penalty for an ability test.
+ * - Strength: +2 DR if overencumbered.
+ * - Agility: +2 DR if overencumbered; +2 DR if wearing Medium armor (tier 2); +4 DR if wearing Heavy armor (tier 3).
+ * - Presence & Toughness: 0 penalty.
+ */
+export function getAbilityDRPenalty(
+  ability: AbilityName,
+  armor: Armor,
+  isOverencumbered: boolean
+): number {
+  let penalty = 0;
+  if (isOverencumbered && (ability === 'strength' || ability === 'agility')) {
+    penalty += 2;
+  }
+  if (ability === 'agility') {
+    const effectiveTier = Math.max(0, armor.tier - armor.degraded);
+    if (effectiveTier === 2) {
+      penalty += 2;
+    } else if (effectiveTier >= 3) {
+      penalty += 4;
+    }
+  }
+  return penalty;
+}
+
 export function performAbilityCheck(
   characterName: string,
   ability: AbilityName,
   modifier: number,
   targetDR: number = 12,
-  omenLowerDR: number = 0
+  omenLowerDR: number = 0,
+  drPenalty: number = 0
 ): RollResult {
   const d20 = rollDie(20);
   const effectiveDR = Math.max(2, targetDR - omenLowerDR);
@@ -37,6 +64,8 @@ export function performAbilityCheck(
     flavor = 'Failure. Pain and misfortune mount.';
   }
 
+  const penaltyNote = drPenalty > 0 ? ` (+${drPenalty} DR penalty)` : '';
+
   return {
     id: crypto.randomUUID(),
     timestamp: Date.now(),
@@ -50,7 +79,7 @@ export function performAbilityCheck(
     success,
     isCrit,
     isFumble,
-    details: `Rolled [${d20}] ${modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`} = ${total} vs DR ${effectiveDR}`,
+    details: `Rolled [${d20}] ${modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`} = ${total} vs DR ${effectiveDR}${penaltyNote}`,
     flavor,
   };
 }
@@ -461,21 +490,28 @@ export function performShortRest(character: Character): {
  * Carrying Capacity: Strength + 8 items
  * Bulky/Heavy items count as 2 slots.
  * 100 silver counts as 1 normal item.
+ * Armor of any tier (except 0, none) uses 1 inventory slot.
+ * A shield uses 1 inventory slot.
  */
 export function calculateCarryingCapacity(
   strengthModifier: number,
   inventory: InventoryItem[],
-  silver: number
+  silver: number,
+  armor?: Armor
 ): {
   maxSlots: number;
   usedSlots: number;
   isOverencumbered: boolean;
   penaltyDR: number;
+  armorSlots: number;
+  shieldSlots: number;
 } {
   const maxSlots = Math.max(8, strengthModifier + 8);
   const itemsSlots = inventory.reduce((acc, item) => acc + (item.slots * item.quantity), 0);
   const silverSlots = Math.floor(silver / 100);
-  const usedSlots = itemsSlots + silverSlots;
+  const armorSlots = armor && armor.tier > 0 ? 1 : 0;
+  const shieldSlots = armor && armor.hasShield ? 1 : 0;
+  const usedSlots = itemsSlots + silverSlots + armorSlots + shieldSlots;
   const isOverencumbered = usedSlots > maxSlots;
 
   return {
@@ -483,6 +519,8 @@ export function calculateCarryingCapacity(
     usedSlots,
     isOverencumbered,
     penaltyDR: isOverencumbered ? 2 : 0,
+    armorSlots,
+    shieldSlots,
   };
 }
 
