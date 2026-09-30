@@ -8,7 +8,8 @@ import {
   generateRandomCharacter,
   performArmorSoak,
   performDefend,
-  getAbilityDRPenalty
+  getAbilityDRPenalty,
+  performWeaponDamage
 } from './morkborgRules';
 import { Character } from '../types/morkborg';
 
@@ -251,5 +252,42 @@ describe('MÖRK BORG Rules Engine', () => {
     // Heavy armor (tier 3): +2 DR to defense (DR 14)
     const defHvy = performDefend('Wretched Test', 1, 3, 12);
     expect(defHvy.targetDR).toBe(14);
+  });
+
+  it('performWeaponDamage should support custom dice formulas like 2d6 and 1d8+1, including crits and max damage', () => {
+    // 1. Multi-dice weapon: 2d6
+    const greatsword = { id: 'w-great', name: 'Zweihänder', type: 'melee' as const, damageDie: '2d6' };
+    const roll2d6 = performWeaponDamage('Wretched Test', greatsword);
+    expect(roll2d6.diceRolls).toHaveLength(2);
+    expect(roll2d6.total).toBeGreaterThanOrEqual(2);
+    expect(roll2d6.total).toBeLessThanOrEqual(12);
+    expect(roll2d6.details).toMatch(/Rolled \[\d+ \+ \d+\] = \d+ damage/);
+
+    // Max damage on 2d6 (Omen spent) -> 12
+    const max2d6 = performWeaponDamage('Wretched Test', greatsword, false, true);
+    expect(max2d6.total).toBe(12);
+    expect(max2d6.diceRolls).toEqual([6, 6]);
+    expect(max2d6.details).toContain('MAX DAMAGE (Omen spent): 12 damage!');
+
+    // Critical hit on 2d6 -> rolls 4 dice
+    const crit2d6 = performWeaponDamage('Wretched Test', greatsword, true, false);
+    expect(crit2d6.diceRolls).toHaveLength(4);
+    expect(crit2d6.total).toBeGreaterThanOrEqual(4);
+    expect(crit2d6.total).toBeLessThanOrEqual(24);
+
+    // 2. Weapon with modifier: 1d8+1
+    const spikedMace = { id: 'w-mace', name: 'Spiked Mace', type: 'melee' as const, damageDie: '1d8+1' };
+    const roll1d8plus1 = performWeaponDamage('Wretched Test', spikedMace);
+    expect(roll1d8plus1.diceRolls).toHaveLength(1);
+    expect(roll1d8plus1.modifier).toBe(1);
+    expect(roll1d8plus1.total).toBeGreaterThanOrEqual(2); // 1 + 1
+    expect(roll1d8plus1.total).toBeLessThanOrEqual(9); // 8 + 1
+    expect(roll1d8plus1.details).toMatch(/Rolled \[\d+\] \+ 1 = \d+ damage/);
+
+    // Max damage on 1d8+1 -> 9
+    const max1d8plus1 = performWeaponDamage('Wretched Test', spikedMace, false, true);
+    expect(max1d8plus1.total).toBe(9);
+    expect(max1d8plus1.diceRolls).toEqual([8]);
+    expect(max1d8plus1.details).toContain('MAX DAMAGE (Omen spent): 9 damage!');
   });
 });

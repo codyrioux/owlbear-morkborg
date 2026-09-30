@@ -79,3 +79,24 @@ export function formatModifier(mod: number): string {
   if (mod === 0) return `±0`;
   return `${mod}`;
 }
+
+/**
+ * Validates whether a string represents a valid dice formula (e.g., 'd6', '2d6', '1d8+1', '2d4-1', '5')
+ */
+export function isValidDiceFormula(formula: string): boolean {
+  if (!formula || typeof formula !== 'string') return false;
+  const cleaned = formula.trim().toLowerCase().replace(/\s+/g, '');
+  if (!cleaned) return false;
+
+  const regex = /^(\d*)d(\d+)(?:([+-])(\d+))?$/;
+  const match = cleaned.match(regex);
+  if (match) {
+    const count = match[1] ? parseInt(match[1], 10) : 1;
+    const sides = parseInt(match[2], 10);
+    const modVal = match[4] ? parseInt(match[4], 10) : 0;
+    return count > 0 && count <= 20 && sides > 1 && sides <= 1000 && modVal >= 0 && modVal <= 100;
+  }
+
+  const fixedNum = parseInt(cleaned, 10);
+  return !isNaN(fixedNum) && fixedNum >= 0 && fixedNum <= 1000 && String(fixedNum) === cleaned;
+}

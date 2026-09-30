@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rollDie, rollDice, rollFormula, scoreToModifier, formatModifier } from './dice';
+import { rollDie, rollDice, rollFormula, scoreToModifier, formatModifier, isValidDiceFormula } from './dice';
 
 describe('Dice utilities', () => {
   it('should roll a die within bounds', () => {
@@ -67,5 +67,31 @@ describe('Dice utilities', () => {
     expect(formatModifier(2)).toBe('+2');
     expect(formatModifier(0)).toBe('±0');
     expect(formatModifier(-1)).toBe('-1');
+  });
+
+  it('should validate dice formulas accurately', () => {
+    // Valid standard and custom formulas
+    expect(isValidDiceFormula('d4')).toBe(true);
+    expect(isValidDiceFormula('d6')).toBe(true);
+    expect(isValidDiceFormula('d8')).toBe(true);
+    expect(isValidDiceFormula('d10')).toBe(true);
+    expect(isValidDiceFormula('d12')).toBe(true);
+    expect(isValidDiceFormula('2d6')).toBe(true);
+    expect(isValidDiceFormula('1d8+1')).toBe(true);
+    expect(isValidDiceFormula('2d4-1')).toBe(true);
+    expect(isValidDiceFormula('3d6+2')).toBe(true);
+    expect(isValidDiceFormula(' 2d6 + 1 ')).toBe(true);
+    expect(isValidDiceFormula('5')).toBe(true);
+
+    // Invalid formulas
+    expect(isValidDiceFormula('')).toBe(false);
+    expect(isValidDiceFormula('   ')).toBe(false);
+    expect(isValidDiceFormula('banana')).toBe(false);
+    expect(isValidDiceFormula('0d6')).toBe(false);
+    expect(isValidDiceFormula('2d0')).toBe(false);
+    expect(isValidDiceFormula('d')).toBe(false);
+    expect(isValidDiceFormula('2d')).toBe(false);
+    expect(isValidDiceFormula('d+1')).toBe(false);
+    expect(isValidDiceFormula('100d6')).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Sword, Plus, Trash2, Dices, Crosshair } from 'lucide-react';
 import { ArmorTier, Character, Weapon } from '../types/morkborg';
+import { isValidDiceFormula } from '../utils/dice';
 import { SectionHeader } from './SectionHeader';
 
 interface CombatSectionProps {
@@ -30,6 +31,8 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
   const [newWeaponName, setNewWeaponName] = useState('');
   const [newWeaponType, setNewWeaponType] = useState<'melee' | 'ranged'>('melee');
   const [newWeaponDamage, setNewWeaponDamage] = useState('d6');
+  const [customDamage, setCustomDamage] = useState('');
+  const [isCustomDamage, setIsCustomDamage] = useState(false);
 
   const armor = character.armor;
   const effectiveTier = Math.max(0, armor.tier - armor.degraded);
@@ -54,11 +57,25 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
     e.preventDefault();
     if (!newWeaponName.trim()) return;
 
+    let damageDie = newWeaponDamage;
+    if (isCustomDamage) {
+      const trimmed = customDamage.trim();
+      if (!trimmed) {
+        alert('Please enter a custom damage die (e.g. 2d6, 1d8+1).');
+        return;
+      }
+      if (!isValidDiceFormula(trimmed)) {
+        alert(`Invalid dice formula "${trimmed}". Use standard notation such as 2d6, 1d8+1, or d10-1.`);
+        return;
+      }
+      damageDie = trimmed.toLowerCase().replace(/\s+/g, '');
+    }
+
     const newWep: Weapon = {
       id: crypto.randomUUID(),
       name: newWeaponName.trim(),
       type: newWeaponType,
-      damageDie: newWeaponDamage,
+      damageDie,
     };
 
     onUpdateCharacter((prev) => ({
@@ -67,6 +84,9 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
     }));
 
     setNewWeaponName('');
+    if (isCustomDamage) {
+      setCustomDamage('');
+    }
   };
 
   const handleRemoveWeapon = (id: string) => {
@@ -273,34 +293,66 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
           </div>
 
           {/* Add New Weapon Form */}
-          <form onSubmit={handleAddWeapon} className="flex gap-1 pt-1.5 border-t border-mb-charcoal">
+          <form onSubmit={handleAddWeapon} className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-mb-charcoal">
             <input
               type="text"
               placeholder="Weapon name..."
               value={newWeaponName}
               onChange={(e) => setNewWeaponName(e.target.value)}
-              className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
+              className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-[110px]"
             />
             <select
               value={newWeaponType}
               onChange={(e) => setNewWeaponType(e.target.value as 'melee' | 'ranged')}
-              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer"
+              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
             >
               <option value="melee">Melee</option>
               <option value="ranged">Ranged</option>
             </select>
             <select
-              value={newWeaponDamage}
-              onChange={(e) => setNewWeaponDamage(e.target.value)}
-              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none font-mono cursor-pointer"
+              value={isCustomDamage ? 'custom' : newWeaponDamage}
+              onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomDamage(true);
+                } else {
+                  setIsCustomDamage(false);
+                  setNewWeaponDamage(e.target.value);
+                }
+              }}
+              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none font-mono cursor-pointer shrink-0"
             >
               <option value="d4">d4</option>
               <option value="d6">d6</option>
               <option value="d8">d8</option>
               <option value="d10">d10</option>
               <option value="d12">d12</option>
+              <option value="custom">Custom...</option>
             </select>
-            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-1.5">
+            {isCustomDamage && (
+              <div className="flex items-center gap-0.5 shrink-0">
+                <input
+                  type="text"
+                  placeholder="2d6, 1d8+1"
+                  value={customDamage}
+                  onChange={(e) => setCustomDamage(e.target.value)}
+                  className="w-20 bg-mb-dark text-mb-yellow placeholder:text-mb-white/30 text-xs px-1.5 py-0.5 border border-mb-yellow focus:outline-none font-mono"
+                  autoFocus
+                  title="Enter custom dice formula (e.g. 2d6, 1d8+1, 2d4-1)"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomDamage(false);
+                    setNewWeaponDamage('d6');
+                  }}
+                  className="text-[10px] text-mb-white/40 hover:text-mb-pink px-0.5"
+                  title="Cancel custom damage"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-1.5 shrink-0">
               <Plus className="w-3 h-3" />
             </button>
           </form>

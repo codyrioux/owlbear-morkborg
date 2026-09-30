@@ -189,17 +189,35 @@ export function performWeaponDamage(
   let rolls = [...parsed.rolls];
 
   if (maxDamage) {
-    // Used an omen for maximum damage
-    const match = weapon.damageDie.match(/d(\d+)/i);
-    const sides = match ? parseInt(match[1], 10) : 6;
-    total = sides;
-    rolls = [sides];
+    // Used an omen for maximum damage: maximize all dice and add modifier
+    const cleaned = weapon.damageDie.trim().toLowerCase().replace(/\s+/g, '');
+    const regex = /^(\d*)d(\d+)(?:([+-])(\d+))?$/;
+    const match = cleaned.match(regex);
+    if (match) {
+      const count = match[1] ? parseInt(match[1], 10) : 1;
+      const sides = parseInt(match[2], 10);
+      const sign = match[3];
+      const modVal = match[4] ? parseInt(match[4], 10) : 0;
+      const modifier = sign === '-' ? -modVal : modVal;
+      rolls = Array(count).fill(sides);
+      total = Math.max(0, count * sides + modifier);
+    } else {
+      const fixedNum = parseInt(cleaned, 10);
+      total = !isNaN(fixedNum) ? fixedNum : 6;
+      rolls = [total];
+    }
   } else if (isCrit) {
     // Critical hit deals double damage (roll twice)
     const secondRoll = rollFormula(weapon.damageDie);
     rolls.push(...secondRoll.rolls);
     total = total + secondRoll.total;
   }
+
+  const modText = parsed.modifier > 0
+    ? ` + ${parsed.modifier}`
+    : parsed.modifier < 0
+    ? ` - ${Math.abs(parsed.modifier)}`
+    : '';
 
   return {
     id: crypto.randomUUID(),
@@ -215,7 +233,7 @@ export function performWeaponDamage(
       ? `MAX DAMAGE (Omen spent): ${total} damage!`
       : isCrit 
       ? `CRITICAL DOUBLE DAMAGE: [${rolls.join(' + ')}] = ${total} damage!`
-      : `Rolled [${rolls.join(', ')}] = ${total} damage`,
+      : `Rolled [${rolls.join(' + ')}]${modText} = ${total} damage`,
     flavor: total >= 8 ? 'Devastating, gory wound!' : 'A vicious, bloody cut.',
   };
 }
