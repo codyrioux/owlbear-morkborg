@@ -18,10 +18,10 @@ describe('MÖRK BORG Rules Engine', () => {
     characterClass: 'Gutterborn Scum',
     description: 'A test wretch',
     abilities: {
-      strength: { score: 10, modifier: 0 },
-      agility: { score: 14, modifier: 1 },
-      presence: { score: 15, modifier: 2 },
-      toughness: { score: 8, modifier: -1 },
+      strength: { modifier: 0 },
+      agility: { modifier: 1 },
+      presence: { modifier: 2 },
+      toughness: { modifier: -1 },
     },
     hp: {
       current: 2,

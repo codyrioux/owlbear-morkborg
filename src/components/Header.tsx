@@ -211,13 +211,13 @@ export const Header: React.FC<HeaderProps> = ({
           TRAITS, QUIRKS & TROUBLED PAST
         </label>
         <textarea
-          rows={1}
+          rows={3}
           value={character.description}
           onChange={(e) =>
             onUpdateCharacter((prev) => ({ ...prev, description: e.target.value }))
           }
           placeholder="Scars, sins, debts, habits, strange markings..."
-          className="w-full bg-mb-black/10 text-mb-black font-punk text-xs px-2 py-1 border border-mb-black/40 focus:outline-none focus:bg-mb-white/80 resize-none"
+          className="w-full bg-mb-black/10 text-mb-black font-punk text-xs px-2.5 py-1.5 border border-mb-black/40 focus:outline-none focus:bg-mb-white/80 resize-y min-h-[72px] leading-relaxed"
         />
       </div>
     </header>

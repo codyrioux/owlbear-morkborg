@@ -545,10 +545,9 @@ export function generateRandomCharacter(): Character {
   const pickedClass = classes[Math.floor(Math.random() * classes.length)];
 
   const rollStat = () => {
-    // 3d6
+    // 3d6 score used solely for initial modifier calculation
     const score = rollDie(6) + rollDie(6) + rollDie(6);
     return {
-      score,
       modifier: scoreToModifier(score),
     };
   };

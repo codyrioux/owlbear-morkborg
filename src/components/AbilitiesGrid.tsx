@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dices, Shield, Eye, Dumbbell, HeartPulse } from 'lucide-react';
 import { AbilityName, Character } from '../types/morkborg';
-import { formatModifier, scoreToModifier } from '../utils/dice';
+import { formatModifier } from '../utils/dice';
 
 interface AbilitiesGridProps {
   character: Character;
@@ -59,21 +59,6 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
 
   const abilities: AbilityName[] = ['agility', 'presence', 'strength', 'toughness'];
 
-  const handleScoreChange = (ability: AbilityName, newScore: number) => {
-    const safeScore = Math.max(1, Math.min(20, newScore || 10));
-    const newModifier = scoreToModifier(safeScore);
-    onUpdateCharacter((prev) => ({
-      ...prev,
-      abilities: {
-        ...prev.abilities,
-        [ability]: {
-          score: safeScore,
-          modifier: newModifier,
-        },
-      },
-    }));
-  };
-
   const handleModifierDirectChange = (ability: AbilityName, newMod: number) => {
     onUpdateCharacter((prev) => ({
       ...prev,
@@ -127,7 +112,6 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           const config = ABILITY_CONFIG[abilityKey];
           const ability = character.abilities[abilityKey];
           const modifier = ability.modifier;
-          const score = ability.score;
 
           return (
             <div
@@ -135,23 +119,11 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               className="relative bg-mb-black border-2 border-mb-charcoal hover:border-mb-yellow transition-all p-2.5 flex flex-col justify-between shadow-brutal-sm group"
             >
               {/* Header Label */}
-              <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1.5">
-                <div className="flex items-center gap-1.5 text-mb-yellow">
-                  {config.icon}
-                  <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
-                    {config.label}
-                  </h3>
-                </div>
-                {/* Score Input */}
-                <div className="flex items-center gap-1 text-[11px] text-mb-white/60">
-                  <span className="font-mono text-[9px]">SCORE:</span>
-                  <input
-                    type="number"
-                    value={score}
-                    onChange={(e) => handleScoreChange(abilityKey, parseInt(e.target.value, 10))}
-                    className="w-7 bg-mb-dark text-mb-white font-mono text-center px-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow text-[11px]"
-                  />
-                </div>
+              <div className="flex items-center justify-center gap-1.5 text-mb-yellow border-b border-mb-charcoal pb-1 mb-1.5">
+                {config.icon}
+                <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+                  {config.label}
+                </h3>
               </div>
 
               {/* Main Modifier Display & Quick Adjusters */}

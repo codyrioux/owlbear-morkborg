@@ -1,7 +1,7 @@
 export type AbilityName = 'strength' | 'agility' | 'presence' | 'toughness';
 
 export interface AbilityScore {
-  score: number;
+  score?: number;
   modifier: number;
 }
 
