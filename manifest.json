@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "name": "MÖRK BORG Character Sheet",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MÖRK BORG character sheet extension for Owlbear Rodeo.",
   "icon": "/owlbear-morkborg/icon.svg",
   "action": {
