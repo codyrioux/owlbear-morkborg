@@ -1,15 +1,14 @@
 {
   "name": "owlbear-morkborg",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "deploy": "bash scripts/deploy-gh-pages.sh"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@owlbear-rodeo/sdk": "^3.1.0",

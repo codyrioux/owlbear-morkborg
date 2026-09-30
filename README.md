@@ -31,8 +31,7 @@ An authentic, art-punk character sheet extension for **MÖRK BORG** built for **
   - Standalone browser fallback: works independently in any browser using `localStorage`.
 - **GitHub Pages Ready**:
   - Configured with relative paths (`base: './'`).
-  - GitHub Actions automated workflow for continuous deployment.
-  - Built-in `bun run deploy` script to publish directly to the `gh-pages` branch.
+  - GitHub Actions automated workflow for continuous deployment on push to `main`.
 
 ## Quick Start
 
@@ -52,10 +51,8 @@ bun test
 bun run build
 ```
 
-### Deploy to `gh-pages` Branch
-```bash
-bun run deploy
-```
+### Deployment to GitHub Pages
+Pushing commits to the `main` branch automatically triggers the GitHub Actions workflow ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)), which installs dependencies, runs tests, builds the bundle, and deploys the production artifacts directly to the `gh-pages` branch.
 
 ## Installing in Owlbear Rodeo
 
