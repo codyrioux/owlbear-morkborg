@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Sword, Plus, Trash2, Dices, Crosshair } from 'lucide-react';
 import { ArmorTier, Character, Weapon } from '../types/morkborg';
+import { SectionHeader } from './SectionHeader';
 
 interface CombatSectionProps {
   character: Character;
@@ -14,8 +15,8 @@ interface CombatSectionProps {
 const ARMOR_TIERS: { tier: ArmorTier; name: string; dr: string; penalty: string }[] = [
   { tier: 0, name: 'Tier 0: None', dr: '0', penalty: '0 slots • No penalty' },
   { tier: 1, name: 'Tier 1: Light', dr: '-d2', penalty: '1 slot • Leather / Gambeson' },
-  { tier: 2, name: 'Tier 2: Medium', dr: '-d4', penalty: '1 slot • +2 DR Agility (incl. defence) • No powers' },
-  { tier: 3, name: 'Tier 3: Heavy', dr: '-d6', penalty: '1 slot • +4 DR Agility (defence +2 DR) • No powers' },
+  { tier: 2, name: 'Tier 2: Medium', dr: '-d4', penalty: '1 slot • +2 DR Agi (incl. def) • No powers' },
+  { tier: 3, name: 'Tier 3: Heavy', dr: '-d6', penalty: '1 slot • +4 DR Agi (def +2) • No powers' },
 ];
 
 export const CombatSection: React.FC<CombatSectionProps> = ({
@@ -76,203 +77,214 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
   };
 
   return (
-    <section className="p-3 bg-mb-dark border-b-2 border-mb-charcoal">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-bone">
+      {/* Standardized Section Header */}
+      <SectionHeader
+        title="Combat & Weapons"
+        subtitle="Armor • Attacks • Defense"
+        icon={<Sword className="w-3.5 h-3.5 text-mb-bone" />}
+        accentColor="bone"
+        rightElement={
+          effectiveTier >= 2 ? (
+            <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1 uppercase">
+              {effectiveTier === 2 ? 'MED ARMOR (+2 DEF)' : 'HVY ARMOR (+2 DEF)'}
+            </span>
+          ) : undefined
+        }
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* LEFT COLUMN: Armor & Defense */}
-        <div className="bg-mb-black p-3 border-2 border-mb-charcoal shadow-brutal-sm">
-          <div className="flex items-center justify-between border-b border-mb-charcoal pb-1.5 mb-2.5">
-            <div className="flex items-center gap-1.5 text-mb-yellow">
-              <Shield className="w-4 h-4" />
-              <h3 className="font-brutal font-black text-sm tracking-wider uppercase">
-                ARMOR & DEFENSE
-              </h3>
-            </div>
-            {effectiveTier === 2 && (
-              <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-                +2 DR AGILITY (DEFENCE +2) • NO POWERS
+        <div className="bg-mb-black p-2 border border-mb-charcoal shadow-brutal-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-2">
+              <div className="flex items-center gap-1 text-mb-bone">
+                <Shield className="w-3.5 h-3.5" />
+                <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+                  ARMOR & DEFENSE
+                </h3>
+              </div>
+              <span className="text-[9px] font-mono text-mb-white/60">
+                SOAK: {effectiveTier > 0 ? (effectiveTier === 1 ? '-d2' : effectiveTier === 2 ? '-d4' : '-d6') : '0'}
+                {armor.hasShield ? ' -1' : ''}
               </span>
-            )}
-            {effectiveTier >= 3 && (
-              <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-                +4 DR AGILITY (DEFENCE +2) • NO POWERS
-              </span>
-            )}
-          </div>
-
-          {/* Armor Configuration */}
-          <div className="space-y-2 mb-3">
-            <div>
-              <label className="block text-[10px] font-bold text-mb-white/60 uppercase mb-0.5">
-                ARMOR TIER
-              </label>
-              <select
-                value={armor.tier}
-                onChange={(e) => handleTierChange(Number(e.target.value) as ArmorTier)}
-                className="w-full bg-mb-dark text-mb-white border border-mb-charcoal font-brutal text-xs py-1 px-2 focus:outline-none focus:border-mb-yellow cursor-pointer"
-              >
-                {ARMOR_TIERS.map((t) => (
-                  <option key={t.tier} value={t.tier}>
-                    {t.name} ({t.dr}) — {t.penalty}
-                  </option>
-                ))}
-              </select>
             </div>
 
-            {/* Shield & Degradation */}
-            <div className="flex items-center justify-between gap-2 pt-1 border-t border-mb-charcoal/50 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer text-mb-white select-none">
-                <input
-                  type="checkbox"
-                  checked={armor.hasShield}
-                  onChange={(e) =>
-                    onUpdateCharacter((prev) => ({
-                      ...prev,
-                      armor: { ...prev.armor, hasShield: e.target.checked },
-                    }))
-                  }
-                  className="accent-mb-yellow w-4 h-4"
-                />
-                <span className="font-bold">Shield (-1 damage / sacrifice • 1 slot)</span>
-              </label>
+            {/* Armor Configuration */}
+            <div className="space-y-1.5 mb-2">
+              <div>
+                <label className="block text-[9px] font-bold text-mb-white/60 uppercase mb-0.5">
+                  ARMOR TIER
+                </label>
+                <select
+                  value={armor.tier}
+                  onChange={(e) => handleTierChange(Number(e.target.value) as ArmorTier)}
+                  className="w-full bg-mb-dark text-mb-white border border-mb-charcoal font-brutal text-xs py-1 px-1.5 focus:outline-none focus:border-mb-yellow cursor-pointer truncate"
+                >
+                  {ARMOR_TIERS.map((t) => (
+                    <option key={t.tier} value={t.tier}>
+                      {t.name} ({t.dr}) — {t.penalty}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              {/* Degradation Counter */}
-              <div className="flex items-center gap-1.5 text-mb-pink">
-                <span className="text-[10px] uppercase font-bold">Degraded:</span>
-                <button
-                  onClick={() =>
-                    onUpdateCharacter((prev) => ({
-                      ...prev,
-                      armor: { ...prev.armor, degraded: Math.max(0, prev.armor.degraded - 1) },
-                    }))
-                  }
-                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-xs font-bold border border-mb-black flex items-center justify-center"
-                >
-                  -
-                </button>
-                <span className="font-mono font-bold">{armor.degraded}</span>
-                <button
-                  onClick={() =>
-                    onUpdateCharacter((prev) => ({
-                      ...prev,
-                      armor: { ...prev.armor, degraded: prev.armor.degraded + 1 },
-                    }))
-                  }
-                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-xs font-bold border border-mb-black flex items-center justify-center"
-                >
-                  +
-                </button>
+              {/* Shield & Degradation */}
+              <div className="flex items-center justify-between gap-1 pt-1 border-t border-mb-charcoal/50 text-[11px]">
+                <label className="flex items-center gap-1.5 cursor-pointer text-mb-white select-none">
+                  <input
+                    type="checkbox"
+                    checked={armor.hasShield}
+                    onChange={(e) =>
+                      onUpdateCharacter((prev) => ({
+                        ...prev,
+                        armor: { ...prev.armor, hasShield: e.target.checked },
+                      }))
+                    }
+                    className="accent-mb-yellow w-3.5 h-3.5"
+                  />
+                  <span>Shield (-1 soak • 1 slot)</span>
+                </label>
+
+                {/* Degradation Counter */}
+                <div className="flex items-center gap-1 text-mb-pink">
+                  <span className="text-[9px] uppercase font-bold text-mb-white/60">Degraded:</span>
+                  <button
+                    onClick={() =>
+                      onUpdateCharacter((prev) => ({
+                        ...prev,
+                        armor: { ...prev.armor, degraded: Math.max(0, prev.armor.degraded - 1) },
+                      }))
+                    }
+                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink"
+                  >
+                    -
+                  </button>
+                  <span className="font-mono font-bold text-xs">{armor.degraded}</span>
+                  <button
+                    onClick={() =>
+                      onUpdateCharacter((prev) => ({
+                        ...prev,
+                        armor: { ...prev.armor, degraded: prev.armor.degraded + 1 },
+                      }))
+                    }
+                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Defense Roll & Armor Soak Buttons */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-mb-charcoal">
+          <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-mb-charcoal">
             <button
               onClick={onDefend}
-              className="mb-btn mb-btn-yellow text-xs py-2 flex items-center justify-center gap-1.5"
+              className="mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1"
               title={`Roll d20 + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
             >
-              <Shield className="w-4 h-4" />
-              <span>DEFEND TEST {effectiveTier >= 2 ? '(DR 14)' : '(DR 12)'}</span>
+              <Shield className="w-3.5 h-3.5" />
+              <span>DEFEND {effectiveTier >= 2 ? '(DR14)' : '(DR12)'}</span>
             </button>
 
             <button
               onClick={onSoakArmor}
-              className="mb-btn mb-btn-dark text-xs py-2 flex items-center justify-center gap-1.5"
+              className="mb-btn mb-btn-dark text-[11px] py-1 flex items-center justify-center gap-1"
               title="Roll armor damage reduction (-d2, -d4, -d6) + shield"
             >
-              <Dices className="w-4 h-4" />
+              <Dices className="w-3.5 h-3.5" />
               <span>SOAK ARMOR</span>
             </button>
           </div>
         </div>
 
         {/* RIGHT COLUMN: Weapons List */}
-        <div className="bg-mb-black p-3 border-2 border-mb-charcoal shadow-brutal-sm">
-          <div className="flex items-center justify-between border-b border-mb-charcoal pb-1.5 mb-2.5">
-            <div className="flex items-center gap-1.5 text-mb-yellow">
-              <Sword className="w-4 h-4" />
-              <h3 className="font-brutal font-black text-sm tracking-wider uppercase">
-                WEAPONS & ATTACKS
-              </h3>
+        <div className="bg-mb-black p-2 border border-mb-charcoal shadow-brutal-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1.5">
+              <div className="flex items-center gap-1 text-mb-yellow">
+                <Sword className="w-3.5 h-3.5" />
+                <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+                  WEAPONS & ATTACKS
+                </h3>
+              </div>
+              <span className="text-[9px] text-mb-white/50 font-punk">
+                Melee: STR • Ranged: PRES
+              </span>
             </div>
-            <span className="text-[10px] text-mb-white/60 font-punk">
-              Melee: STR • Ranged: PRES
-            </span>
-          </div>
 
-          {/* List of Weapons */}
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 mb-2.5">
-            {character.weapons.length === 0 ? (
-              <p className="text-xs text-mb-white/40 italic py-2">
-                Unarmed and defenseless. Add a weapon below.
-              </p>
-            ) : (
-              character.weapons.map((wep) => (
-                <div
-                  key={wep.id}
-                  className="flex items-center justify-between gap-2 p-1.5 bg-mb-dark border border-mb-charcoal hover:border-mb-yellow transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
+            {/* List of Weapons */}
+            <div className="space-y-1 max-h-36 overflow-y-auto pr-1 mb-1.5">
+              {character.weapons.length === 0 ? (
+                <p className="text-[11px] text-mb-white/40 italic py-1">
+                  Unarmed and defenseless. Add a weapon below.
+                </p>
+              ) : (
+                character.weapons.map((wep) => (
+                  <div
+                    key={wep.id}
+                    className="flex items-center justify-between gap-1.5 p-1 bg-mb-dark border border-mb-charcoal hover:border-mb-yellow/60 transition-colors"
+                  >
+                    <div className="min-w-0 flex-1 flex items-center gap-1 truncate">
                       <span className="font-bold text-xs text-mb-white truncate">
                         {wep.name}
                       </span>
-                      <span className="text-[10px] bg-mb-black text-mb-yellow px-1 font-mono uppercase font-bold">
+                      <span className="text-[9px] bg-mb-black text-mb-yellow px-1 font-mono uppercase font-bold shrink-0">
                         {wep.damageDie}
                       </span>
-                      <span className="text-[9px] text-mb-white/50 uppercase">
-                        [{wep.type}]
+                      <span className="text-[8px] text-mb-white/50 uppercase shrink-0">
+                        [{wep.type[0]}]
                       </span>
                     </div>
+
+                    {/* Roll Attack and Damage */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => onAttack(wep)}
+                        className="mb-btn mb-btn-yellow text-[9px] py-0.5 px-1.5"
+                        title={`Roll Attack with ${wep.name}`}
+                      >
+                        <Crosshair className="w-2.5 h-2.5" />
+                        <span>ATK</span>
+                      </button>
+
+                      <button
+                        onClick={() => onDamage(wep)}
+                        className="mb-btn mb-btn-pink text-[9px] py-0.5 px-1.5"
+                        title={`Roll Damage (${wep.damageDie})`}
+                      >
+                        <Dices className="w-2.5 h-2.5" />
+                        <span>DMG</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleRemoveWeapon(wep.id)}
+                        className="p-0.5 text-mb-white/40 hover:text-mb-pink"
+                        title="Remove weapon"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Roll Attack and Damage */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onAttack(wep)}
-                      className="mb-btn mb-btn-yellow text-[10px] py-0.5 px-2"
-                      title={`Roll Attack with ${wep.name}`}
-                    >
-                      <Crosshair className="w-3 h-3" />
-                      <span>ATK</span>
-                    </button>
-
-                    <button
-                      onClick={() => onDamage(wep)}
-                      className="mb-btn mb-btn-pink text-[10px] py-0.5 px-2"
-                      title={`Roll Damage (${wep.damageDie})`}
-                    >
-                      <Dices className="w-3 h-3" />
-                      <span>DMG</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleRemoveWeapon(wep.id)}
-                      className="p-1 text-mb-white/40 hover:text-mb-pink"
-                      title="Remove weapon"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
 
           {/* Add New Weapon Form */}
-          <form onSubmit={handleAddWeapon} className="flex gap-1.5 pt-2 border-t border-mb-charcoal">
+          <form onSubmit={handleAddWeapon} className="flex gap-1 pt-1.5 border-t border-mb-charcoal">
             <input
               type="text"
               placeholder="Weapon name..."
               value={newWeaponName}
               onChange={(e) => setNewWeaponName(e.target.value)}
-              className="flex-1 bg-mb-dark text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+              className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
             />
             <select
               value={newWeaponType}
               onChange={(e) => setNewWeaponType(e.target.value as 'melee' | 'ranged')}
-              className="bg-mb-dark text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none"
+              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer"
             >
               <option value="melee">Melee</option>
               <option value="ranged">Ranged</option>
@@ -280,7 +292,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
             <select
               value={newWeaponDamage}
               onChange={(e) => setNewWeaponDamage(e.target.value)}
-              className="bg-mb-dark text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none font-mono"
+              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none font-mono cursor-pointer"
             >
               <option value="d4">d4</option>
               <option value="d6">d6</option>
@@ -288,7 +300,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
               <option value="d10">d10</option>
               <option value="d12">d12</option>
             </select>
-            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-1 px-2">
+            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-1.5">
               <Plus className="w-3 h-3" />
             </button>
           </form>

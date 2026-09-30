@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scroll as ScrollIcon, Plus, Trash2, Wand2, BookOpen, AlertTriangle } from 'lucide-react';
 import { Character, Scroll } from '../types/morkborg';
+import { SectionHeader } from './SectionHeader';
 
 interface ScrollsSectionProps {
   character: Character;
@@ -73,44 +74,40 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   };
 
   return (
-    <section className="p-3 bg-mb-dark border-b-2 border-mb-charcoal">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-mb-charcoal pb-1.5 mb-2.5">
-        <div className="flex items-center gap-2">
-          <ScrollIcon className="w-4 h-4 text-mb-yellow" />
-          <h3 className="font-brutal font-black text-sm tracking-wider uppercase text-mb-white">
-            SCROLLS & OCCULT POWERS
-          </h3>
-          <span className="font-punk text-[10px] text-mb-white/60">
-            (DR12 Presence to invoke • 1 hr cooldown & d2 dmg on fail)
-          </span>
-        </div>
-
-        <button
-          disabled={isArmorRestricted}
-          onClick={() => !isArmorRestricted && setShowPresets(!showPresets)}
-          className={`text-xs font-bold flex items-center gap-1 border px-1.5 py-0.5 transition-colors ${
-            isArmorRestricted
-              ? 'text-mb-white/30 border-mb-charcoal cursor-not-allowed opacity-50'
-              : 'text-mb-yellow hover:text-mb-white border-mb-yellow/40'
-          }`}
-          title={isArmorRestricted ? 'Cannot use powers while wearing Medium or Heavy armor' : undefined}
-        >
-          <BookOpen className="w-3 h-3" />
-          <span>{showPresets ? 'Close Library' : 'Scroll Library'}</span>
-        </button>
-      </div>
+    <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-pink">
+      {/* Standardized Section Header */}
+      <SectionHeader
+        title="Scrolls & Powers"
+        subtitle="Presence DR12 to Invoke"
+        icon={<ScrollIcon className="w-3.5 h-3.5 text-mb-pink" />}
+        accentColor="pink"
+        rightElement={
+          <button
+            disabled={isArmorRestricted}
+            onClick={() => !isArmorRestricted && setShowPresets(!showPresets)}
+            className={`text-[10px] font-bold flex items-center gap-1 border px-2 py-0.5 transition-colors ${
+              isArmorRestricted
+                ? 'text-mb-white/30 border-mb-charcoal cursor-not-allowed opacity-50'
+                : 'text-mb-yellow hover:text-mb-white border-mb-yellow/40 bg-mb-black'
+            }`}
+            title={isArmorRestricted ? 'Cannot use powers while wearing Medium or Heavy armor' : undefined}
+          >
+            <BookOpen className="w-3 h-3" />
+            <span>{showPresets ? 'Close Library' : 'Scroll Library'}</span>
+          </button>
+        }
+      />
 
       {/* Armor Restriction Banner */}
       {isArmorRestricted && (
-        <div className="mb-3 p-2 bg-mb-pink/15 border-2 border-mb-pink text-mb-pink flex items-center gap-2 shadow-brutal-sm">
-          <AlertTriangle className="w-5 h-5 shrink-0 animate-pulse text-mb-pink" />
-          <div className="text-xs">
+        <div className="mb-2 p-1.5 bg-mb-pink/15 border border-mb-pink text-mb-pink flex items-center gap-2 shadow-brutal-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse text-mb-pink" />
+          <div className="text-[11px] leading-tight">
             <span className="font-bold uppercase tracking-wider block text-mb-white">
-              SECTION DISABLED: {effectiveTier === 2 ? 'MEDIUM ARMOR' : 'HEAVY ARMOR'} EQUIPPED
+              POWERS DISABLED: {effectiveTier === 2 ? 'MEDIUM ARMOR' : 'HEAVY ARMOR'} EQUIPPED
             </span>
-            <span className="font-punk text-[10px] text-mb-white/80">
-              MÖRK BORG rules forbid using Powers or reading Scrolls while encumbered by Medium or Heavy armor.
+            <span className="font-punk text-[9px] text-mb-white/80">
+              Rules forbid using Powers or reading Scrolls while wearing Medium or Heavy armor.
             </span>
           </div>
         </div>
@@ -118,30 +115,30 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
 
       {/* Preset Library Drawer */}
       {showPresets && (
-        <div className="mb-3 p-2 bg-mb-black border-2 border-mb-yellow shadow-brutal-sm">
-          <h4 className="font-gothic text-sm text-mb-yellow mb-1.5">
+        <div className="mb-2 p-2 bg-mb-black border border-mb-yellow shadow-brutal-sm">
+          <h4 className="font-gothic text-xs text-mb-yellow mb-1">
             Canon Scrolls Library (Click to Learn)
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-40 overflow-y-auto pr-1">
             {PRESET_SCROLLS.map((p, idx) => (
               <button
                 key={idx}
                 onClick={() => handleAddPreset(p)}
-                className="text-left p-1.5 bg-mb-dark hover:bg-mb-charcoal border border-mb-charcoal flex flex-col justify-between group"
+                className="text-left p-1 bg-mb-dark hover:bg-mb-charcoal border border-mb-charcoal flex flex-col justify-between group"
               >
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-bold text-xs text-mb-white group-hover:text-mb-yellow">
+                  <span className="font-bold text-xs text-mb-white group-hover:text-mb-yellow truncate">
                     {p.name}
                   </span>
                   <span
-                    className={`text-[9px] font-mono px-1 uppercase font-bold ${
+                    className={`text-[8px] font-mono px-1 uppercase font-bold shrink-0 ml-1 ${
                       p.type === 'sacred' ? 'bg-mb-yellow text-mb-black' : 'bg-mb-pink text-mb-white'
                     }`}
                   >
                     {p.type}
                   </span>
                 </div>
-                <p className="font-punk text-[10px] text-mb-white/60 mt-0.5 line-clamp-2">
+                <p className="font-punk text-[9px] text-mb-white/60 line-clamp-1">
                   {p.description}
                 </p>
               </button>
@@ -151,24 +148,24 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       )}
 
       {/* Character Scrolls List */}
-      <div className={`space-y-1.5 max-h-48 overflow-y-auto pr-1 mb-2.5 ${isArmorRestricted ? 'opacity-50' : ''}`}>
+      <div className={`space-y-1 max-h-36 overflow-y-auto pr-1 mb-1.5 ${isArmorRestricted ? 'opacity-50' : ''}`}>
         {character.scrolls.length === 0 ? (
-          <p className="text-xs text-mb-white/40 italic py-2">
+          <p className="text-xs text-mb-white/40 italic py-1">
             No scrolls possessed. You wander through the darkness blind to magic.
           </p>
         ) : (
           character.scrolls.map((scroll) => (
             <div
               key={scroll.id}
-              className="flex items-center justify-between gap-2 p-2 bg-mb-black border border-mb-charcoal hover:border-mb-yellow transition-colors"
+              className="flex items-center justify-between gap-1.5 p-1 bg-mb-black border border-mb-charcoal hover:border-mb-yellow/60 transition-colors"
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-0.5">
+              <div className="min-w-0 flex-1 truncate">
+                <div className="flex items-center gap-1 truncate">
                   <span className="font-bold text-xs text-mb-white truncate">
                     {scroll.name}
                   </span>
                   <span
-                    className={`text-[9px] font-mono px-1 uppercase font-bold ${
+                    className={`text-[8px] font-mono px-1 uppercase font-bold shrink-0 ${
                       scroll.type === 'sacred'
                         ? 'bg-mb-yellow text-mb-black'
                         : 'bg-mb-pink text-mb-white'
@@ -177,20 +174,20 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
                     {scroll.type}
                   </span>
                 </div>
-                <p className="font-punk text-[10px] text-mb-white/70 line-clamp-1">
+                <p className="font-punk text-[9px] text-mb-white/60 truncate">
                   {scroll.description}
                 </p>
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   disabled={isArmorRestricted}
                   onClick={() => !isArmorRestricted && onInvokeScroll(scroll)}
-                  className={`text-[10px] py-1 px-2.5 flex items-center gap-1 font-brutal font-bold uppercase transition-all ${
+                  className={`text-[9px] py-0.5 px-2 flex items-center gap-1 font-brutal font-bold uppercase transition-all ${
                     isArmorRestricted
                       ? 'bg-mb-charcoal text-mb-white/30 border border-mb-charcoal cursor-not-allowed'
-                      : 'mb-btn mb-btn-yellow shadow-brutal-sm'
+                      : 'mb-btn mb-btn-yellow'
                   }`}
                   title={
                     isArmorRestricted
@@ -198,15 +195,15 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
                       : 'Test DR12 Presence to activate this power'
                   }
                 >
-                  <Wand2 className="w-3 h-3" />
-                  <span>INVOKE (DR12)</span>
+                  <Wand2 className="w-2.5 h-2.5" />
+                  <span>INVOKE</span>
                 </button>
                 <button
                   onClick={() => handleRemoveScroll(scroll.id)}
-                  className="p-1 text-mb-white/40 hover:text-mb-pink"
+                  className="p-0.5 text-mb-white/40 hover:text-mb-pink"
                   title="Discard scroll"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -215,19 +212,19 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       </div>
 
       {/* Add Custom Scroll Form */}
-      <form onSubmit={handleAddScroll} className="pt-2 border-t border-mb-charcoal">
-        <fieldset disabled={isArmorRestricted} className={`flex flex-wrap gap-1.5 ${isArmorRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}>
+      <form onSubmit={handleAddScroll} className="pt-1.5 border-t border-mb-charcoal">
+        <fieldset disabled={isArmorRestricted} className={`flex gap-1 ${isArmorRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}>
           <input
             type="text"
             placeholder={isArmorRestricted ? 'Powers disabled in armor...' : 'Scroll name...'}
             value={newScrollName}
             onChange={(e) => setNewScrollName(e.target.value)}
-            className="flex-1 min-w-[140px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+            className="w-1/3 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
           />
           <select
             value={newScrollType}
             onChange={(e) => setNewScrollType(e.target.value as 'unclean' | 'sacred')}
-            className="bg-mb-black text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none"
+            className="bg-mb-black text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
           >
             <option value="unclean">Unclean</option>
             <option value="sacred">Sacred</option>
@@ -237,9 +234,9 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
             placeholder="Effect description..."
             value={newScrollDesc}
             onChange={(e) => setNewScrollDesc(e.target.value)}
-            className="flex-1 min-w-[180px] bg-mb-black text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+            className="flex-1 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
           />
-          <button type="submit" className="mb-btn mb-btn-yellow text-xs py-1 px-2">
+          <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2 shrink-0">
             <Plus className="w-3 h-3" />
             <span>ADD</span>
           </button>

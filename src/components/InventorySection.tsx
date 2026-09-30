@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Package, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { Character, InventoryItem } from '../types/morkborg';
 import { calculateCarryingCapacity } from '../utils/morkborgRules';
+import { SectionHeader } from './SectionHeader';
 
 interface InventorySectionProps {
   character: Character;
@@ -68,89 +69,88 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
   };
 
   return (
-    <section className="p-3 bg-mb-black border-b-2 border-mb-charcoal">
-      {/* Header & Capacity Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-mb-charcoal pb-2 mb-2.5">
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-mb-yellow" />
-          <h3 className="font-brutal font-black text-sm tracking-wider uppercase text-mb-white">
-            EQUIPMENT & GEAR
-          </h3>
-          <span className="font-punk text-[10px] text-mb-white/60">
-            (MAX: STR + 8 SLOTS)
-          </span>
-        </div>
-
-        {/* Capacity Indicator */}
-        <div className="flex items-center gap-2">
-          <div className="text-xs font-mono">
-            <span
-              className={`font-black ${
-                capacity.isOverencumbered ? 'text-mb-pink' : 'text-mb-yellow'
-              }`}
-            >
-              {capacity.usedSlots}
-            </span>
-            <span className="text-mb-white/50"> / {capacity.maxSlots} SLOTS</span>
-            {(capacity.armorSlots > 0 || capacity.shieldSlots > 0 || capacity.weaponsSlots > 0 || capacity.scrollsSlots > 0) && (
-              <span className="text-[10px] text-mb-white/60 font-punk ml-1">
-                ({[
-                  capacity.armorSlots > 0 ? 'armor: 1' : null,
-                  capacity.shieldSlots > 0 ? 'shield: 1' : null,
-                  capacity.weaponsSlots > 0 ? `weapons: ${capacity.weaponsSlots}` : null,
-                  capacity.scrollsSlots > 0 ? `scrolls: ${capacity.scrollsSlots}` : null,
-                ].filter(Boolean).join(', ')})
+    <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow">
+      {/* Standardized Section Header */}
+      <SectionHeader
+        title="Equipment & Gear"
+        subtitle="STR + 8 Slots"
+        icon={<Package className="w-3.5 h-3.5 text-mb-yellow" />}
+        accentColor="yellow"
+        rightElement={
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <div className="text-xs font-mono">
+              <span
+                className={`font-black ${
+                  capacity.isOverencumbered ? 'text-mb-pink' : 'text-mb-yellow'
+                }`}
+              >
+                {capacity.usedSlots}
+              </span>
+              <span className="text-mb-white/50 text-[11px]"> / {capacity.maxSlots} SLOTS</span>
+            </div>
+            {capacity.isOverencumbered && (
+              <span className="bg-mb-pink text-mb-white text-[9px] font-bold px-1 py-0.5 border border-mb-pink animate-pulse flex items-center gap-1">
+                <AlertTriangle className="w-2.5 h-2.5" />
+                <span>+2 DR STR & AGI</span>
               </span>
             )}
           </div>
-          {capacity.isOverencumbered && (
-            <div className="flex items-center gap-1 bg-mb-pink text-mb-white text-[10px] font-bold px-1.5 py-0.5 border border-mb-pink animate-pulse">
-              <AlertTriangle className="w-3 h-3" />
-              <span>OVERENCUMBERED (+2 DR TO STR & AGI)</span>
-            </div>
-          )}
-        </div>
-      </div>
+        }
+      />
 
-      {/* Items Grid / List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 max-h-56 overflow-y-auto pr-1 mb-2.5">
+      {/* Breakdown helper if any fixed equipment exists */}
+      {(capacity.armorSlots > 0 || capacity.shieldSlots > 0 || capacity.weaponsSlots > 0 || capacity.scrollsSlots > 0 || Math.floor(character.silver / 100) > 0) && (
+        <div className="text-[9px] font-mono text-mb-white/40 mb-1.5 px-1 truncate">
+          Equipped slots:{' '}
+          {[
+            capacity.armorSlots > 0 ? 'armor: 1' : null,
+            capacity.shieldSlots > 0 ? 'shield: 1' : null,
+            capacity.weaponsSlots > 0 ? `weapons: ${capacity.weaponsSlots}` : null,
+            capacity.scrollsSlots > 0 ? `scrolls: ${capacity.scrollsSlots}` : null,
+            Math.floor(character.silver / 100) > 0 ? `silver: ${Math.floor(character.silver / 100)}` : null,
+          ].filter(Boolean).join(' • ')}
+        </div>
+      )}
+
+      {/* Items Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 max-h-40 overflow-y-auto pr-1 mb-1.5">
         {character.inventory.length === 0 ? (
-          <p className="text-xs text-mb-white/40 italic py-2 col-span-full">
+          <p className="text-xs text-mb-white/40 italic py-1 col-span-full">
             You carry nothing. Scavenge to survive.
           </p>
         ) : (
           character.inventory.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-2 p-1.5 bg-mb-dark border border-mb-charcoal hover:border-mb-white/40 transition-colors"
+              className="flex items-center justify-between gap-1 p-1 bg-mb-dark border border-mb-charcoal hover:border-mb-white/40 transition-colors"
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline gap-1">
+              <div className="min-w-0 flex-1 truncate">
+                <div className="flex items-baseline gap-1 truncate">
                   <span className="text-xs font-bold text-mb-white truncate">
                     {item.name}
                   </span>
                   {item.quantity > 1 && (
-                    <span className="text-[10px] font-mono text-mb-yellow">
+                    <span className="text-[9px] font-mono text-mb-yellow">
                       x{item.quantity}
                     </span>
                   )}
                 </div>
-                <div className="text-[9px] text-mb-white/50 font-mono">
-                  {item.slots * item.quantity} slot(s) {item.slots > 1 && '(Heavy)'}
+                <div className="text-[8.5px] text-mb-white/40 font-mono">
+                  {item.slots * item.quantity} slot{item.slots * item.quantity === 1 ? '' : 's'} {item.slots > 1 && '(Heavy)'}
                 </div>
               </div>
 
               {/* Quantity buttons & delete */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 shrink-0">
                 <button
                   onClick={() => handleUpdateQty(item.id, -1)}
-                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-xs font-bold flex items-center justify-center hover:bg-mb-pink"
+                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-pink"
                 >
                   -
                 </button>
                 <button
                   onClick={() => handleUpdateQty(item.id, 1)}
-                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-xs font-bold flex items-center justify-center hover:bg-mb-yellow hover:text-mb-black"
+                  className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-yellow hover:text-mb-black"
                 >
                   +
                 </button>
@@ -167,32 +167,32 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
       </div>
 
       {/* Add New Item Form */}
-      <form onSubmit={handleAddItem} className="flex flex-wrap gap-1.5 pt-2 border-t border-mb-charcoal">
+      <form onSubmit={handleAddItem} className="flex gap-1 pt-1.5 border-t border-mb-charcoal">
         <input
           type="text"
           placeholder="New item name..."
           value={newItemName}
           onChange={(e) => setNewItemName(e.target.value)}
-          className="flex-1 min-w-[140px] bg-mb-dark text-mb-white text-xs px-2 py-1 border border-mb-charcoal focus:outline-none focus:border-mb-yellow"
+          className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
         />
         <select
           value={newItemSlots}
           onChange={(e) => setNewItemSlots(Number(e.target.value))}
-          className="bg-mb-dark text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none"
+          className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer"
         >
-          <option value={1}>1 Slot (Normal)</option>
-          <option value={2}>2 Slots (Heavy / Bulky)</option>
-          <option value={0}>0 Slots (Negligible)</option>
+          <option value={1}>1 Slot</option>
+          <option value={2}>2 Slots</option>
+          <option value={0}>0 Slots</option>
         </select>
         <input
           type="number"
           min={1}
           value={newItemQty}
           onChange={(e) => setNewItemQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-          className="w-12 bg-mb-dark text-mb-white text-xs px-1 border border-mb-charcoal focus:outline-none text-center font-mono"
+          className="w-10 bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none text-center font-mono"
           title="Quantity"
         />
-        <button type="submit" className="mb-btn mb-btn-yellow text-xs py-1 px-2">
+        <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2">
           <Plus className="w-3 h-3" />
           <span>ADD</span>
         </button>

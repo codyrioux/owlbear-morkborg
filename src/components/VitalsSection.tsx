@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Sparkles, Wand2, Coins, Skull } from 'lucide-react';
 import { Character } from '../types/morkborg';
+import { SectionHeader } from './SectionHeader';
 
 interface VitalsSectionProps {
   character: Character;
@@ -53,61 +54,74 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   const hpPercent = Math.max(0, Math.min(100, Math.round((hpCurrent / (hpMax || 1)) * 100)));
 
   return (
-    <section className="p-3 bg-mb-black border-b-2 border-mb-charcoal">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+    <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-pink">
+      {/* Standardized Section Header */}
+      <SectionHeader
+        title="Vitals & Omens"
+        subtitle="HP • Omens • Powers • Silver"
+        icon={<Heart className="w-3.5 h-3.5 text-mb-pink fill-mb-pink" />}
+        accentColor="pink"
+        rightElement={
+          isZeroHp ? (
+            <span className="bg-mb-pink text-mb-white text-[10px] font-black px-1.5 py-0.5 uppercase tracking-wider animate-pulse border border-mb-black">
+              BROKEN (0 HP)
+            </span>
+          ) : undefined
+        }
+      />
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {/* 1. Hit Points */}
         <div
-          className={`relative p-2.5 border-2 flex flex-col justify-between shadow-brutal-sm ${
+          className={`p-2 border flex flex-col justify-between shadow-brutal-sm ${
             isZeroHp ? 'border-mb-pink bg-mb-pink/10 animate-pulse' : 'border-mb-charcoal bg-mb-dark'
           }`}
         >
           <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1">
-            <div className="flex items-center gap-1.5 text-mb-pink">
-              <Heart className="w-4 h-4 fill-mb-pink" />
-              <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+            <div className="flex items-center gap-1 text-mb-pink">
+              <Heart className="w-3.5 h-3.5 fill-mb-pink shrink-0" />
+              <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
                 HIT POINTS
               </h3>
             </div>
             {isZeroHp && (
-              <span className="bg-mb-pink text-mb-white text-[9px] font-black px-1 uppercase tracking-wider">
-                BROKEN
+              <span className="bg-mb-pink text-mb-white text-[9px] font-black px-1 uppercase">
+                0 HP
               </span>
             )}
           </div>
 
           {/* Current / Max display */}
-          <div className="flex items-center justify-center my-1 gap-2">
-            <div className="flex items-baseline gap-1">
-              <input
-                type="number"
-                value={hpCurrent}
-                onChange={(e) =>
-                  onUpdateCharacter((prev) => ({
-                    ...prev,
-                    hp: { ...prev.hp, current: parseInt(e.target.value, 10) || 0 },
-                  }))
-                }
-                className={`w-12 text-3xl font-black font-brutal text-center bg-transparent border-b border-mb-charcoal focus:outline-none ${
-                  isZeroHp ? 'text-mb-pink' : 'text-mb-white'
-                }`}
-              />
-              <span className="text-mb-white/40 text-sm font-bold">/</span>
-              <input
-                type="number"
-                value={hpMax}
-                onChange={(e) =>
-                  onUpdateCharacter((prev) => ({
-                    ...prev,
-                    hp: { ...prev.hp, max: Math.max(1, parseInt(e.target.value, 10) || 1) },
-                  }))
-                }
-                className="w-10 text-base font-bold font-brutal text-mb-white/70 text-center bg-transparent border-b border-mb-charcoal focus:outline-none"
-              />
-            </div>
+          <div className="flex items-baseline justify-center my-0.5 gap-1">
+            <input
+              type="number"
+              value={hpCurrent}
+              onChange={(e) =>
+                onUpdateCharacter((prev) => ({
+                  ...prev,
+                  hp: { ...prev.hp, current: parseInt(e.target.value, 10) || 0 },
+                }))
+              }
+              className={`w-10 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-charcoal focus:outline-none ${
+                isZeroHp ? 'text-mb-pink' : 'text-mb-white'
+              }`}
+            />
+            <span className="text-mb-white/40 text-xs font-bold">/</span>
+            <input
+              type="number"
+              value={hpMax}
+              onChange={(e) =>
+                onUpdateCharacter((prev) => ({
+                  ...prev,
+                  hp: { ...prev.hp, max: Math.max(1, parseInt(e.target.value, 10) || 1) },
+                }))
+              }
+              className="w-8 text-sm font-bold font-brutal text-mb-white/70 text-center bg-transparent border-b border-mb-charcoal focus:outline-none"
+            />
           </div>
 
           {/* Health Bar */}
-          <div className="w-full bg-mb-black h-1.5 border border-mb-charcoal mb-2 overflow-hidden">
+          <div className="w-full bg-mb-black h-1 border border-mb-charcoal mb-1.5 overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 hpPercent > 50 ? 'bg-green-500' : hpPercent > 20 ? 'bg-mb-yellow' : 'bg-mb-pink'
@@ -116,166 +130,164 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             />
           </div>
 
-          {/* Quick HP Adjustment Buttons */}
-          <div className="grid grid-cols-4 gap-1">
-            <button
-              onClick={() => handleHpChange(-1)}
-              className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-xs font-bold py-1 border border-mb-black"
-              title="Lose 1 HP"
-            >
-              -1
-            </button>
-            <button
-              onClick={() => handleHpChange(1)}
-              className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-xs font-bold py-1 border border-mb-black"
-              title="Heal 1 HP"
-            >
-              +1
-            </button>
-            <button
-              onClick={() => handleHpChange(4)}
-              className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-xs font-bold py-1 border border-mb-black"
-              title="Heal 4 HP"
-            >
-              +4
-            </button>
-            <button
-              onClick={() => handleHpChange(6)}
-              className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-xs font-bold py-1 border border-mb-black"
-              title="Heal 6 HP"
-            >
-              +6
-            </button>
-          </div>
-
-          {/* If 0 HP: Flash Broken Roll Button */}
-          {isZeroHp && (
+          {/* Quick HP Adjustment Buttons or Broken Trigger */}
+          {isZeroHp ? (
             <button
               onClick={onOpenBrokenModal}
-              className="mt-2 w-full mb-btn mb-btn-pink text-xs py-1.5 flex items-center justify-center gap-1 animate-bounce"
+              className="w-full mb-btn mb-btn-pink text-[10px] py-1 flex items-center justify-center gap-1 animate-bounce"
             >
-              <Skull className="w-3.5 h-3.5" />
-              <span>ROLL BROKEN TABLE!</span>
+              <Skull className="w-3 h-3" />
+              <span>ROLL BROKEN!</span>
             </button>
+          ) : (
+            <div className="grid grid-cols-4 gap-1">
+              <button
+                onClick={() => handleHpChange(-1)}
+                className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                title="Lose 1 HP"
+              >
+                -1
+              </button>
+              <button
+                onClick={() => handleHpChange(1)}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                title="Heal 1 HP"
+              >
+                +1
+              </button>
+              <button
+                onClick={() => handleHpChange(4)}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                title="Heal 4 HP"
+              >
+                +4
+              </button>
+              <button
+                onClick={() => handleHpChange(6)}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                title="Heal 6 HP"
+              >
+                +6
+              </button>
+            </div>
           )}
         </div>
 
         {/* 2. Omens */}
-        <div className="p-2.5 border-2 border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
+        <div className="p-2 border border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
           <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1">
-            <div className="flex items-center gap-1.5 text-mb-yellow">
-              <Sparkles className="w-4 h-4" />
-              <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+            <div className="flex items-center gap-1 text-mb-yellow">
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
                 OMENS
               </h3>
             </div>
-            <span className="text-[10px] font-mono text-mb-black bg-mb-yellow px-1 font-bold">
-              DIE: {character.omens.dieType}
+            <span className="text-[9px] font-mono text-mb-black bg-mb-yellow px-1 font-bold">
+              {character.omens.dieType}
             </span>
           </div>
 
-          <div className="flex items-center justify-center my-1 gap-3">
+          <div className="flex items-center justify-center my-0.5 gap-1.5">
             <button
               onClick={() => handleOmenChange(-1)}
               disabled={character.omens.current <= 0}
-              className="w-6 h-6 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-xs disabled:opacity-30 border border-mb-black"
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
             >
               -
             </button>
 
-            <div className="text-3xl font-black font-brutal text-mb-yellow">
+            <div className="text-2xl font-black font-brutal text-mb-yellow">
               {character.omens.current}{' '}
-              <span className="text-sm text-mb-white/40 font-normal">/ {character.omens.max}</span>
+              <span className="text-xs text-mb-white/40 font-normal">/ {character.omens.max}</span>
             </div>
 
             <button
               onClick={() => handleOmenChange(1)}
               disabled={character.omens.current >= character.omens.max}
-              className="w-6 h-6 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-xs disabled:opacity-30 border border-mb-black"
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
             >
               +
             </button>
           </div>
 
-          <p className="font-punk text-[9px] text-mb-white/50 text-center mb-1">
-            Replenishes on Long Rest
-          </p>
-
           <button
             onClick={onOpenSpendOmen}
             disabled={character.omens.current <= 0}
-            className="w-full mb-btn mb-btn-yellow text-xs py-1.5 flex items-center justify-center gap-1 disabled:opacity-40"
+            className="w-full mb-btn mb-btn-yellow text-[10px] py-1 flex items-center justify-center gap-1 disabled:opacity-30"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 h-3" />
             <span>SPEND OMEN</span>
           </button>
         </div>
 
         {/* 3. Powers */}
-        <div className="p-2.5 border-2 border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
+        <div className="p-2 border border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
           <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1">
-            <div className="flex items-center gap-1.5 text-mb-yellow">
-              <Wand2 className="w-4 h-4" />
-              <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+            <div className="flex items-center gap-1 text-mb-yellow">
+              <Wand2 className="w-3.5 h-3.5 shrink-0" />
+              <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
                 POWERS
               </h3>
             </div>
-            <span className="text-[10px] font-mono text-mb-white/60">
-              PRES + d4
+            <span className="text-[9px] font-mono text-mb-white/60">
+              PRES+d4
             </span>
           </div>
 
-          <div className="flex items-center justify-center my-1 gap-3">
+          <div className="flex items-center justify-center my-0.5 gap-1.5">
             <button
               onClick={() => handlePowerChange(-1)}
               disabled={character.powers.current <= 0}
-              className="w-6 h-6 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-xs disabled:opacity-30 border border-mb-black"
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
             >
               -
             </button>
 
-            <div className="text-3xl font-black font-brutal text-mb-yellow">
+            <div className="text-2xl font-black font-brutal text-mb-yellow">
               {character.powers.current}{' '}
-              <span className="text-sm text-mb-white/40 font-normal">/ {character.powers.max}</span>
+              <span className="text-xs text-mb-white/40 font-normal">/ {character.powers.max}</span>
             </div>
 
             <button
               onClick={() => handlePowerChange(1)}
-              className="w-6 h-6 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-xs border border-mb-black"
+              disabled={character.powers.current >= character.powers.max}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
             >
               +
             </button>
           </div>
 
-          <p className="font-punk text-[9px] text-mb-white/50 text-center mb-1">
-            Daily Scroll Invocations
-          </p>
-
-          <button
-            onClick={() => handlePowerChange(-1)}
-            disabled={character.powers.current <= 0}
-            className="w-full mb-btn mb-btn-dark text-xs py-1.5 flex items-center justify-center gap-1 disabled:opacity-40"
-          >
-            <Wand2 className="w-3.5 h-3.5" />
-            <span>USE DAILY POWER</span>
-          </button>
+          <div className="flex items-center justify-between text-[9px] font-mono px-1.5 py-0.5 bg-mb-black border border-mb-charcoal text-mb-white/70">
+            <span className="uppercase text-mb-white/50">Max:</span>
+            <input
+              type="number"
+              value={character.powers.max}
+              onChange={(e) =>
+                onUpdateCharacter((prev) => ({
+                  ...prev,
+                  powers: { ...prev.powers, max: Math.max(0, parseInt(e.target.value, 10) || 0) },
+                }))
+              }
+              className="w-8 text-right bg-transparent font-bold text-mb-yellow focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* 4. Silver */}
-        <div className="p-2.5 border-2 border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
+        <div className="p-2 border border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
           <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1">
-            <div className="flex items-center gap-1.5 text-mb-yellow">
-              <Coins className="w-4 h-4" />
-              <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
+            <div className="flex items-center gap-1 text-mb-yellow">
+              <Coins className="w-3.5 h-3.5 shrink-0" />
+              <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
                 SILVER
               </h3>
             </div>
-            <span className="text-[10px] font-mono text-mb-white/60">
-              100s = 1 SLOT
+            <span className="text-[9px] font-mono text-mb-white/60">
+              {Math.floor(character.silver / 100)} slot(s)
             </span>
           </div>
 
-          <div className="flex items-center justify-center my-2">
+          <div className="flex items-baseline justify-center my-0.5">
             <input
               type="number"
               value={character.silver}
@@ -285,15 +297,36 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
                   silver: Math.max(0, parseInt(e.target.value, 10) || 0),
                 }))
               }
-              className="w-28 text-3xl font-black font-brutal text-center bg-transparent border-b-2 border-mb-yellow text-mb-yellow focus:outline-none"
+              className="w-16 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-yellow text-mb-yellow focus:outline-none"
             />
+            <span className="text-xs text-mb-yellow/70 font-bold ml-1 font-mono">s</span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-mb-white/60 pt-2 border-t border-mb-charcoal">
-            <span>Encumbrance:</span>
-            <span className="font-mono text-mb-yellow">
-              {Math.floor(character.silver / 100)} slot(s)
-            </span>
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              onClick={() =>
+                onUpdateCharacter((prev) => ({
+                  ...prev,
+                  silver: Math.max(0, prev.silver - 10),
+                }))
+              }
+              className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono"
+              title="Lose 10 silver"
+            >
+              -10
+            </button>
+            <button
+              onClick={() =>
+                onUpdateCharacter((prev) => ({
+                  ...prev,
+                  silver: prev.silver + 10,
+                }))
+              }
+              className="bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono"
+              title="Gain 10 silver"
+            >
+              +10
+            </button>
           </div>
         </div>
       </div>

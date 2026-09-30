@@ -3,6 +3,7 @@ import { Dices, Shield, Eye, Dumbbell, HeartPulse } from 'lucide-react';
 import { AbilityName, Character } from '../types/morkborg';
 import { formatModifier } from '../utils/dice';
 import { calculateCarryingCapacity, getAbilityDRPenalty } from '../utils/morkborgRules';
+import { SectionHeader } from './SectionHeader';
 
 interface AbilitiesGridProps {
   character: Character;
@@ -12,31 +13,31 @@ interface AbilitiesGridProps {
 
 const ABILITY_CONFIG: Record<
   AbilityName,
-  { label: string; icon: React.ReactNode; hints: string; color: string }
+  { label: string; shortLabel: string; icon: React.ReactNode; hints: string }
 > = {
   agility: {
     label: 'AGILITY',
-    icon: <Shield className="w-4 h-4" />,
-    hints: 'Defend • Balance • Flee • Sneak',
-    color: 'border-mb-yellow',
+    shortLabel: 'AGI',
+    icon: <Shield className="w-3.5 h-3.5" />,
+    hints: 'Defend • Balance • Sneak',
   },
   presence: {
     label: 'PRESENCE',
-    icon: <Eye className="w-4 h-4" />,
-    hints: 'Aim • Powers • Perceive • Search',
-    color: 'border-mb-pink',
+    shortLabel: 'PRS',
+    icon: <Eye className="w-3.5 h-3.5" />,
+    hints: 'Aim • Powers • Search',
   },
   strength: {
     label: 'STRENGTH',
-    icon: <Dumbbell className="w-4 h-4" />,
-    hints: 'Crush • Lift • Strike • Grapple',
-    color: 'border-mb-yellow',
+    shortLabel: 'STR',
+    icon: <Dumbbell className="w-3.5 h-3.5" />,
+    hints: 'Crush • Strike • Grapple',
   },
   toughness: {
     label: 'TOUGHNESS',
-    icon: <HeartPulse className="w-4 h-4" />,
-    hints: 'Survive • Poison • Cold • Falls',
-    color: 'border-mb-pink',
+    shortLabel: 'TGH',
+    icon: <HeartPulse className="w-3.5 h-3.5" />,
+    hints: 'Survive • Poison • Falls',
   },
 };
 
@@ -45,8 +46,8 @@ const DR_OPTIONS = [
   { value: 10, label: 'DR 10 (Easy)' },
   { value: 12, label: 'DR 12 (Normal)' },
   { value: 14, label: 'DR 14 (Difficult)' },
-  { value: 16, label: 'DR 16 (Really Hard)' },
-  { value: 18, label: 'DR 18 (Nearly Impossible)' },
+  { value: 16, label: 'DR 16 (Hard)' },
+  { value: 18, label: 'DR 18 (Impossible)' },
 ];
 
 export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
@@ -82,51 +83,50 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
   };
 
   return (
-    <section className="p-3 bg-mb-dark border-b-2 border-mb-charcoal">
-      {/* Section Header & Global DR Selector */}
-      <div className="flex items-center justify-between gap-2 mb-2 pb-1 border-b border-mb-charcoal">
-        <div className="flex items-center gap-2">
-          <span className="font-gothic text-xl text-mb-yellow">Abilities</span>
-          <span className="font-punk text-[10px] text-mb-white/60 uppercase">
-            Roll d20 + modifier vs DR
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 flex-wrap justify-end">
-          <label className="font-brutal text-xs font-bold text-mb-white/80">
-            BASE DR:
-          </label>
-          <select
-            value={targetDR}
-            onChange={(e) => setTargetDR(Number(e.target.value))}
-            className="bg-mb-black text-mb-yellow border border-mb-yellow font-brutal font-bold text-xs px-2 py-0.5 focus:outline-none cursor-pointer"
-          >
-            {DR_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          {effectiveTier === 2 && (
-            <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-              +2 DR AGI (MED ARMOR)
-            </span>
-          )}
-          {effectiveTier >= 3 && (
-            <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-              +4 DR AGI (HVY ARMOR)
-            </span>
-          )}
-          {capacity.isOverencumbered && (
-            <span className="text-[10px] font-bold text-mb-pink border border-mb-pink px-1">
-              +2 DR ENCUMBERED
-            </span>
-          )}
-        </div>
-      </div>
+    <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow">
+      {/* Standardized Section Header */}
+      <SectionHeader
+        title="Abilities"
+        subtitle="d20 + mod vs DR"
+        icon={<Dices className="w-3.5 h-3.5 text-mb-yellow" />}
+        accentColor="yellow"
+        rightElement={
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <label className="font-brutal text-[10px] font-bold text-mb-white/80">
+              DR:
+            </label>
+            <select
+              value={targetDR}
+              onChange={(e) => setTargetDR(Number(e.target.value))}
+              className="bg-mb-black text-mb-yellow border border-mb-yellow font-brutal font-bold text-[11px] px-1.5 py-0.5 focus:outline-none cursor-pointer"
+            >
+              {DR_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {effectiveTier === 2 && (
+              <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+                +2 AGI
+              </span>
+            )}
+            {effectiveTier >= 3 && (
+              <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+                +4 AGI
+              </span>
+            )}
+            {capacity.isOverencumbered && (
+              <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+                +2 ENC
+              </span>
+            )}
+          </div>
+        }
+      />
 
       {/* Grid of 4 Abilities */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {abilities.map((abilityKey) => {
           const config = ABILITY_CONFIG[abilityKey];
           const ability = character.abilities[abilityKey];
@@ -137,28 +137,35 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           return (
             <div
               key={abilityKey}
-              className="relative bg-mb-black border-2 border-mb-charcoal hover:border-mb-yellow transition-all p-2.5 flex flex-col justify-between shadow-brutal-sm group"
+              className="relative bg-mb-black border border-mb-charcoal hover:border-mb-yellow/60 transition-colors p-2 flex flex-col justify-between shadow-brutal-sm group"
             >
               {/* Header Label */}
-              <div className="flex items-center justify-center gap-1.5 text-mb-yellow border-b border-mb-charcoal pb-1 mb-1.5">
-                {config.icon}
-                <h3 className="font-brutal font-black text-xs tracking-wider uppercase">
-                  {config.label}
-                </h3>
+              <div className="flex items-center justify-between text-mb-yellow border-b border-mb-charcoal pb-1 mb-1">
+                <div className="flex items-center gap-1">
+                  {config.icon}
+                  <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
+                    {config.label}
+                  </h3>
+                </div>
+                {penalty > 0 && (
+                  <span className="text-[9px] font-bold text-mb-pink font-mono">
+                    +{penalty}DR
+                  </span>
+                )}
               </div>
 
-              {/* Main Modifier Display & Quick Adjusters */}
-              <div className="flex items-center justify-center my-2 gap-2">
+              {/* Modifier Value & Quick Adjusters */}
+              <div className="flex items-center justify-center my-1 gap-1.5">
                 <button
                   onClick={() => handleModifierDirectChange(abilityKey, modifier - 1)}
-                  className="w-5 h-5 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-xs border border-mb-black"
+                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] border border-mb-black shrink-0"
                   title="Decrease modifier"
                 >
                   -
                 </button>
 
                 <div
-                  className={`text-3xl font-black font-brutal tracking-tight text-center w-16 py-0.5 ${
+                  className={`text-2xl font-black font-brutal tracking-tight text-center px-1 ${
                     modifier > 0
                       ? 'text-mb-yellow'
                       : modifier < 0
@@ -171,7 +178,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
 
                 <button
                   onClick={() => handleModifierDirectChange(abilityKey, modifier + 1)}
-                  className="w-5 h-5 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-xs border border-mb-black"
+                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] border border-mb-black shrink-0"
                   title="Increase modifier"
                 >
                   +
@@ -179,25 +186,19 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               </div>
 
               {/* Action Hints */}
-              <p className="font-punk text-[9px] text-mb-white/50 text-center mb-1.5 leading-tight">
+              <p className="font-punk text-[8.5px] text-mb-white/40 text-center mb-1.5 truncate">
                 {config.hints}
               </p>
 
-              {/* Ability Specific DR Penalty Badge */}
-              {penalty > 0 && (
-                <div className="flex items-center justify-center gap-1 text-[9px] font-bold text-mb-pink border border-mb-pink/40 bg-mb-pink/10 py-0.5 mb-1.5 font-mono">
-                  <span>+{penalty} DR PENALTY</span>
-                </div>
-              )}
-
-              {/* Big ROLL Button */}
+              {/* Compact ROLL Button */}
               <button
                 onClick={() => onRollAbility(abilityKey, modifier, effectiveDR, penalty)}
-                className="w-full mb-btn mb-btn-yellow text-xs py-1.5 flex items-center justify-center gap-1.5 shadow-brutal-sm"
+                className="w-full mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 shadow-brutal-sm"
                 title={`Roll d20 ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
               >
-                <Dices className="w-3.5 h-3.5" />
-                <span>ROLL {formatModifier(modifier)} {penalty > 0 ? `(DR ${effectiveDR})` : ''}</span>
+                <Dices className="w-3 h-3" />
+                <span>ROLL {formatModifier(modifier)}</span>
+                {penalty > 0 && <span className="text-[9px] opacity-75">(DR{effectiveDR})</span>}
               </button>
             </div>
           );
