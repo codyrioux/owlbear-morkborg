@@ -1,33 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <rect width="100" height="100" fill="#fee700" />
-  <!-- Distressed border -->
-  <rect x="4" y="4" width="92" height="92" fill="none" stroke="#0a0a0a" stroke-width="4" stroke-dasharray="8 2 4 4" />
-  
-  <!-- Stylized Grim Skull -->
-  <g fill="#0a0a0a">
-    <!-- Skull Cranium -->
-    <path d="M 24 45 C 24 24, 76 24, 76 45 C 76 55, 70 60, 68 66 L 68 76 L 32 76 L 32 66 C 30 60, 24 55, 24 45 Z" />
-    
-    <!-- Jaw and Teeth -->
-    <rect x="36" y="78" width="28" height="10" />
-    <!-- Inverted Teeth cutouts -->
-    <rect x="40" y="78" width="3" height="6" fill="#fee700" />
-    <rect x="46" y="78" width="3" height="6" fill="#fee700" />
-    <rect x="52" y="78" width="3" height="6" fill="#fee700" />
-    <rect x="58" y="78" width="3" height="6" fill="#fee700" />
-    
-    <!-- Eye Sockets (Angled & Menacing) -->
-    <polygon points="34,42 46,46 44,56 32,50" fill="#fee700" />
-    <polygon points="66,42 54,46 56,56 68,50" fill="#fee700" />
-    
-    <!-- Nose Cavity (Inverted triangle/cleft) -->
-    <polygon points="50,56 46,65 54,65" fill="#fee700" />
-    
-    <!-- Cross/Dagger Marks -->
-    <path d="M 50 18 L 50 32 M 43 25 L 57 25" stroke="#fee700" stroke-width="2.5" stroke-linecap="square" />
-  </g>
-  
-  <!-- Pink Blood/Gore Splat Accent -->
-  <circle cx="74" cy="74" r="5" fill="#ff0055" />
-  <circle cx="79" cy="78" r="2.5" fill="#ff0055" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M 12 1.5
+    C 6.2 1.5 2.5 5.8 2.5 11
+    C 2.5 14.2 3.9 16.5 5.5 17.6
+    L 6.2 21.2
+    C 6.3 22 7.1 22.5 8 22.5
+    L 16 22.5
+    C 16.9 22.5 17.7 22 17.8 21.2
+    L 18.5 17.6
+    C 20.1 16.5 21.5 14.2 21.5 11
+    C 21.5 5.8 17.8 1.5 12 1.5
+    Z
+    M 6.2 10.5 L 10 11.8 L 8.8 15 L 5.5 12.8 Z
+    M 17.8 10.5 L 14 11.8 L 15.2 15 L 18.5 12.8 Z
+    M 12 14.8 L 10.2 17.5 L 13.8 17.5 Z
+    M 9 19.5 L 10.2 19.5 L 10.2 22.5 L 9 22.5 Z
+    M 11.4 19.5 L 12.6 19.5 L 12.6 22.5 L 11.4 22.5 Z
+    M 13.8 19.5 L 15 19.5 L 15 22.5 L 13.8 22.5 Z
+    M 11.2 3.8 L 12.8 3.8 L 12.8 5.2 L 14.2 5.2 L 14.2 6.6 L 12.8 6.6 L 12.8 8.8 L 11.2 8.8 L 11.2 6.6 L 9.8 6.6 L 9.8 5.2 L 11.2 5.2 Z
+  " fill="#fee700" />
 </svg>
