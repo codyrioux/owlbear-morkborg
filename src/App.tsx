@@ -28,11 +28,15 @@ import { RollResultModal } from './components/RollResultModal';
 import { SpendOmenModal } from './components/SpendOmenModal';
 import { BrokenModal } from './components/BrokenModal';
 import { ExportImportModal } from './components/ExportImportModal';
+import { loadCharacterFromStorage, saveCharacterToStorage } from './utils/storage';
 
 export const App: React.FC = () => {
   const [character, setCharacter] = useState<Character>(() => {
-    // Initial fallback
-    return generateRandomCharacter();
+    const saved = loadCharacterFromStorage();
+    if (saved) return saved;
+    const fresh = generateRandomCharacter();
+    saveCharacterToStorage(fresh);
+    return fresh;
   });
   const [linkedToken, setLinkedToken] = useState<{ id: string; name: string } | null>(null);
 
@@ -330,6 +334,7 @@ export const App: React.FC = () => {
     if (confirmed) {
       const newChar = generateRandomCharacter();
       setCharacter(newChar);
+      saveCharacterToStorage(newChar);
     }
   };
 
@@ -502,7 +507,10 @@ export const App: React.FC = () => {
         mode={exportImportModal.mode}
         character={character}
         onClose={() => setExportImportModal((prev) => ({ ...prev, isOpen: false }))}
-        onImportCharacter={(imported) => setCharacter(imported)}
+        onImportCharacter={(imported) => {
+          setCharacter(imported);
+          saveCharacterToStorage(imported);
+        }}
       />
     </div>
   );

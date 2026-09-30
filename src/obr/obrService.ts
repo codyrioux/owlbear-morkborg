@@ -1,5 +1,6 @@
 import OBR from '@owlbear-rodeo/sdk';
 import { BroadcastPayload, Character, RollResult } from '../types/morkborg';
+import { loadCharacterFromStorage, saveCharacterToStorage } from '../utils/storage';
 
 const METADATA_KEY = 'com.morkborg.character-sheet/character';
 const BROADCAST_CHANNEL = 'com.morkborg.character-sheet/roll';
@@ -7,7 +8,6 @@ const CONTEXT_MENU_ID = 'com.morkborg.character-sheet/context-menu';
 
 export class OBRService {
   private static isInitialized = false;
-  private static mockStorageKey = 'morkborg_current_character';
 
   /**
    * Check if running inside Owlbear Rodeo iframe
@@ -114,15 +114,11 @@ export class OBRService {
   }
 
   /**
-   * Save character to local storage or token metadata
+   * Save character to local storage and optionally token metadata
    */
   public static async saveCharacter(character: Character, tokenId?: string): Promise<void> {
-    // Always persist to localStorage for local fast recovery
-    try {
-      localStorage.setItem(this.mockStorageKey, JSON.stringify(character));
-    } catch {
-      // Ignore quota errors
-    }
+    // Always persist to localStorage
+    saveCharacterToStorage(character);
 
     // If attached to a specific token in OBR
     if (OBR.isAvailable && tokenId) {
@@ -139,7 +135,7 @@ export class OBRService {
   }
 
   /**
-   * Load character from local storage or token
+   * Load character from token or local storage
    */
   public static async loadCharacter(tokenId?: string): Promise<Character | null> {
     if (OBR.isAvailable && tokenId) {
@@ -153,16 +149,7 @@ export class OBRService {
       }
     }
 
-    try {
-      const stored = localStorage.getItem(this.mockStorageKey);
-      if (stored) {
-        return JSON.parse(stored) as Character;
-      }
-    } catch {
-      // Ignore parsing errors
-    }
-
-    return null;
+    return loadCharacterFromStorage();
   }
 
   /**
