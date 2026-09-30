@@ -27,6 +27,7 @@ import { RestModal } from './components/RestModal';
 import { RollResultModal } from './components/RollResultModal';
 import { SpendOmenModal } from './components/SpendOmenModal';
 import { BrokenModal } from './components/BrokenModal';
+import { ExportImportModal } from './components/ExportImportModal';
 
 export const App: React.FC = () => {
   const [character, setCharacter] = useState<Character>(() => {
@@ -40,6 +41,10 @@ export const App: React.FC = () => {
   const [isRestModalOpen, setIsRestModalOpen] = useState(false);
   const [isSpendOmenOpen, setIsSpendOmenOpen] = useState(false);
   const [isBrokenModalOpen, setIsBrokenModalOpen] = useState(false);
+  const [exportImportModal, setExportImportModal] = useState<{
+    isOpen: boolean;
+    mode: 'export' | 'import';
+  }>({ isOpen: false, mode: 'export' });
   const [rollHistory, setRollHistory] = useState<RollResult[]>([]);
   const [showLog, setShowLog] = useState(false);
 
@@ -342,38 +347,12 @@ export const App: React.FC = () => {
 
   // Export JSON
   const handleExport = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(character, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `${character.name || 'mork_borg_scum'}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    setExportImportModal({ isOpen: true, mode: 'export' });
   };
 
   // Import JSON
   const handleImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e: any) => {
-      const file = e.target?.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const imported = JSON.parse(event.target?.result as string);
-            if (imported && imported.abilities) {
-              setCharacter(imported);
-            }
-          } catch {
-            alert('Failed to parse character JSON file.');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
+    setExportImportModal({ isOpen: true, mode: 'import' });
   };
 
   return (
@@ -516,6 +495,14 @@ export const App: React.FC = () => {
         onClose={() => setActiveRoll(null)}
         onSpendOmenReroll={handleSpendOmenReroll}
         onSpendOmenLowerDR={handleSpendOmenLowerDR}
+      />
+
+      <ExportImportModal
+        isOpen={exportImportModal.isOpen}
+        mode={exportImportModal.mode}
+        character={character}
+        onClose={() => setExportImportModal((prev) => ({ ...prev, isOpen: false }))}
+        onImportCharacter={(imported) => setCharacter(imported)}
       />
     </div>
   );
