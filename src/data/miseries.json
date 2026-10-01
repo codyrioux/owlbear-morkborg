@@ -1,0 +1,263 @@
+{
+  "durationDice": [
+    {
+      "id": "d100",
+      "name": "Years of pain",
+      "die": "d100",
+      "description": "A slow, prolonged decay across generations of agony."
+    },
+    {
+      "id": "d20",
+      "name": "A bleak half-year",
+      "die": "d20",
+      "description": "Six months of fading hope and creeping gloom."
+    },
+    {
+      "id": "d10",
+      "name": "A fall in anguish",
+      "die": "d10",
+      "description": "An autumn of suffering, dying leaves and freezing blood."
+    },
+    {
+      "id": "d6",
+      "name": "A cruel month",
+      "die": "d6",
+      "description": "Thirty days of unrelenting horror and famine."
+    },
+    {
+      "id": "d4",
+      "name": "A few weeks of agony",
+      "die": "d4",
+      "description": "A rapid plunge into the yawning abyss."
+    },
+    {
+      "id": "d2",
+      "name": "The end is nigh!",
+      "die": "d2",
+      "description": "Every other dawn brings death and cataclysm. Burn the book."
+    }
+  ],
+  "psalms": [
+    {
+      "psalm": 1,
+      "title": "PSALM I",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "1:1",
+          "text": "The City shall be made hollow. Of those who rest in hollowness, they shall not be seen."
+        },
+        {
+          "verse": 2,
+          "title": "1:2",
+          "text": "And the earth shall shake and be riven. And from the cracks shall rise a poisonous mist, and in ten days it will shroud the world."
+        },
+        {
+          "verse": 3,
+          "title": "1:3",
+          "text": "Of those who build mightily, stone by stone, so shall they fall, stone by stone."
+        },
+        {
+          "verse": 4,
+          "title": "1:4",
+          "text": "And the depths of the underworld shall bring forth flying spectres and crawling beasts. In their passing the worm grows fat, the vulture weary."
+        },
+        {
+          "verse": 5,
+          "title": "1:5",
+          "text": "Doubt is crowned. The loyal shall turn their blades on those who silver gave."
+        },
+        {
+          "verse": 6,
+          "title": "1:6",
+          "text": "And blood-cough shall spread like fire across the wastelands of the drought."
+        }
+      ]
+    },
+    {
+      "psalm": 2,
+      "title": "PSALM II",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "2:1",
+          "text": "As at the beginning, so at the end, all manner of fly and wasp shall fill the air."
+        },
+        {
+          "verse": 2,
+          "title": "2:2",
+          "text": "And the ground pale with maggots."
+        },
+        {
+          "verse": 3,
+          "title": "2:3",
+          "text": "And from the Spears: a frost. Born from Bergen Chrypt and covering all."
+        },
+        {
+          "verse": 4,
+          "title": "2:4",
+          "text": "And in ten days and one the writings of sorcerers will be made pale as air."
+        },
+        {
+          "verse": 5,
+          "title": "2:5",
+          "text": "And glass shall become quartz."
+        },
+        {
+          "verse": 6,
+          "title": "2:6",
+          "text": "And SHE shall see HIM grow stronger. And SHE reveals herself and all shall be slain."
+        }
+      ]
+    },
+    {
+      "psalm": 3,
+      "title": "PSALM III",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "3:1",
+          "text": "At Graven-Tosk the soil shall grow warm and those who rest be made to walk."
+        },
+        {
+          "verse": 2,
+          "title": "3:2",
+          "text": "In the heart of Sarkash fog and dusk shall breathe beneath the waking trees. That which was hewed by man shall now hew in its turn."
+        },
+        {
+          "verse": 3,
+          "title": "3:3",
+          "text": "And hunger shall come among you. You shall dig roots and pull children from the breast. The gaunt shall prey upon the gaunt."
+        },
+        {
+          "verse": 4,
+          "title": "3:4",
+          "text": "The great shall be made poor and the poor poorer still."
+        },
+        {
+          "verse": 5,
+          "title": "3:5",
+          "text": "Then shall come rain unending and the day shall be made night by its coming."
+        },
+        {
+          "verse": 6,
+          "title": "3:6",
+          "text": "Brother shall slay Brother and Sister poison Sister."
+        }
+      ]
+    },
+    {
+      "psalm": 4,
+      "title": "PSALM IV",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "4:1",
+          "text": "For five days and five nights mothers flesh shall be the cloak of demons."
+        },
+        {
+          "verse": 2,
+          "title": "4:2",
+          "text": "And for five days and five nights shall fathers weep."
+        },
+        {
+          "verse": 3,
+          "title": "4:3",
+          "text": "Look to the West. Forth comes fire, and a horde, and the Kingdoms burn."
+        },
+        {
+          "verse": 4,
+          "title": "4:4",
+          "text": "The liar, Arkh shall make knots of the hearts of men, sundering the strongest of bonds."
+        },
+        {
+          "verse": 5,
+          "title": "4:5",
+          "text": "Behold now the Endless Sea, where Leviathan causes waves to be as mountains."
+        },
+        {
+          "verse": 6,
+          "title": "4:6",
+          "text": "And Leviathan shall come among you. Children winter-born and fated to fall before snow, both shall it take."
+        }
+      ]
+    },
+    {
+      "psalm": 5,
+      "title": "PSALM V",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "5:1",
+          "text": "The lake and brook shall blacken and the water become tar."
+        },
+        {
+          "verse": 2,
+          "title": "5:2",
+          "text": "The trees shall wither, shrivel and die."
+        },
+        {
+          "verse": 3,
+          "title": "5:3",
+          "text": "And birds shall fall dead from the sky."
+        },
+        {
+          "verse": 4,
+          "title": "5:4",
+          "text": "In one night all those not yet of seven years and seven days shall pass. Born and unborn. And dawn shall give them life as eaters of men."
+        },
+        {
+          "verse": 5,
+          "title": "5:5",
+          "text": "The sky shall weep fire and a great stone shall plummet as a city fallen from heaven. Its gift is Death and madness is its herald."
+        },
+        {
+          "verse": 6,
+          "title": "5:6",
+          "text": "And the last King and the last Queen shall wither to dust. Their wretched courts are devoured by wolves."
+        }
+      ]
+    },
+    {
+      "psalm": 6,
+      "title": "PSALM VI",
+      "verses": [
+        {
+          "verse": 1,
+          "title": "6:1",
+          "text": "You shall know the last day is come. The sun shall set and never rise."
+        },
+        {
+          "verse": 2,
+          "title": "6:2",
+          "text": "And day shall be as night and night as day. You shall not sleep, neither shall you wake."
+        },
+        {
+          "verse": 3,
+          "title": "6:3",
+          "text": "Anthelia shall have her will and drink all colour from the world."
+        },
+        {
+          "verse": 4,
+          "title": "6:4",
+          "text": "Those who walk on two legs shall be nameless as the beasts of the field."
+        },
+        {
+          "verse": 5,
+          "title": "6:5",
+          "text": "The earth shall vein, bringing black serpents forth from within the earth."
+        },
+        {
+          "verse": 6,
+          "title": "6:6",
+          "text": "And the unnamed enter the earth, passing through the Veil as it is sundered by Daejmon, the left underling of Nechrubel."
+        }
+      ]
+    }
+  ],
+  "seventhMisery": {
+    "title": "PSALM VII THE LAST (7:7)",
+    "verse": "7:7",
+    "text": "All praise Yetsabu-Nech, the underworld’s nightmare, the black disk which stands before the sun! All praise Verhu, beaming with delight! All praise the fire which burns all! And the darkness shall swallow the darkness. The seventh seal is broken for the seventh and final time. The game and your lives end here. Burn the book."
+  }
+}

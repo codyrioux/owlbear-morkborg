@@ -1,0 +1,132 @@
+{
+  "weather": [
+    { "roll": 1, "title": "Lifeless grey", "description": "A featureless, stagnant, lightless sky that saps all vigor." },
+    { "roll": 2, "title": "Hammering rain", "description": "Freezing torrential deluge turning ground into knee-deep mud." },
+    { "roll": 3, "title": "Piercing wind", "description": "Bone-chilling gales that extinguish open flames and numb exposed flesh." },
+    { "roll": 4, "title": "Deafening storm", "description": "Violent squalls and crashing thunder drown out all speech." },
+    { "roll": 5, "title": "Black as night", "description": "Unnatural pitch darkness descending in the middle of midday." },
+    { "roll": 6, "title": "Dead quiet", "description": "Eerie, suffocating silence. Not even insects make a sound." },
+    { "roll": 7, "title": "Cloudburst", "description": "Sudden wall of falling water threatening to wash gear away." },
+    { "roll": 8, "title": "Soup-thick mist", "description": "Opaque yellowish fog reducing visibility to barely five feet." },
+    { "roll": 9, "title": "Crackling frost", "description": "Sudden bitter rime forming over stone, iron, and skin." },
+    { "roll": 10, "title": "Irritating drizzle", "description": "Persistent acidic mist that rots clothes and breeds misery." },
+    { "roll": 11, "title": "Roaring thunder", "description": "Ceaseless rolling booms that rattle teeth and terrorize beasts." },
+    { "roll": 12, "title": "Gravelike cold", "description": "Numbing chill from the depths of Kergüs freezing breath into ice." }
+  ],
+  "trapsAndDevilry": [
+    { "roll": 1, "title": "Booby-trapped corpse", "description": "Well dressed corpse rigged with tripwires or concealed spikes." },
+    { "roll": 2, "title": "Wall-holes shoot poisonous arrows", "description": "Hidden pressure plate triggers a volley of venom-dipped iron shafts." },
+    { "roll": 3, "title": "Bells and marbles", "description": "Concealed strings ring warning chimes while marbles throw victims prone." },
+    { "roll": 4, "title": "Scorpion basket", "description": "Woven basket filled with agitated scorpions poised to fall on heads." },
+    { "roll": 5, "title": "Fish hooks at eye level", "description": "Barbed iron hooks dangling invisibly from rotting ceiling beams." },
+    { "roll": 6, "title": "Explosive runes on chest", "description": "Carved glowing glyphs detonate into shrapnel upon touch." },
+    { "roll": 7, "title": "Poison gas lock", "description": "Lock mechanism houses a glass vial of choking necrotic gas." },
+    { "roll": 8, "title": "Jewel roof collapse", "description": "Removing the alluring gemstone pulls the keystone of the ceiling." },
+    { "roll": 9, "title": "Slanted oily floor", "description": "Translucent grease sends careless boots sliding directly into a spiked pit." },
+    { "roll": 10, "title": "Snake cages on ceiling tiles", "description": "Stepping on tiles releases falling wicker cages of vipers." },
+    { "roll": 11, "title": "Evil urns", "description": "Breaking or opening funeral urns releases vengeful cold spectres." },
+    { "roll": 12, "title": "Poison-coated coins", "description": "Alluring scattered coins coated in tasteless contact poison." }
+  ],
+  "corpsePlundering": [
+    { "roll": "11-16", "min": 11, "max": 16, "title": "Worthless dust", "description": "The remains of something worthless crumbles in your hands." },
+    { "roll": "21", "min": 21, "max": 21, "title": "Itching ointment", "description": "Pot filled with extremely potent itching ointment." },
+    { "roll": "22", "min": 22, "max": 22, "title": "Teeth necklace", "description": "Necklace strung with rotting human teeth." },
+    { "roll": "23", "min": 23, "max": 23, "title": "Venomous moths", "description": "Bag of angry, venomous moths. Test Toughness DR6 or die." },
+    { "roll": "24", "min": 24, "max": 24, "title": "Broken glass", "description": "Pocket full of jagged broken glass, PC takes d2 damage." },
+    { "roll": "25", "min": 25, "max": 25, "title": "Mad manifesto", "description": "Mad manifesto. If read, test Presence DR12 or lose 1 Presence permanently from confusion." },
+    { "roll": "26", "min": 26, "max": 26, "title": "Stolen key", "description": "Key to nearby locked door. Stolen." },
+    { "roll": "31", "min": 31, "max": 31, "title": "House map", "description": "Map to a weak but wealthy family’s house." },
+    { "roll": "32", "min": 32, "max": 32, "title": "Hopeless spiders", "description": "A hopeless amount of spiders scuttling out of the clothes." },
+    { "roll": "33", "min": 33, "max": 33, "title": "Gunpowder cylinder", "description": "Metal cylinder with gunpowder and fuse. Roll d6: 1–2 you lose a hand, 3–6 deals 3d10 damage wherever it lands." },
+    { "roll": "34", "min": 34, "max": 34, "title": "Flayed face", "description": "Known and liked/despised witch-hunter’s face. Flayed." },
+    { "roll": "35", "min": 35, "max": 35, "title": "Death note", "description": "Note with party members' names. One is crossed out." },
+    { "roll": "36", "min": 36, "max": 36, "title": "Tortured pixie", "description": "Tortured pixie with torn-off wings and gouged out eyes." },
+    { "roll": "41", "min": 41, "max": 41, "title": "Impossible map", "description": "Map to a place that cannot possibly exist." },
+    { "roll": "42", "min": 42, "max": 42, "title": "Shifting liquid", "description": "Unmarked bottle with a liquid that shifts between red and green." },
+    { "roll": "43", "min": 43, "max": 43, "title": "Potentate bond", "description": "Bond. A local potentate owes the holder a sizable amount of silver." },
+    { "roll": "44", "min": 44, "max": 44, "title": "Death mask", "description": "Death mask of one of the player characters." },
+    { "roll": "45", "min": 45, "max": 45, "title": "Water of Life", "description": "The ‘Water of Life.’ Heals d8 HP. Test Toughness DR10 or go blind. Highly alcoholic." },
+    { "roll": "46", "min": 46, "max": 46, "title": "Lukewarm acid", "description": "There was something very wrong with this one. Hands covered with lukewarm, brown acidic goo. Take d2+1 damage and smell terrible for d4 days." },
+    { "roll": "51", "min": 51, "max": 51, "title": "Black Kergüs dagger", "description": "Black Kergüs dagger. Deals 2d4 damage." },
+    { "roll": "52", "min": 52, "max": 52, "title": "Labelled poison", "description": "Labelled poison bottle. Test Toughness DR12 or lower random ability by d4." },
+    { "roll": "53", "min": 53, "max": 53, "title": "Black hair scalp", "description": "Scalp with long black hair." },
+    { "roll": "54", "min": 54, "max": 54, "title": "Golden ball", "description": "Golden ball with an invisible seam, twists open." },
+    { "roll": "55", "min": 55, "max": 55, "title": "Knuckle-duster", "description": "Bloodstained iron knuckle-duster." },
+    { "roll": "56", "min": 56, "max": 56, "title": "Weighted dice", "description": "Two weighted bone dice." },
+    { "roll": "61-66", "min": 61, "max": 66, "title": "Silver coins", "description": "The result in silver (roll d6 for tens and ones, or silver equal to the d66 roll)." }
+  ],
+  "basilisksDemand": [
+    { "roll": 1, "demand": "A sword that has killed exactly one dozen times" },
+    { "roll": 2, "demand": "A widower’s wedding ring" },
+    { "roll": 3, "demand": "Silver from a sinner’s grave" },
+    { "roll": 4, "demand": "Eyes that have seen the Shimmering Fields" },
+    { "roll": 5, "demand": "The year’s first-born goat" },
+    { "roll": 6, "demand": "Blutday bread" },
+    { "roll": 7, "demand": "The cuticle of an executed innocent" },
+    { "roll": 8, "demand": "A troll’s heart valves" },
+    { "roll": 9, "demand": "A dagger onto which the condemned carved their victims’ name" },
+    { "roll": 10, "demand": "Rare anti-obsidian from the Urilian crypts" },
+    { "roll": 11, "demand": "The forbidden brew of the hermit of Terion" },
+    { "roll": 12, "demand": "An orgh-maggot from the ice of Kergüs" },
+    { "roll": 13, "demand": "A body mutilated by those who loved it in life" },
+    { "roll": 14, "demand": "Joy’s lampoon written in blood" },
+    { "roll": 15, "demand": "The gall of a Chrypt-vulture" },
+    { "roll": 16, "demand": "Moss upon which a dying man has slept" },
+    { "roll": 17, "demand": "A child born with the third eye" },
+    { "roll": 18, "demand": "A body drowned in Lake Onda" },
+    { "roll": 19, "demand": "The rear molar of the Gluttonous" },
+    { "roll": 20, "demand": "Gems from overflowing pockets" }
+  ],
+  "arcaneCatastrophes": [
+    { "roll": 1, "title": "Fingernail Teeth", "effect": "One by one your teeth fall out. Long, brittle fingernails replace them in your gums. Your smile is horrific and you find it hard to eat." },
+    { "roll": 2, "title": "Magical Plague", "effect": "You feel fine. It's fine. You pustulate with a magical contagion. Those intimate with you die of plague within d4 days, then rise as woeful weeping zombies who track you down in your dreams." },
+    { "roll": 3, "title": "Possessed Skeleton", "effect": "Your skeleton is possessed by an unearthly force and will do anything to kill you and escape. Test Strength DR10 in stressful situations or take d4 damage. When you die, you become a zombie." },
+    { "roll": 4, "title": "Beyond the Celestial Sphere", "effect": "The illusion of the celestial sphere is lifted, you now see what dwells beyond. And it sees you. Gazing upon a clear night sky drives you mad with fear." },
+    { "roll": 5, "title": "Black Ash Snow", "effect": "Around you falls an unending snow of black ash which only you and the mad can perceive. Water sickens you from this day on. Only ash, soot or burnt remains quench your thirst." },
+    { "roll": 6, "title": "Flesh Earth & Crayfish Children", "effect": "The earth decays like wet flesh. You sink 3 feet and cannot climb out without help. Clinging to you, screaming and biting are d4 translucent crayfish children with your face (HP 3, Bite d4)." },
+    { "roll": 7, "title": "Walking Skeleton", "effect": "Your skin tatters like paper, your flesh melts like wax and intestines bloat like balloons, bursting until all that is left is a walking, talking skeleton." },
+    { "roll": 8, "title": "Gaptoothed Neck Mouth", "effect": "A gnashing gaptoothed mouth splits open on your neck. It spits out your secrets and inner thoughts and can be silenced to sleep only with blood." },
+    { "roll": 9, "title": "Time Bile & Misery", "effect": "The sky warps and stars spin. Thrown one day into the future, you arrive vomiting Time as evaporating silver bile. A Misery is fulfilled!" },
+    { "roll": 10, "title": "Despised by Light", "effect": "Light itself despises you. If you gaze upon a candle, lamp, or torch it immediately goes out." },
+    { "roll": 11, "title": "Vile Clone Cocoon", "effect": "Within d4 days a vile cocoon heaves from the ground, bursting and spawning your exact clone. It is unintelligent and begins to spread mischief and suffering until cleansed with holy water or fire." },
+    { "roll": 12, "title": "Detached Burning Eyes", "effect": "Your eyes burn with insufferable agony, bleeding heavily before falling from their gory pits. You continue to see through them wherever they are." },
+    { "roll": 13, "title": "Soul Swapped", "effect": "You and a random nearby creature pass out. When you wake up, your souls have switched. Welcome to your new flesh." },
+    { "roll": 14, "title": "Skeletal Back Arms", "effect": "Five twisted skeletal arms burst from your back. The hands are mischievous, violent, and terribly cruel." },
+    { "roll": 15, "title": "Sickly Green Glow", "effect": "Your skin pales then begins to emit a sickly greenish light. Living things held close to you slowly fall ill, teeth and hair falling out." },
+    { "roll": 16, "title": "Perverted Power", "effect": "The Power works, but fate or a demonic force perverts its effects to your precise disadvantage." },
+    { "roll": 17, "title": "Black Powder Choke", "effect": "The scroll crumbles to tendrils of fine black powder reaching for your nose and mouth. Make a DR14 Toughness test or lose d10 HP." },
+    { "roll": 18, "title": "Anima Leech", "effect": "The Power pierces you like a knife, feeding on your anima. You are permanently gaunt and insatiably hungry. When resting you restore only half the rolled HP." },
+    { "roll": 19, "title": "Cube-Violet Dimension", "effect": "You fall through Refva into the esoteric dimension of Cube-Violet. Iridescent cold walls beneath an endless inferno. Slay riddling Kulvan or sacrifice friends to escape." },
+    { "roll": 20, "title": "HE Emerges", "effect": "Perhaps it's for the best. HE emerges from the shadows. At least your suffering is short, almost instantaneous, as the two-headed basilisk devours you." }
+  ],
+  "brokenTable": [
+    {
+      "roll": 1,
+      "title": "Unconscious",
+      "description": "Fall unconscious for d4 hours. Wake up with d4 HP restored."
+    },
+    {
+      "roll": 2,
+      "title": "Crippled",
+      "description": "Severely injured or maimed (lost eye, severed limb, or shattered bone). Cannot act for d4 hours, wake with d4 HP, permanently disadvantage on related tests."
+    },
+    {
+      "roll": 3,
+      "title": "Hemorrhaging",
+      "description": "Bleeding out onto the cold stone. Dies in d2 hours unless someone binds your wounds with a successful DR12 test."
+    },
+    {
+      "roll": 4,
+      "title": "Dead",
+      "description": "Slain. Your flesh turns cold and your gear is scavenged. Roll a new scvm."
+    }
+  ],
+  "gettingBetterDebris": [
+    { "roll": 1, "type": "nothing", "description": "Nothing. Only dust, rotting cloth, and cold mud." },
+    { "roll": 2, "type": "nothing", "description": "Nothing. Broken bone shards and rusted iron scrap." },
+    { "roll": 3, "type": "nothing", "description": "Nothing. A swarm of beetles scuttles away." },
+    { "roll": 4, "type": "silver", "description": "Silver coins! 3d10 silver discovered among the dead." },
+    { "roll": 5, "type": "unclean_scroll", "description": "An Unclean Scroll tucked into a rotting leather sheath." },
+    { "roll": 6, "type": "sacred_scroll", "description": "A Sacred Scroll wrapped in yellowing silk." }
+  ]
+}

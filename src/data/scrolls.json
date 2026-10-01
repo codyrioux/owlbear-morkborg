@@ -1,0 +1,122 @@
+[
+  {
+    "id": "unclean-1",
+    "name": "Palms Open the Southern Gate",
+    "type": "unclean",
+    "description": "A ball of fire hits d2 creatures dealing d8 damage per creature."
+  },
+  {
+    "id": "unclean-2",
+    "name": "Tongue of Eris",
+    "type": "unclean",
+    "description": "A creature of your choice is confused for 10 minutes."
+  },
+  {
+    "id": "unclean-3",
+    "name": "Te-le-kin-esis",
+    "type": "unclean",
+    "description": "Move an object up to d10×10 feet for d6 minutes."
+  },
+  {
+    "id": "unclean-4",
+    "name": "Lucy-fires Levitation",
+    "type": "unclean",
+    "description": "Hover for Presence + d10 rounds."
+  },
+  {
+    "id": "unclean-5",
+    "name": "Daemon of Capillaries",
+    "type": "unclean",
+    "description": "One creature suffocates for d6 rounds, losing d4 HP per round."
+  },
+  {
+    "id": "unclean-6",
+    "name": "Nine Violet Signs Unknot the Storm",
+    "type": "unclean",
+    "description": "Produce d2 lightning bolts dealing d6 damage each."
+  },
+  {
+    "id": "unclean-7",
+    "name": "Metzhuotl Blind Your Eye",
+    "type": "unclean",
+    "description": "A creature becomes invisible for d6 rounds or until it is damaged, attacking/defending with DR6."
+  },
+  {
+    "id": "unclean-8",
+    "name": "Foul Psychopomp",
+    "type": "unclean",
+    "description": "Summon (d6): 1–3: d4 skeletons, 4–6: d4 zombies."
+  },
+  {
+    "id": "unclean-9",
+    "name": "Eyelid Blinds the Mind",
+    "type": "unclean",
+    "description": "d4 creatures fall asleep for one hour unless they succeed a DR14 test."
+  },
+  {
+    "id": "unclean-10",
+    "name": "Death",
+    "type": "unclean",
+    "description": "All creatures within 30 feet lose a total of 4d10 HP."
+  },
+  {
+    "id": "sacred-1",
+    "name": "Grace of a Dead Saint",
+    "type": "sacred",
+    "description": "d2 creatures regain d10 HP each."
+  },
+  {
+    "id": "sacred-2",
+    "name": "Grace for a Sinner",
+    "type": "sacred",
+    "description": "A creature of your choice gets +d6 on one roll (damage, tests etc.)."
+  },
+  {
+    "id": "sacred-3",
+    "name": "Whispers Pass the Gate",
+    "type": "sacred",
+    "description": "Ask three questions to a deceased creature."
+  },
+  {
+    "id": "sacred-4",
+    "name": "Aegis of Sorrow",
+    "type": "sacred",
+    "description": "A creature of your choice gains 2d6 extra HP for 10 rounds."
+  },
+  {
+    "id": "sacred-5",
+    "name": "Unmet Fate",
+    "type": "sacred",
+    "description": "One creature, dead for no more than a week, is awakened with terrible memories."
+  },
+  {
+    "id": "sacred-6",
+    "name": "Bestial Speech",
+    "type": "sacred",
+    "description": "You may speak with animals for d20 minutes."
+  },
+  {
+    "id": "sacred-7",
+    "name": "False Dawn / Night's Chariot",
+    "type": "sacred",
+    "description": "Light or pitch black for 3d10 minutes."
+  },
+  {
+    "id": "sacred-8",
+    "name": "Hermetic Step",
+    "type": "sacred",
+    "description": "You find all traps in your path for 2d10 minutes."
+  },
+  {
+    "id": "sacred-9",
+    "name": "Roskoe's Consuming Glare",
+    "type": "sacred",
+    "description": "d4 creatures lose d8 HP each."
+  },
+  {
+    "id": "sacred-10",
+    "name": "Enochian Syntax",
+    "type": "sacred",
+    "description": "One creature blindly obeys a single command."
+  }
+]

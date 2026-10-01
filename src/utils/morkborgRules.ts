@@ -8,6 +8,17 @@ import {
   Weapon 
 } from '../types/morkborg';
 import { rollDie, rollDice, rollFormula, scoreToModifier, formatModifier } from './dice';
+import {
+  CANONICAL_SCROLLS,
+  ITEM_STACK_PRESETS,
+  getItemPreset,
+  getClasses,
+  getWeapons,
+  getArmorData,
+  getOracles,
+} from '../data';
+
+export { CANONICAL_SCROLLS, ITEM_STACK_PRESETS, getItemPreset };
 
 /**
  * Perform an Ability test: d20 + modifier vs DR
@@ -337,29 +348,13 @@ export function performPowerTest(
  */
 export function rollArcaneCatastrophe(): { roll: number; title: string; effect: string } {
   const roll = rollDie(20);
-  const table: Record<number, { title: string; effect: string }> = {
-    1: { title: 'Torn Reality', effect: 'Your eyes rot in their sockets. Blinded forever.' },
-    2: { title: 'Vile Swarm', effect: 'd6 venomous centipedes erupt from your throat, dealing 1d4 damage.' },
-    3: { title: 'Black Bleeding', effect: 'Thick black ichor oozes from your ears and nose. Lose d4 HP.' },
-    4: { title: 'Grave Chill', effect: 'You become frozen in place for d6 minutes, helpless.' },
-    5: { title: 'The Dead Speak', effect: 'Ghostly voices scream in agony. All nearby must test Presence DR12 or flee.' },
-    6: { title: 'Flesh Rot', effect: 'Skin sloughs off in patches. Toughness reduced by 1 permanently.' },
-    7: { title: 'Stolen Memory', effect: 'You completely forget who you are and where you are for d6 hours.' },
-    8: { title: 'Blood Rain', effect: 'Putrid, lukewarm blood pours from the ceiling/sky in a 30ft radius.' },
-    9: { title: 'Shadow Stalker', effect: 'Your shadow detaches and becomes a hostile wraith seeking your demise.' },
-    10: { title: 'Inverse Gravity', effect: 'You violently fall upward towards the ceiling or sky for d4 rounds.' },
-    11: { title: 'Demonic Whisper', effect: 'A demon knows your true name and demands immediate sacrifice.' },
-    12: { title: 'Choking Ash', effect: 'Air fills with sulfurous ash. Everyone nearby loses d4 HP.' },
-    13: { title: 'Mutated Visage', effect: 'Your face warps into a hideous goat or swine snout. Presence -1.' },
-    14: { title: 'Twisted Bone', effect: 'Your weapon hand cracks and calcifies into a claw. Melee rolls +1, item use hindered.' },
-    15: { title: 'Eldritch Tremor', effect: 'The ground violently shakes; all within 20ft fall prone, taking d2 damage.' },
-    16: { title: 'Vortex of Teeth', effect: 'A miniature rift appears, chewing on your gear. One random item is destroyed.' },
-    17: { title: 'Lethargic Curse', effect: 'Agility is reduced by 2 until you receive a full night of rest.' },
-    18: { title: 'False Prophet', effect: 'You are compelled to chant blasphemies loudly for d10 rounds.' },
-    19: { title: 'Combustion', effect: 'Your clothes catch eerie purple fire. Take d6 damage unless put out.' },
-    20: { title: 'Abyssal Gaze', effect: 'SHE-entity gazes upon you. Take 2d6 damage and gain an eerie omen.' }
+  const catastrophes = getOracles().arcaneCatastrophes;
+  const entry = catastrophes.find((c) => c.roll === roll) || {
+    roll,
+    title: 'Arcane Catastrophe',
+    effect: 'Reality tears asunder with horrific shrieking.',
   };
-  return { roll, ...table[roll] };
+  return { roll, title: entry.title, effect: entry.effect };
 }
 
 /**
@@ -525,94 +520,7 @@ export interface ItemStackPreset {
   slots: number;
   isAmmunition?: boolean;
 }
-
-export const ITEM_STACK_PRESETS: Record<string, { stackSize: number; slots: number; isAmmunition?: boolean }> = {
-  // Ammunition (first stack of stackSize consumes 0 slots)
-  'arrow': { stackSize: 20, slots: 1, isAmmunition: true },
-  'arrows': { stackSize: 20, slots: 1, isAmmunition: true },
-  'crossbow bolt': { stackSize: 10, slots: 1, isAmmunition: true },
-  'crossbow bolts': { stackSize: 10, slots: 1, isAmmunition: true },
-  'bolt': { stackSize: 10, slots: 1, isAmmunition: true },
-  'bolts': { stackSize: 10, slots: 1, isAmmunition: true },
-  'sling bullet': { stackSize: 20, slots: 1, isAmmunition: true },
-  'sling bullets': { stackSize: 20, slots: 1, isAmmunition: true },
-  'sling stone': { stackSize: 20, slots: 1, isAmmunition: true },
-  'sling stones': { stackSize: 20, slots: 1, isAmmunition: true },
-
-  // General stackables
-  'chalk': { stackSize: 10, slots: 1 },
-  'torch': { stackSize: 4, slots: 1 },
-  'torches': { stackSize: 4, slots: 1 },
-  'ration': { stackSize: 4, slots: 1 },
-  'rations': { stackSize: 4, slots: 1 },
-  'dry ration': { stackSize: 4, slots: 1 },
-  'dry rations': { stackSize: 4, slots: 1 },
-  'dried food': { stackSize: 4, slots: 1 },
-  'food': { stackSize: 4, slots: 1 },
-  'iron nail': { stackSize: 10, slots: 1 },
-  'iron nails': { stackSize: 10, slots: 1 },
-  'nail': { stackSize: 10, slots: 1 },
-  'nails': { stackSize: 10, slots: 1 },
-  'caltrop': { stackSize: 2, slots: 1 },
-  'caltrops': { stackSize: 2, slots: 1 },
-  'needle': { stackSize: 10, slots: 1 },
-  'needles': { stackSize: 10, slots: 1 },
-  'magnesium strip': { stackSize: 4, slots: 1 },
-  'magnesium strips': { stackSize: 4, slots: 1 },
-  'chewing tobacco': { stackSize: 4, slots: 1 },
-  'tobacco': { stackSize: 4, slots: 1 },
-  'throwing knife': { stackSize: 3, slots: 1 },
-  'throwing knives': { stackSize: 3, slots: 1 },
-  'poison': { stackSize: 4, slots: 1 },
-  'poisons': { stackSize: 4, slots: 1 },
-  'elixir': { stackSize: 4, slots: 1 },
-  'elixirs': { stackSize: 4, slots: 1 },
-};
-
-/**
- * Looks up default stack presets for common MÖRK BORG items by name.
- */
-export function getItemPreset(name: string): { stackSize: number; slots: number; isAmmunition?: boolean } | null {
-  const normalized = name.trim().toLowerCase();
-  if (ITEM_STACK_PRESETS[normalized]) {
-    return ITEM_STACK_PRESETS[normalized];
-  }
-  // Substring matching for descriptive variations like "Silver Arrows" or "Tallow Torches"
-  if (normalized.includes('arrow')) {
-    return { stackSize: 20, slots: 1, isAmmunition: true };
-  }
-  if (normalized.includes('bolt')) {
-    return { stackSize: 10, slots: 1, isAmmunition: true };
-  }
-  if (normalized.includes('sling bullet') || normalized.includes('sling stone')) {
-    return { stackSize: 20, slots: 1, isAmmunition: true };
-  }
-  if (normalized.includes('chalk')) {
-    return { stackSize: 10, slots: 1 };
-  }
-  if (normalized.includes('torch')) {
-    return { stackSize: 4, slots: 1 };
-  }
-  if (normalized.includes('ration') || normalized.includes('dried food')) {
-    return { stackSize: 4, slots: 1 };
-  }
-  if (normalized.includes('nail')) {
-    return { stackSize: 10, slots: 1 };
-  }
-  if (normalized.includes('caltrop')) {
-    return { stackSize: 2, slots: 1 };
-  }
-  if (normalized.includes('needle')) {
-    return { stackSize: 10, slots: 1 };
-  }
-  if (normalized.includes('magnesium')) {
-    return { stackSize: 4, slots: 1 };
-  }
-  if (normalized.includes('throwing knife') || normalized.includes('throwing knives')) {
-    return { stackSize: 3, slots: 1 };
-  }
-  return null;
-}
+// Note: ITEM_STACK_PRESETS and getItemPreset are loaded from src/data and re-exported above.
 
 /**
  * Calculates how many inventory slots an item consumes based on quantity, stack size, and ammunition rules.
@@ -699,169 +607,11 @@ export function calculateCarryingCapacity(
 /**
  * Canonical MÖRK BORG Scrolls (Pages 34-35 of Rulebook)
  * 10 Unclean Scrolls + 10 Sacred Scrolls
- */
-export const CANONICAL_SCROLLS: Omit<Scroll, 'id'>[] = [
-  // --- UNCLEAN SCROLLS (d10) ---
-  {
-    name: 'Palms Open the Southern Gate',
-    type: 'unclean',
-    description: 'A ball of fire hits d2 creatures dealing d8 damage per creature.',
-  },
-  {
-    name: 'Tongue of Eris',
-    type: 'unclean',
-    description: 'A creature of your choice is confused for 10 minutes.',
-  },
-  {
-    name: 'Te-le-kin-esis',
-    type: 'unclean',
-    description: 'Move an object up to d10×10 feet for d6 minutes.',
-  },
-  {
-    name: 'Lucy-fires Levitation',
-    type: 'unclean',
-    description: 'Hover for Presence + d10 rounds.',
-  },
-  {
-    name: 'Daemon of Capillaries',
-    type: 'unclean',
-    description: 'One creature suffocates for d6 rounds, losing d4 HP per round.',
-  },
-  {
-    name: 'Nine Violet Signs Unknot the Storm',
-    type: 'unclean',
-    description: 'Produce d2 lightning bolts dealing d6 damage each.',
-  },
-  {
-    name: 'Metzhuotl Blind Your Eye',
-    type: 'unclean',
-    description: 'A creature becomes invisible for d6 rounds or until it is damaged, attacking/defending with DR6.',
-  },
-  {
-    name: 'Foul Psychopomp',
-    type: 'unclean',
-    description: 'Summon (d6): 1–3: d4 skeletons, 4–6: d4 zombies.',
-  },
-  {
-    name: 'Eyelid Blinds the Mind',
-    type: 'unclean',
-    description: 'd4 creatures fall asleep for one hour unless they succeed a DR14 test.',
-  },
-  {
-    name: 'Death',
-    type: 'unclean',
-    description: 'All creatures within 30 feet lose a total of 4d10 HP.',
-  },
-
-  // --- SACRED SCROLLS (d10) ---
-  {
-    name: 'Grace of a Dead Saint',
-    type: 'sacred',
-    description: 'd2 creatures regain d10 HP each.',
-  },
-  {
-    name: 'Grace for a Sinner',
-    type: 'sacred',
-    description: 'A creature of your choice gets +d6 on one roll (damage, tests etc.).',
-  },
-  {
-    name: 'Whispers Pass the Gate',
-    type: 'sacred',
-    description: 'Ask three questions to a deceased creature.',
-  },
-  {
-    name: 'Aegis of Sorrow',
-    type: 'sacred',
-    description: 'A creature of your choice gains 2d6 extra HP for 10 rounds.',
-  },
-  {
-    name: 'Unmet Fate',
-    type: 'sacred',
-    description: 'One creature, dead for no more than a week, is awakened with terrible memories.',
-  },
-  {
-    name: 'Bestial Speech',
-    type: 'sacred',
-    description: 'You may speak with animals for d20 minutes.',
-  },
-  {
-    name: "False Dawn / Night's Chariot",
-    type: 'sacred',
-    description: 'Light or pitch black for 3d10 minutes.',
-  },
-  {
-    name: 'Hermetic Step',
-    type: 'sacred',
-    description: 'You find all traps in your path for 2d10 minutes.',
-  },
-  {
-    name: "Roskoe's Consuming Glare",
-    type: 'sacred',
-    description: 'd4 creatures lose d8 HP each.',
-  },
-  {
-    name: 'Enochian Syntax',
-    type: 'sacred',
-    description: 'One creature blindly obeys a single command.',
-  },
-];
-
 /**
  * SCVMBIRTHER: Random MÖRK BORG Character Generator
  */
 export function generateRandomCharacter(): Character {
-  const classes = [
-    {
-      name: 'Fanged Deserter',
-      hpDie: 10,
-      omenDie: 'd2' as const,
-      desc: 'You were a savage brute in an uncaring army. You deserted with teeth bared.',
-      traits: 'Gnashing teeth, feral rage, covered in dried mud and scars.'
-    },
-    {
-      name: 'Gutterborn Scum',
-      hpDie: 6,
-      omenDie: 'd2' as const,
-      desc: 'An ill-fated wretch born in the filth beneath Galgenbeck.',
-      traits: 'Twitching eye, stained rags, pockets full of sharp trinkets.'
-    },
-    {
-      name: 'Esoteric Hermit',
-      hpDie: 4,
-      omenDie: 'd4' as const,
-      desc: 'A crazed scholar who speaks to fungi and reads secrets in entrails.',
-      traits: 'Wild unwashed beard, muttering prophecies of the two-headed basilisks.'
-    },
-    {
-      name: 'Wretched Royalty',
-      hpDie: 6,
-      omenDie: 'd2' as const,
-      desc: 'Heir to a kingdom reduced to dust and cinders.',
-      traits: 'Tattered velvet coat, dull brass signet ring, haughty sneer.'
-    },
-    {
-      name: 'Heretical Priest',
-      hpDie: 8,
-      omenDie: 'd4' as const,
-      desc: 'Cast out of the Cathedral of the Two-Headed Basilisks for forbidden preachings.',
-      traits: 'Self-inflicted flagellation marks, charred holy symbol.'
-    },
-    {
-      name: 'Occult Herbmaster',
-      hpDie: 6,
-      omenDie: 'd2' as const,
-      desc: 'Maker of poisonous decoctions and bitter medicines in the dark marshes.',
-      traits: 'Fingers permanently stained violet, glass vials rattling in pockets.'
-    },
-    {
-      name: 'Classless Scum',
-      hpDie: 8,
-      omenDie: 'd2' as const,
-      desc: 'Just another desperate wretch struggling to breathe before the world ends.',
-      traits: 'Hollow cheeks, desperate glare, carrying only what was scavenged.'
-    },
-  ];
-
+  const classes = getClasses();
   const pickedClass = classes[Math.floor(Math.random() * classes.length)];
 
   const rollStat = () => {
@@ -894,28 +644,27 @@ export function generateRandomCharacter(): Character {
   const silver = rollDie(6) * 10;
 
   // Weapons pool
-  const weaponsPool: Weapon[] = [
-    { id: crypto.randomUUID(), name: 'Femur Club', type: 'melee', damageDie: 'd4', special: 'Crude bone' },
-    { id: crypto.randomUUID(), name: 'Rusted Shortsword', type: 'melee', damageDie: 'd6', special: 'Jagged edge' },
-    { id: crypto.randomUUID(), name: 'Battle Axe', type: 'melee', damageDie: 'd8', special: 'Heavy hewing blade' },
-    { id: crypto.randomUUID(), name: 'Zweihänder', type: 'melee', damageDie: 'd10', special: 'Requires 2 hands' },
-    { id: crypto.randomUUID(), name: 'Crossbow', type: 'ranged', damageDie: 'd8', special: 'DR12 Presence to aim' },
-    { id: crypto.randomUUID(), name: 'Gut-Ripper Dagger', type: 'melee', damageDie: 'd4', special: 'Concealable' },
-  ];
+  const weaponsPool: Weapon[] = getWeapons().map((w) => ({
+    id: crypto.randomUUID(),
+    name: w.name,
+    type: w.type,
+    damageDie: w.damageDie,
+    special: w.special,
+  }));
   const startingWeapon = weaponsPool[Math.floor(Math.random() * weaponsPool.length)];
 
   // Armor pool (d4 roll)
+  const armorData = getArmorData();
   const armorRoll = rollDie(4);
-  let armor: Armor;
-  if (armorRoll === 1) {
-    armor = { name: 'Rags & Flayed Skins', tier: 0, damageReduction: '0', degraded: 0, hasShield: false };
-  } else if (armorRoll === 2) {
-    armor = { name: 'Padded Leather', tier: 1, damageReduction: '-d2', degraded: 0, hasShield: Math.random() > 0.5 };
-  } else if (armorRoll === 3) {
-    armor = { name: 'Rusty Chainmail', tier: 2, damageReduction: '-d4', degraded: 0, hasShield: Math.random() > 0.5 };
-  } else {
-    armor = { name: 'Dented Plate Mail', tier: 3, damageReduction: '-d6', degraded: 0, hasShield: true };
-  }
+  const pickedTier = armorData.tiers.find((t) => t.tier === armorRoll - 1) || armorData.tiers[0];
+  const hasShield = pickedTier.tier > 0 && Math.random() > 0.5;
+  const armor: Armor = {
+    name: pickedTier.name,
+    tier: pickedTier.tier as Armor['tier'],
+    damageReduction: pickedTier.damageReduction,
+    degraded: 0,
+    hasShield: hasShield,
+  };
 
   // Starting inventory
   const inventory: InventoryItem[] = [

@@ -1,0 +1,394 @@
+[
+  {
+    "id": "backpack",
+    "name": "Backpack",
+    "slots": 0,
+    "quantity": 1,
+    "costSilver": 6,
+    "description": "Holds 7 normal-sized items"
+  },
+  {
+    "id": "sack",
+    "name": "Sack",
+    "slots": 0,
+    "quantity": 1,
+    "costSilver": 3,
+    "description": "Holds 10 normal sized items"
+  },
+  {
+    "id": "small-wagon",
+    "name": "Small Wagon",
+    "slots": 0,
+    "quantity": 1,
+    "costSilver": 25,
+    "description": "Wooden cart for hauling goods and corpses"
+  },
+  {
+    "id": "bear-trap",
+    "name": "Bear Trap",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 20,
+    "description": "Presence DR14 to spot, d8 damage"
+  },
+  {
+    "id": "blanket",
+    "name": "Blanket",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 4,
+    "description": "Coarse wool blanket"
+  },
+  {
+    "id": "caltrops",
+    "name": "Caltrops",
+    "slots": 1,
+    "quantity": 2,
+    "stackSize": 2,
+    "costSilver": 7,
+    "description": "d4 damage + infection on 1 in 6"
+  },
+  {
+    "id": "chalk",
+    "name": "Chalk",
+    "slots": 1,
+    "quantity": 10,
+    "stackSize": 10,
+    "costSilver": 1,
+    "description": "10 sticks of white chalk"
+  },
+  {
+    "id": "chewing-tobacco",
+    "name": "Chewing Tobacco",
+    "slots": 1,
+    "quantity": 4,
+    "stackSize": 4,
+    "costSilver": 1,
+    "description": "Bitter dried tobacco leaves"
+  },
+  {
+    "id": "crowbar",
+    "name": "Crowbar",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 8,
+    "description": "Forged iron pry bar"
+  },
+  {
+    "id": "crucifix-silver",
+    "name": "Silver Crucifix",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 60,
+    "description": "Blessed silver symbol of the Basilisk"
+  },
+  {
+    "id": "crucifix-wood",
+    "name": "Wooden Crucifix",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 8,
+    "description": "Carved wooden symbol"
+  },
+  {
+    "id": "dried-food",
+    "name": "Dried Food",
+    "slots": 1,
+    "quantity": 4,
+    "stackSize": 4,
+    "costSilver": 1,
+    "description": "Hardtack and salted meat (1 day per ration)"
+  },
+  {
+    "id": "exquisite-perfume",
+    "name": "Exquisite Perfume",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 25,
+    "description": "Masks the stench of rot and death"
+  },
+  {
+    "id": "firesteel",
+    "name": "Firesteel",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 4,
+    "description": "Flint and steel for striking sparks"
+  },
+  {
+    "id": "grappling-hook",
+    "name": "Grappling Hook",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 12,
+    "description": "Four-pronged iron climbing hook"
+  },
+  {
+    "id": "hammer",
+    "name": "Hammer",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 8,
+    "description": "Heavy builder's hammer"
+  },
+  {
+    "id": "heavy-chain",
+    "name": "Heavy Chain",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 10,
+    "description": "15 feet of welded iron chain"
+  },
+  {
+    "id": "iron-nails",
+    "name": "Iron Nails",
+    "slots": 1,
+    "quantity": 10,
+    "stackSize": 10,
+    "costSilver": 10,
+    "description": "10 heavy forged iron nails"
+  },
+  {
+    "id": "ladder",
+    "name": "Ladder",
+    "slots": 2,
+    "quantity": 1,
+    "costSilver": 7,
+    "description": "Bulky wooden ladder"
+  },
+  {
+    "id": "lantern-oil",
+    "name": "Lantern Oil",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 5,
+    "description": "Fuel lasting Presence + 6 hours"
+  },
+  {
+    "id": "lard",
+    "name": "Lard",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 5,
+    "description": "May function as 5 meals"
+  },
+  {
+    "id": "large-iron-hook",
+    "name": "Large Iron Hook",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 9,
+    "description": "Butcher's iron hook"
+  },
+  {
+    "id": "lockpicks",
+    "name": "Lockpicks",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 5,
+    "description": "Set of twisted wire picks"
+  },
+  {
+    "id": "magnesium-strip",
+    "name": "Magnesium Strip",
+    "slots": 1,
+    "quantity": 4,
+    "stackSize": 4,
+    "costSilver": 4,
+    "description": "Blinds eyes or ignites underwater"
+  },
+  {
+    "id": "manacles",
+    "name": "Manacles",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 10,
+    "description": "Heavy iron wrist shackles with key"
+  },
+  {
+    "id": "mattress",
+    "name": "Mattress",
+    "slots": 2,
+    "quantity": 1,
+    "costSilver": 3,
+    "description": "Bulky straw-filled bedroll"
+  },
+  {
+    "id": "meat-cleaver",
+    "name": "Meat Cleaver",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 15,
+    "description": "Heavy butcher blade"
+  },
+  {
+    "id": "medicine-box",
+    "name": "Medicine Box",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 15,
+    "description": "Stops bleeding/infection and +d6 HP. Presence + 4 uses"
+  },
+  {
+    "id": "metal-file",
+    "name": "Metal File",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 10,
+    "description": "Hardened steel rasp"
+  },
+  {
+    "id": "mirror",
+    "name": "Mirror",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 15,
+    "description": "Small polished silvered glass"
+  },
+  {
+    "id": "muzzle",
+    "name": "Muzzle",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 6,
+    "description": "Leather cage for beast jaws"
+  },
+  {
+    "id": "noose",
+    "name": "Noose",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 5,
+    "description": "Knotted hangman rope"
+  },
+  {
+    "id": "oil-lamp",
+    "name": "Oil Lamp",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 10,
+    "description": "Tin oil lantern"
+  },
+  {
+    "id": "poison-black",
+    "name": "Poison (Black)",
+    "slots": 1,
+    "quantity": 3,
+    "stackSize": 3,
+    "costSilver": 20,
+    "description": "Toughness DR14 or d6 damage + blind for one hour. 3 doses"
+  },
+  {
+    "id": "poison-red",
+    "name": "Poison (Red)",
+    "slots": 1,
+    "quantity": 3,
+    "stackSize": 3,
+    "costSilver": 20,
+    "description": "Toughness DR12 or d10 damage. 3 doses"
+  },
+  {
+    "id": "preserved-corpse",
+    "name": "Preserved Corpse",
+    "slots": 2,
+    "quantity": 1,
+    "costSilver": 70,
+    "description": "Pickled human remains"
+  },
+  {
+    "id": "rope",
+    "name": "Rope",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 4,
+    "description": "30 feet of hemp rope"
+  },
+  {
+    "id": "salt",
+    "name": "Salt",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 4,
+    "description": "Bag of coarse rock salt"
+  },
+  {
+    "id": "scissors",
+    "name": "Scissors",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 9,
+    "description": "Iron shears"
+  },
+  {
+    "id": "sharp-needle",
+    "name": "Sharp Needle",
+    "slots": 1,
+    "quantity": 10,
+    "stackSize": 10,
+    "costSilver": 3,
+    "description": "10 sewing needles"
+  },
+  {
+    "id": "tent",
+    "name": "Tent",
+    "slots": 2,
+    "quantity": 1,
+    "costSilver": 12,
+    "description": "Canvas shelter for two"
+  },
+  {
+    "id": "toolbox",
+    "name": "Toolbox",
+    "slots": 2,
+    "quantity": 1,
+    "costSilver": 20,
+    "description": "10 nails, hammer, small saw, tongs"
+  },
+  {
+    "id": "torch",
+    "name": "Torch",
+    "slots": 1,
+    "quantity": 4,
+    "stackSize": 4,
+    "costSilver": 2,
+    "description": "Pitch-soaked torch, burns for 1 hour"
+  },
+  {
+    "id": "waterskin",
+    "name": "Waterskin",
+    "slots": 1,
+    "quantity": 1,
+    "costSilver": 4,
+    "description": "4 days of water"
+  },
+  {
+    "id": "arrows",
+    "name": "Arrows",
+    "slots": 1,
+    "quantity": 20,
+    "stackSize": 20,
+    "isAmmunition": true,
+    "costSilver": 10,
+    "description": "20 fledged arrows (first stack consumes 0 slots)"
+  },
+  {
+    "id": "crossbow-bolts",
+    "name": "Crossbow Bolts",
+    "slots": 1,
+    "quantity": 10,
+    "stackSize": 10,
+    "isAmmunition": true,
+    "costSilver": 10,
+    "description": "10 iron quarrels (first stack consumes 0 slots)"
+  },
+  {
+    "id": "sling-bullets",
+    "name": "Sling Bullets",
+    "slots": 1,
+    "quantity": 20,
+    "stackSize": 20,
+    "isAmmunition": true,
+    "costSilver": 5,
+    "description": "20 cast lead bullets (first stack consumes 0 slots)"
+  }
+]

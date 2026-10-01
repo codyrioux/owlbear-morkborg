@@ -1,0 +1,58 @@
+[
+  {
+    "id": "fanged-deserter",
+    "name": "Fanged Deserter",
+    "hpDie": 10,
+    "omenDie": "d2",
+    "desc": "You were a savage brute in an uncaring army. You deserted with teeth bared.",
+    "traits": "Gnashing teeth, feral rage, covered in dried mud and scars."
+  },
+  {
+    "id": "gutterborn-scum",
+    "name": "Gutterborn Scum",
+    "hpDie": 6,
+    "omenDie": "d2",
+    "desc": "An ill-fated wretch born in the filth beneath Galgenbeck.",
+    "traits": "Twitching eye, stained rags, pockets full of sharp trinkets."
+  },
+  {
+    "id": "esoteric-hermit",
+    "name": "Esoteric Hermit",
+    "hpDie": 4,
+    "omenDie": "d4",
+    "desc": "A crazed scholar who speaks to fungi and reads secrets in entrails.",
+    "traits": "Wild unwashed beard, muttering prophecies of the two-headed basilisks."
+  },
+  {
+    "id": "wretched-royalty",
+    "name": "Wretched Royalty",
+    "hpDie": 6,
+    "omenDie": "d2",
+    "desc": "Heir to a kingdom reduced to dust and cinders.",
+    "traits": "Tattered velvet coat, dull brass signet ring, haughty sneer."
+  },
+  {
+    "id": "heretical-priest",
+    "name": "Heretical Priest",
+    "hpDie": 8,
+    "omenDie": "d4",
+    "desc": "Cast out of the Cathedral of the Two-Headed Basilisks for forbidden preachings.",
+    "traits": "Self-inflicted flagellation marks, charred holy symbol."
+  },
+  {
+    "id": "occult-herbmaster",
+    "name": "Occult Herbmaster",
+    "hpDie": 6,
+    "omenDie": "d2",
+    "desc": "Maker of poisonous decoctions and bitter medicines in the dark marshes.",
+    "traits": "Fingers permanently stained violet, glass vials rattling in pockets."
+  },
+  {
+    "id": "classless-scum",
+    "name": "Classless Scum",
+    "hpDie": 8,
+    "omenDie": "d2",
+    "desc": "Just another desperate wretch struggling to breathe before the world ends.",
+    "traits": "Hollow cheeks, desperate glare, carrying only what was scavenged."
+  }
+]

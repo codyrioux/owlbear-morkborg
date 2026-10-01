@@ -1,0 +1,55 @@
+{
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "Rags & Flayed Skins",
+      "damageReduction": "0",
+      "slots": 0,
+      "costSilver": 0,
+      "defensePenalty": 0,
+      "agilityPenalty": 0,
+      "preventsPowers": false,
+      "description": "Filthy tunics and crude hides offering no protection"
+    },
+    {
+      "tier": 1,
+      "name": "Padded Leather",
+      "damageReduction": "-d2",
+      "slots": 1,
+      "costSilver": 20,
+      "defensePenalty": 0,
+      "agilityPenalty": 0,
+      "preventsPowers": false,
+      "description": "Boiled leather and stitched gambeson. Absorbs d2 damage."
+    },
+    {
+      "tier": 2,
+      "name": "Rusty Chainmail",
+      "damageReduction": "-d4",
+      "slots": 1,
+      "costSilver": 100,
+      "defensePenalty": 2,
+      "agilityPenalty": 2,
+      "preventsPowers": true,
+      "description": "Interlocking iron rings. Absorbs d4 damage. +2 DR on Agility tests (including defense). Cannot wield Powers or read scrolls."
+    },
+    {
+      "tier": 3,
+      "name": "Dented Plate Mail",
+      "damageReduction": "-d6",
+      "slots": 1,
+      "costSilver": 200,
+      "defensePenalty": 2,
+      "agilityPenalty": 4,
+      "preventsPowers": true,
+      "description": "Heavy hammered plate. Absorbs d6 damage. +4 DR on Agility tests, defense is DR+2. Cannot wield Powers or read scrolls."
+    }
+  ],
+  "shield": {
+    "name": "Shield",
+    "damageReduction": "-1",
+    "slots": 1,
+    "costSilver": 20,
+    "description": "Wood and iron round shield. Absorbs 1 damage or can be sacrificed/broken to entirely negate 1 attack."
+  }
+}

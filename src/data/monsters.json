@@ -1,0 +1,342 @@
+[
+  {
+    "id": "goblin",
+    "name": "Seth, Goblin",
+    "epithet": "Cursed wretch",
+    "hp": 6,
+    "morale": 7,
+    "armorTier": 1,
+    "damageReduction": "-d2",
+    "attacks": [
+      {
+        "name": "Knife / Shortbow",
+        "damageDie": "d4",
+        "special": "Hit or miss, sends the goblin curse!"
+      }
+    ],
+    "specialRules": [
+      "Quick: Attacks and defence are DR14.",
+      "Goblin Curse: Even being attacked sends the curse. Hit or miss, if the goblin still lives d6 days after the attack, the victim warps irrevocably into a goblin."
+    ],
+    "bounties": {
+      "head": "7s",
+      "dead": "20s",
+      "captured": "150s"
+    },
+    "description": "All goblins carry a curse. Once like you, now trapped in crazed goblin flesh. In the dark of Sarkash they shoot at passers-by with twanging bows."
+  },
+  {
+    "id": "scum",
+    "name": "Bent, Scum",
+    "epithet": "Fecund slum miscreant",
+    "hp": 7,
+    "morale": 8,
+    "armorTier": 0,
+    "damageReduction": "0",
+    "attacks": [
+      {
+        "name": "Poisoned Knife",
+        "damageDie": "d4",
+        "special": "Test Toughness DR10 or become infected."
+      }
+    ],
+    "specialRules": [
+      "Cowardly Backstab: The PC with highest Presence tests DR14 at start of battle. On failure, a random party member takes an automatic backstab for normal damage + 3."
+    ],
+    "bounties": {
+      "dead": "20-70s",
+      "captured": "50-120s"
+    },
+    "description": "Mothered by dark alleyways and slum misery. Few fiends are more fell than poverty or monsters more powerful than hate."
+  },
+  {
+    "id": "berserker",
+    "name": "Zukuma, Berserker",
+    "epithet": "Frenzied ambush killer",
+    "hp": 13,
+    "morale": 9,
+    "armorTier": 1,
+    "damageReduction": "-d2",
+    "attacks": [
+      {
+        "name": "Long Flail (d4=1)",
+        "damageDie": "d8",
+        "special": "Whirling spiked chain"
+      },
+      {
+        "name": "Heavy Mace (d4=2)",
+        "damageDie": "d6",
+        "special": "Crushing blow"
+      },
+      {
+        "name": "Chained Sword (d4=3)",
+        "damageDie": "d6",
+        "special": "Barbed edge"
+      },
+      {
+        "name": "Huge Warhammer (d4=4)",
+        "damageDie": "d10",
+        "special": "Shattering hammer"
+      }
+    ],
+    "specialRules": [
+      "Attacks twice per round.",
+      "Doesn't have time for defense: DR10 to hit them."
+    ],
+    "bounties": {
+      "dead": "20s",
+      "captured": "55s",
+      "blood": "3s per litre"
+    },
+    "description": "They're on you! A frenzied ambush in dusty hallways and from behind the stacked black stones of catacombs."
+  },
+  {
+    "id": "wraith",
+    "name": "Wrat, Wraith",
+    "epithet": "Soundless phantom",
+    "hp": 15,
+    "morale": null,
+    "armorTier": 0,
+    "damageReduction": "0",
+    "attacks": [
+      {
+        "name": "Chilling Touch",
+        "damageDie": "d4",
+        "special": "Drains Strength, Presence, and Agility by 1 for duration of fight."
+      }
+    ],
+    "specialRules": [
+      "Swift, elusive, and difficult to hit: DR14 to hit them.",
+      "Always wins initiative.",
+      "Morale: Fearless (undead)."
+    ],
+    "bounties": {
+      "captured": "120s",
+      "skull": "70s",
+      "ectoplasm": "25s"
+    },
+    "description": "Soundless phantoms born of ancient malice. Their freezing touch saps the soul and withers mortal sinew."
+  },
+  {
+    "id": "skeleton",
+    "name": "Belze, Blood-drenched Skeleton",
+    "epithet": "Soundless skulker",
+    "hp": 7,
+    "morale": 8,
+    "armorTier": 0,
+    "damageReduction": "0",
+    "attacks": [
+      {
+        "name": "Shortsword / Knife",
+        "damageDie": "d4",
+        "special": "Piercing thrust"
+      },
+      {
+        "name": "Bony Knuckles",
+        "damageDie": "d2",
+        "special": "Cracking bone strike"
+      }
+    ],
+    "specialRules": [
+      "Skulks about, impossibly soundless. Attacks by surprise.",
+      "Voice Mimicry: Can mimic voices to lure victims, but can only repeat words it has heard.",
+      "Piercing Resistance: Attacks on them with piercing weapons are DR14.",
+      "Fragile: Any single strike doing 5 or more damage destroys the skeleton completely."
+    ],
+    "bounties": {
+      "destroyed": "7s",
+      "captured": "35s"
+    },
+    "description": "Bleached and clotted bones soaked in gore. Moves without a rattle, whispering dead men's last words."
+  },
+  {
+    "id": "lich",
+    "name": "Lich, Undead Necromancer",
+    "epithet": "Anti-magical wound in reality",
+    "hp": 15,
+    "morale": null,
+    "armorTier": 2,
+    "damageReduction": "-d4",
+    "attacks": [
+      {
+        "name": "Necromantic Strike",
+        "damageDie": "d6",
+        "special": "Paralyzing touch (Presence DR14 every round to break free)"
+      }
+    ],
+    "specialRules": [
+      "Anti-Magic Aura: No one can use Powers near this creature.",
+      "Scroll Theft: Every round the lich can steal the contents of a nearby scroll and use this Power against its owner.",
+      "Morale: Fearless (undead)."
+    ],
+    "bounties": {
+      "skull": "100s",
+      "remains": "130s",
+      "captured": "200s"
+    },
+    "description": "A dry, whispering corpse cloaked in burial vestments. A tear in reality that devours all arcane light."
+  },
+  {
+    "id": "troll",
+    "name": "Arbint, Troll",
+    "epithet": "Vengeful regenerating coward",
+    "hp": 32,
+    "morale": "special",
+    "armorTier": 1,
+    "damageReduction": "-d2",
+    "attacks": [
+      {
+        "name": "Massive Fist",
+        "damageDie": "2d6",
+        "special": "Crushing haymaker"
+      }
+    ],
+    "specialRules": [
+      "Easy to hit: Attacks against troll are DR10.",
+      "Cowards: Usually retreat if badly wounded.",
+      "Vengeful Regrowth: Never forget who hurt them. They grow larger during healing and will return stronger than before. Any HP healed is permanently added to maximum HP, and adds +d6 damage on return."
+    ],
+    "bounties": {
+      "horn": "25s",
+      "corpse": "70s",
+      "captured": "200s"
+    },
+    "description": "A hulking brute of muscle, moss, and spite. Cowardly when bleed begins, terrifying when vengeance takes hold."
+  },
+  {
+    "id": "zombie",
+    "name": "Nodh, Zombie",
+    "epithet": "Shambling rot-corpse",
+    "hp": 7,
+    "morale": null,
+    "armorTier": 1,
+    "damageReduction": "-d2",
+    "attacks": [
+      {
+        "name": "Claw / Bite",
+        "damageDie": "d2",
+        "special": "Test Toughness DR8 or die within two days and rise as a zombie."
+      }
+    ],
+    "specialRules": [
+      "Zombie Plague: Anyone bitten must test Toughness DR8 or die within two days before rising as a zombie.",
+      "Morale: Fearless (undead)."
+    ],
+    "bounties": {
+      "captured": "5s",
+      "blood": "30s per litre"
+    },
+    "description": "Rotting flesh wrapped in leather scraps. King Fathmu IX seeks their black blood for rumored vaccines."
+  },
+  {
+    "id": "undead-doll",
+    "name": "Lady Porcelain, Undead Doll",
+    "epithet": "Vengeful child relic",
+    "hp": 11,
+    "morale": null,
+    "armorTier": 1,
+    "damageReduction": "-d2",
+    "attacks": [
+      {
+        "name": "Claws / Piercing Bite",
+        "damageDie": "d4",
+        "special": "Porcelain fangs"
+      }
+    ],
+    "specialRules": [
+      "Terrifying Gaze: Demands a Presence DR12 test at the start of combat or be frozen with fear for d4 rounds.",
+      "Morale: Fearless (undead)."
+    ],
+    "bounties": {
+      "head": "20s",
+      "captured": "80s"
+    },
+    "description": "Starved children enclosed in porcelain dolls and left in cathedral windows. Returned to hunt their tormentors."
+  },
+  {
+    "id": "grotesque",
+    "name": "Thinx, Grotesque",
+    "epithet": "Living gargoyle stone",
+    "hp": 18,
+    "morale": null,
+    "armorTier": 3,
+    "damageReduction": "-d6",
+    "attacks": [
+      {
+        "name": "Stone Claws",
+        "damageDie": "d6",
+        "special": "Gouging rock talons"
+      },
+      {
+        "name": "Eye-Beam",
+        "damageDie": "d8",
+        "special": "Terrifying gaze used on 1-2 on d6 each round; always hits!"
+      }
+    ],
+    "specialRules": [
+      "Disturbingly still and hard to discern against gray stone.",
+      "Slow: Easy to hit (DR10).",
+      "Eye-Beam: Used on 1-2 on a d6 each round. Always hits.",
+      "Morale: Fearless (construct/stone)."
+    ],
+    "bounties": {
+      "dead-in-pieces": "10s",
+      "dead-intact": "100s",
+      "captured": "190s"
+    },
+    "description": "Lurking around churches, stalking graveyards, creeping closer when you look away. Disturbingly still."
+  },
+  {
+    "id": "wickhead",
+    "name": "Aland, Wickhead Knife-Wielder",
+    "epithet": "Stalker in the thicket",
+    "hp": 10,
+    "morale": 7,
+    "armorTier": 0,
+    "damageReduction": "0",
+    "attacks": [
+      {
+        "name": "Knife with Dried Blood",
+        "damageDie": "d4",
+        "special": "25% chance wounds become infected."
+      }
+    ],
+    "specialRules": [
+      "Sneaks up silent as the grave. Skulks in the thickets of Sarkash.",
+      "Blinding Flare: Can magically douse all nearby light sources, ignite its own blinding light and attack, then vanish into darkness."
+    ],
+    "bounties": {
+      "decapitated-lantern": "15s",
+      "corpse": "20s",
+      "captured": "60s"
+    },
+    "description": "Carries a lantern of burning fat. Blows out candles and cuts throats before retreating into the dark."
+  },
+  {
+    "id": "wyvern",
+    "name": "Eulotha, Wyvern",
+    "epithet": "Harbinger of blight",
+    "hp": 25,
+    "morale": 10,
+    "armorTier": 2,
+    "damageReduction": "-d4",
+    "attacks": [
+      {
+        "name": "Bite / Venomous Sting",
+        "damageDie": "d6",
+        "special": "60% bite / 40% sting. Sting: test Toughness DR14 or suffer 1 hour paralysis."
+      }
+    ],
+    "specialRules": [
+      "Flight: Where the wyvern fly, crops die.",
+      "Venomous Sting: Test Toughness DR14 to avoid one painful hour of paralysis."
+    ],
+    "bounties": {
+      "tail-spike": "60s",
+      "poison-gland": "60s",
+      "corpse": "100s",
+      "captured": "200s"
+    },
+    "description": "A scaly nightmare with venomous stinger. Swoops from desolate crags to slaughter cattle and travelers alike."
+  }
+]

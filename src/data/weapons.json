@@ -1,0 +1,138 @@
+[
+  {
+    "id": "femur",
+    "name": "Femur Club",
+    "type": "melee",
+    "damageDie": "d4",
+    "costSilver": 0,
+    "special": "Crude bone, worthless"
+  },
+  {
+    "id": "knife",
+    "name": "Knife",
+    "type": "melee",
+    "damageDie": "d4",
+    "costSilver": 10,
+    "special": "Concealable blade"
+  },
+  {
+    "id": "shortsword",
+    "name": "Shortsword",
+    "type": "melee",
+    "damageDie": "d4",
+    "costSilver": 20,
+    "special": "Thrusting blade"
+  },
+  {
+    "id": "staff",
+    "name": "Staff",
+    "type": "melee",
+    "damageDie": "d4",
+    "costSilver": 5,
+    "special": "Blunt wood"
+  },
+  {
+    "id": "sling",
+    "name": "Sling",
+    "type": "ranged",
+    "damageDie": "d4",
+    "costSilver": 8,
+    "special": "Leather strap and stone"
+  },
+  {
+    "id": "shortbow",
+    "name": "Shortbow",
+    "type": "ranged",
+    "damageDie": "d4",
+    "costSilver": 13,
+    "special": "Fires arrows"
+  },
+  {
+    "id": "whip",
+    "name": "Whip",
+    "type": "melee",
+    "damageDie": "d2",
+    "costSilver": 5,
+    "special": "Cracking lash"
+  },
+  {
+    "id": "club",
+    "name": "Club",
+    "type": "melee",
+    "damageDie": "d6",
+    "costSilver": 10,
+    "special": "Heavy wooden cudgel"
+  },
+  {
+    "id": "handaxe",
+    "name": "Handaxe",
+    "type": "melee",
+    "damageDie": "d6",
+    "costSilver": 15,
+    "special": "Chopping axe"
+  },
+  {
+    "id": "mace",
+    "name": "Mace",
+    "type": "melee",
+    "damageDie": "d6",
+    "costSilver": 25,
+    "special": "Flanged iron head"
+  },
+  {
+    "id": "sword",
+    "name": "Sword",
+    "type": "melee",
+    "damageDie": "d6",
+    "costSilver": 30,
+    "special": "Single-edged iron blade"
+  },
+  {
+    "id": "warhammer",
+    "name": "Warhammer",
+    "type": "melee",
+    "damageDie": "d6",
+    "costSilver": 30,
+    "special": "Spiked war hammer"
+  },
+  {
+    "id": "bow",
+    "name": "Bow",
+    "type": "ranged",
+    "damageDie": "d6",
+    "costSilver": 25,
+    "special": "Recurve hunting bow"
+  },
+  {
+    "id": "battle-axe",
+    "name": "Battle Axe",
+    "type": "melee",
+    "damageDie": "d8",
+    "costSilver": 35,
+    "special": "Heavy double-bitted axe"
+  },
+  {
+    "id": "flail",
+    "name": "Flail",
+    "type": "melee",
+    "damageDie": "d8",
+    "costSilver": 35,
+    "special": "Spiked iron ball and chain"
+  },
+  {
+    "id": "crossbow",
+    "name": "Crossbow",
+    "type": "ranged",
+    "damageDie": "d8",
+    "costSilver": 40,
+    "special": "DR12 Presence to aim, shoots bolts"
+  },
+  {
+    "id": "zweihander",
+    "name": "Zweihänder",
+    "type": "melee",
+    "damageDie": "d10",
+    "costSilver": 60,
+    "special": "Requires 2 hands to wield"
+  }
+]
