@@ -375,4 +375,35 @@ export class OBRService {
       return undefined;
     }
   }
+
+  /**
+   * Get the current player role ('GM' or 'PLAYER').
+   * Defaults to 'GM' when running in standalone mode outside OBR so all tools can be tested.
+   */
+  public static async getUserRole(): Promise<'GM' | 'PLAYER'> {
+    if (!OBR.isAvailable) return 'GM';
+    try {
+      return await OBR.player.getRole();
+    } catch {
+      return 'PLAYER';
+    }
+  }
+
+  /**
+   * Open the GM console in an independent floating popover window
+   */
+  public static async openFloatingGMConsole(): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.popover.open({
+        id: 'com.morkborg.character-sheet/gm-popover',
+        url: new URL('index.html?view=gm', window.location.href).toString(),
+        width: 720,
+        height: 680,
+        disableClickAway: true,
+      });
+    } catch (err) {
+      console.warn('Could not open floating GM popover:', err);
+    }
+  }
 }

@@ -19,6 +19,7 @@ import {
 } from './utils/morkborgRules';
 import { OBRService } from './obr/obrService';
 import { Header, SceneCharacterItem } from './components/Header';
+import { GMConsole } from './components/gm/GMConsole';
 import { AbilitiesGrid } from './components/AbilitiesGrid';
 import { VitalsSection } from './components/VitalsSection';
 import { CombatSection } from './components/CombatSection';
@@ -48,6 +49,24 @@ export const App: React.FC = () => {
   });
   const [linkedToken, setLinkedToken] = useState<{ id: string; name: string } | null>(null);
   const [sceneCharacters, setSceneCharacters] = useState<SceneCharacterItem[]>([]);
+  const [userRole, setUserRole] = useState<'GM' | 'PLAYER'>('PLAYER');
+  const [activeView, setActiveView] = useState<'player' | 'gm'>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('view') === 'gm') return 'gm';
+    } catch {}
+    return 'player';
+  });
+
+  const handleToggleView = async (view: 'player' | 'gm') => {
+    setActiveView(view);
+    if (view === 'gm') {
+      await OBRService.setActionWidth(700);
+      await OBRService.setActionHeight(680);
+    } else {
+      await OBRService.setActionWidth(525);
+    }
+  };
 
   // Refs to prevent stale closures and concurrency race conditions during token switching
   const characterRef = useRef(character);
@@ -284,6 +303,14 @@ export const App: React.FC = () => {
         if (localChar) {
           setCharacter(localChar);
         }
+      }
+
+      // Check player role (GM vs Player)
+      const role = await OBRService.getUserRole();
+      setUserRole(role);
+      if (activeView === 'gm') {
+        await OBRService.setActionWidth(700);
+        await OBRService.setActionHeight(680);
       }
 
       // Load initial scene characters for the roster
@@ -672,58 +699,70 @@ export const App: React.FC = () => {
           onToggleCollapseAll={handleToggleCollapseAll}
           isCollapsed={collapsedSections.header}
           onToggleCollapse={() => handleToggleSection('header')}
+          userRole={userRole}
+          activeView={activeView}
+          onToggleView={handleToggleView}
         />
 
         {/* Main Content Area */}
         <main className="flex flex-col">
-        {/* 2. Core Abilities with Roll Buttons */}
-        <AbilitiesGrid
-          character={character}
-          onUpdateCharacter={setCharacter}
-          onRollAbility={handleRollAbility}
-          onOpenGettingBetter={() => setIsGettingBetterOpen(true)}
-          isCollapsed={collapsedSections.abilities}
-          onToggleCollapse={() => handleToggleSection('abilities')}
-        />
+          {activeView === 'gm' ? (
+            <GMConsole
+              sceneCharacters={sceneCharacters}
+              onSelectToken={handleSwitchToToken}
+            />
+          ) : (
+            <>
+              {/* 2. Core Abilities with Roll Buttons */}
+              <AbilitiesGrid
+                character={character}
+                onUpdateCharacter={setCharacter}
+                onRollAbility={handleRollAbility}
+                onOpenGettingBetter={() => setIsGettingBetterOpen(true)}
+                isCollapsed={collapsedSections.abilities}
+                onToggleCollapse={() => handleToggleSection('abilities')}
+              />
 
-        {/* 3. Vitals: HP, Omens, Powers, Silver */}
-        <VitalsSection
-          character={character}
-          onUpdateCharacter={setCharacter}
-          onOpenSpendOmen={() => setIsSpendOmenOpen(true)}
-          onOpenBrokenModal={() => setIsBrokenModalOpen(true)}
-          isCollapsed={collapsedSections.vitals}
-          onToggleCollapse={() => handleToggleSection('vitals')}
-        />
+              {/* 3. Vitals: HP, Omens, Powers, Silver */}
+              <VitalsSection
+                character={character}
+                onUpdateCharacter={setCharacter}
+                onOpenSpendOmen={() => setIsSpendOmenOpen(true)}
+                onOpenBrokenModal={() => setIsBrokenModalOpen(true)}
+                isCollapsed={collapsedSections.vitals}
+                onToggleCollapse={() => handleToggleSection('vitals')}
+              />
 
-        {/* 4. Combat: Armor, Defense, Weapons */}
-        <CombatSection
-          character={character}
-          onUpdateCharacter={setCharacter}
-          onDefend={handleDefend}
-          onSoakArmor={handleSoakArmor}
-          onAttack={handleAttack}
-          onDamage={handleDamage}
-          isCollapsed={collapsedSections.combat}
-          onToggleCollapse={() => handleToggleSection('combat')}
-        />
+              {/* 4. Combat: Armor, Defense, Weapons */}
+              <CombatSection
+                character={character}
+                onUpdateCharacter={setCharacter}
+                onDefend={handleDefend}
+                onSoakArmor={handleSoakArmor}
+                onAttack={handleAttack}
+                onDamage={handleDamage}
+                isCollapsed={collapsedSections.combat}
+                onToggleCollapse={() => handleToggleSection('combat')}
+              />
 
-        {/* 5. Inventory & Encumbrance */}
-        <InventorySection
-          character={character}
-          onUpdateCharacter={setCharacter}
-          isCollapsed={collapsedSections.inventory}
-          onToggleCollapse={() => handleToggleSection('inventory')}
-        />
+              {/* 5. Inventory & Encumbrance */}
+              <InventorySection
+                character={character}
+                onUpdateCharacter={setCharacter}
+                isCollapsed={collapsedSections.inventory}
+                onToggleCollapse={() => handleToggleSection('inventory')}
+              />
 
-        {/* 6. Scrolls & Occult Powers */}
-        <ScrollsSection
-          character={character}
-          onUpdateCharacter={setCharacter}
-          onInvokeScroll={handleInvokeScroll}
-          isCollapsed={collapsedSections.scrolls}
-          onToggleCollapse={() => handleToggleSection('scrolls')}
-        />
+              {/* 6. Scrolls & Occult Powers */}
+              <ScrollsSection
+                character={character}
+                onUpdateCharacter={setCharacter}
+                onInvokeScroll={handleInvokeScroll}
+                isCollapsed={collapsedSections.scrolls}
+                onToggleCollapse={() => handleToggleSection('scrolls')}
+              />
+            </>
+          )}
 
         {/* Roll History Log Drawer */}
         {showLog && (

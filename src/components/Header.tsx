@@ -27,6 +27,9 @@ interface HeaderProps {
   onToggleCollapseAll?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  userRole?: 'GM' | 'PLAYER';
+  activeView?: 'player' | 'gm';
+  onToggleView?: (view: 'player' | 'gm') => void;
 }
 
 const CLASSES = [
@@ -58,6 +61,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleCollapseAll,
   isCollapsed = false,
   onToggleCollapse,
+  userRole,
+  activeView = 'player',
+  onToggleView,
 }) => {
   const [isRosterOpen, setIsRosterOpen] = useState(false);
   return (
@@ -125,6 +131,35 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
         </div>
+
+        {/* Role Mode Switcher (GM only) */}
+        {userRole === 'GM' && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1 bg-mb-black p-0.5 border border-black shadow-brutal-sm shrink-0"
+          >
+            <button
+              onClick={() => onToggleView?.('player')}
+              className={`px-2 py-0.5 text-[10px] font-brutal font-bold uppercase transition-colors ${
+                activeView === 'player'
+                  ? 'bg-mb-yellow text-mb-black'
+                  : 'text-mb-bone hover:text-white'
+              }`}
+            >
+              SCVM SHEET
+            </button>
+            <button
+              onClick={() => onToggleView?.('gm')}
+              className={`px-2 py-0.5 text-[10px] font-brutal font-bold uppercase transition-colors ${
+                activeView === 'gm'
+                  ? 'bg-mb-pink text-white shadow-brutal-sm'
+                  : 'text-mb-bone hover:text-white'
+              }`}
+            >
+              GM CONSOLE
+            </button>
+          </div>
+        )}
 
         {/* Action Toolbar */}
         <div
