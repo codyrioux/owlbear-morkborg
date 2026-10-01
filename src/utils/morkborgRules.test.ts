@@ -10,7 +10,9 @@ import {
   performDefend,
   getAbilityDRPenalty,
   performWeaponDamage,
-  CANONICAL_SCROLLS
+  CANONICAL_SCROLLS,
+  calculateAbilityChange,
+  performGettingBetter
 } from './morkborgRules';
 import { Character } from '../types/morkborg';
 
@@ -332,4 +334,137 @@ describe('MÖRK BORG Rules Engine', () => {
       expect(s.description.trim().length).toBeGreaterThan(0);
     });
   });
+
+  describe('Getting Better (or worse) Rules', () => {
+    it('calculateAbilityChange should follow MÖRK BORG rules for modifiers <= +1', () => {
+      // For modifier <= 1: roll 1 is -1, roll 2..6 is +1
+      // Clamped min -3: old -3 with roll 1 stays -3, changed is 0
+      expect(calculateAbilityChange(-3, 1)).toEqual({
+        newModifier: -3,
+        changed: 0,
+      });
+      // old -3 with roll 2..6 increases to -2
+      expect(calculateAbilityChange(-3, 2)).toEqual({
+        newModifier: -2,
+        changed: 1,
+      });
+      expect(calculateAbilityChange(0, 1)).toEqual({
+        newModifier: -1,
+        changed: -1,
+      });
+      expect(calculateAbilityChange(0, 5)).toEqual({
+        newModifier: 1,
+        changed: 1,
+      });
+      expect(calculateAbilityChange(1, 1)).toEqual({
+        newModifier: 0,
+        changed: -1,
+      });
+      expect(calculateAbilityChange(1, 6)).toEqual({
+        newModifier: 2,
+        changed: 1,
+      });
+    });
+
+    it('calculateAbilityChange should follow MÖRK BORG rules for modifiers >= +2', () => {
+      // For modifier >= 2: roll >= modifier is +1, roll < modifier is -1
+      // Case +2: roll 1 is -1, roll 2..6 is +1
+      expect(calculateAbilityChange(2, 1)).toEqual({
+        newModifier: 1,
+        changed: -1,
+      });
+      expect(calculateAbilityChange(2, 2)).toEqual({
+        newModifier: 3,
+        changed: 1,
+      });
+
+      // Case +4: roll 1..3 is -1, roll 4..6 is +1
+      expect(calculateAbilityChange(4, 3)).toEqual({
+        newModifier: 3,
+        changed: -1,
+      });
+      expect(calculateAbilityChange(4, 4)).toEqual({
+        newModifier: 5,
+        changed: 1,
+      });
+
+      // Case +6: roll 6 cannot exceed max +6, changed is 0
+      expect(calculateAbilityChange(6, 6)).toEqual({
+        newModifier: 6,
+        changed: 0,
+      });
+      expect(calculateAbilityChange(6, 5)).toEqual({
+        newModifier: 5,
+        changed: -1,
+      });
+    });
+
+    it('performGettingBetter executes all three steps and returns updated character', () => {
+      const char: Character = {
+        ...mockCharacter,
+        hp: { current: 5, max: 8 },
+        abilities: {
+          strength: { modifier: 0 },
+          agility: { modifier: 1 },
+          presence: { modifier: 2 },
+          toughness: { modifier: -1 },
+        },
+        silver: 50,
+        inventory: [],
+        scrolls: [],
+      };
+
+      const { result, updatedCharacter } = performGettingBetter(char);
+
+      // 1. HP Check: 6d10 rolled
+      expect(result.hpRolls).toHaveLength(6);
+      expect(result.hpRollSum).toBeGreaterThanOrEqual(6);
+      expect(result.hpRollSum).toBeLessThanOrEqual(60);
+
+      if (result.hpIncreased) {
+        expect(result.hpGain).toBeGreaterThanOrEqual(1);
+        expect(result.hpGain).toBeLessThanOrEqual(6);
+        expect(updatedCharacter.hp.max).toBe(char.hp.max + result.hpGain);
+        expect(updatedCharacter.hp.current).toBe(char.hp.current + result.hpGain);
+      } else {
+        expect(result.hpGain).toBe(0);
+        expect(updatedCharacter.hp.max).toBe(char.hp.max);
+        expect(updatedCharacter.hp.current).toBe(char.hp.current);
+      }
+
+      // 2. Debris Check: d6 rolled
+      expect(result.debrisRoll).toBeGreaterThanOrEqual(1);
+      expect(result.debrisRoll).toBeLessThanOrEqual(6);
+
+      if (result.debrisRoll <= 3) {
+        expect(result.debrisType).toBe('nothing');
+        expect(result.silverFound).toBeUndefined();
+        expect(result.scrollFound).toBeUndefined();
+        expect(updatedCharacter.silver).toBe(char.silver);
+      } else if (result.debrisRoll === 4) {
+        expect(result.debrisType).toBe('silver');
+        expect(result.silverFound).toBeGreaterThanOrEqual(3);
+        expect(result.silverFound).toBeLessThanOrEqual(30);
+        expect(updatedCharacter.silver).toBe(char.silver + result.silverFound!);
+      } else {
+        // 5 or 6 (unclean or sacred scroll)
+        expect(result.scrollFound).toBeDefined();
+        expect(updatedCharacter.scrolls).toHaveLength(1);
+        expect(updatedCharacter.scrolls[0].name).toBe(result.scrollFound!.name);
+        expect(updatedCharacter.inventory).toHaveLength(1);
+      }
+
+      // 3. Ability Changes
+      expect(result.abilityChanges).toHaveLength(4);
+      result.abilityChanges.forEach((change) => {
+        expect(change.roll).toBeGreaterThanOrEqual(1);
+        expect(change.roll).toBeLessThanOrEqual(6);
+        expect(updatedCharacter.abilities[change.ability].modifier).toBe(change.newModifier);
+      });
+
+      // Summary string exists
+      expect(result.summary.length).toBeGreaterThan(0);
+    });
+  });
 });
+

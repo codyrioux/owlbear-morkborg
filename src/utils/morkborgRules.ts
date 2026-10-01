@@ -7,7 +7,7 @@ import {
   Scroll, 
   Weapon 
 } from '../types/morkborg';
-import { rollDie, rollFormula, scoreToModifier } from './dice';
+import { rollDie, rollDice, rollFormula, scoreToModifier, formatModifier } from './dice';
 
 /**
  * Perform an Ability test: d20 + modifier vs DR
@@ -828,5 +828,183 @@ export function generateRandomCharacter(): Character {
     broken: {
       isBroken: false,
     },
+  };
+}
+
+/**
+ * Calculates modifier change for Getting Better (p. 33):
+ * - "Roll a d6 against every ability. Results equal to or greater than the ability increase it by 1, to a maximum of +6. Results below the ability decrease it by 1."
+ * - "Abilities from −3 to +1 are always increased by 1 unless the d6 result is 1. The ability is then reduced by 1, but never below -3."
+ */
+export function calculateAbilityChange(oldModifier: number, d6Roll: number): {
+  newModifier: number;
+  changed: 1 | -1 | 0;
+} {
+  let delta: number;
+  if (oldModifier <= 1) {
+    if (d6Roll === 1) {
+      delta = -1;
+    } else {
+      delta = 1;
+    }
+  } else {
+    if (d6Roll >= oldModifier) {
+      delta = 1;
+    } else {
+      delta = -1;
+    }
+  }
+
+  const newModifier = Math.max(-3, Math.min(6, oldModifier + delta));
+  const changed = (newModifier - oldModifier) as 1 | -1 | 0;
+  return { newModifier, changed };
+}
+
+export interface GettingBetterResult {
+  hpRollSum: number;
+  hpRolls: number[];
+  hpIncreased: boolean;
+  hpGain: number;
+  oldMaxHp: number;
+  newMaxHp: number;
+
+  debrisRoll: number;
+  debrisType: 'nothing' | 'silver' | 'unclean_scroll' | 'sacred_scroll';
+  debrisDescription: string;
+  silverFound?: number;
+  scrollFound?: Scroll;
+
+  abilityChanges: {
+    ability: AbilityName;
+    roll: number;
+    oldModifier: number;
+    newModifier: number;
+    changed: 1 | -1 | 0;
+  }[];
+
+  summary: string;
+}
+
+/**
+ * Getting Better (or worse) - Core Rules p. 33:
+ * 1. More HP: Roll 6d10. If result >= current max HP, increase max HP by d6.
+ * 2. Left in the debris (d6): 1-3 nothing; 4 3d10 silver; 5 unclean scroll; 6 sacred scroll.
+ * 3. Ability changes: Roll d6 against every ability to increase (+1) or decrease (-1).
+ */
+export function performGettingBetter(character: Character): {
+  result: GettingBetterResult;
+  updatedCharacter: Character;
+} {
+  // 1. More HP
+  const hpRolls = rollDice(6, 10);
+  const hpRollSum = hpRolls.reduce((a, b) => a + b, 0);
+  const oldMaxHp = character.hp.max;
+  const hpIncreased = hpRollSum >= oldMaxHp;
+  const hpGain = hpIncreased ? rollDie(6) : 0;
+  const newMaxHp = oldMaxHp + hpGain;
+  const newCurrentHp = character.hp.current + hpGain;
+
+  // 2. Left in the debris
+  const debrisRoll = rollDie(6);
+  let debrisType: GettingBetterResult['debrisType'] = 'nothing';
+  let debrisDescription = 'Nothing of value in the foul muck.';
+  let silverFound: number | undefined;
+  let scrollFound: Scroll | undefined;
+
+  let newSilver = character.silver;
+  const newScrolls = [...character.scrolls];
+
+  if (debrisRoll >= 1 && debrisRoll <= 3) {
+    debrisType = 'nothing';
+    debrisDescription = 'Nothing. Only dust, rotting cloth, and cold mud.';
+  } else if (debrisRoll === 4) {
+    debrisType = 'silver';
+    const silverRolls = rollDice(3, 10);
+    silverFound = silverRolls.reduce((a, b) => a + b, 0);
+    newSilver += silverFound;
+    debrisDescription = `Found ${silverFound} silver coins [${silverRolls.join(', ')}] in the debris!`;
+  } else if (debrisRoll === 5) {
+    debrisType = 'unclean_scroll';
+    const uncleanList = CANONICAL_SCROLLS.filter((s) => s.type === 'unclean');
+    const picked = uncleanList[Math.floor(Math.random() * uncleanList.length)];
+    scrollFound = {
+      id: crypto.randomUUID(),
+      ...picked,
+    };
+    newScrolls.push(scrollFound);
+    debrisDescription = `Found an Unclean Scroll: "${scrollFound.name}"!`;
+  } else if (debrisRoll === 6) {
+    debrisType = 'sacred_scroll';
+    const sacredList = CANONICAL_SCROLLS.filter((s) => s.type === 'sacred');
+    const picked = sacredList[Math.floor(Math.random() * sacredList.length)];
+    scrollFound = {
+      id: crypto.randomUUID(),
+      ...picked,
+    };
+    newScrolls.push(scrollFound);
+    debrisDescription = `Found a Sacred Scroll: "${scrollFound.name}"!`;
+  }
+
+  // 3. Ability changes
+  const abilities: AbilityName[] = ['agility', 'presence', 'strength', 'toughness'];
+  const newAbilities = { ...character.abilities };
+  const abilityChanges: GettingBetterResult['abilityChanges'] = [];
+
+  for (const ab of abilities) {
+    const oldMod = character.abilities[ab].modifier;
+    const d6 = rollDie(6);
+    const { newModifier, changed } = calculateAbilityChange(oldMod, d6);
+    newAbilities[ab] = {
+      ...newAbilities[ab],
+      modifier: newModifier,
+    };
+    abilityChanges.push({
+      ability: ab,
+      roll: d6,
+      oldModifier: oldMod,
+      newModifier,
+      changed,
+    });
+  }
+
+  const updatedCharacter: Character = {
+    ...character,
+    hp: {
+      ...character.hp,
+      max: newMaxHp,
+      current: newCurrentHp,
+    },
+    silver: newSilver,
+    scrolls: newScrolls,
+    abilities: newAbilities,
+  };
+
+  const hpSummary = hpIncreased 
+    ? `HP increased +${hpGain} (6d10 [${hpRolls.join(', ')}] = ${hpRollSum} >= ${oldMaxHp}) -> Max HP: ${newMaxHp}`
+    : `HP unchanged (6d10 [${hpRolls.join(', ')}] = ${hpRollSum} < ${oldMaxHp})`;
+
+  const abilitySummary = abilityChanges
+    .map((a) => `${a.ability.toUpperCase()}: [d6=${a.roll}] ${formatModifier(a.oldModifier)} -> ${formatModifier(a.newModifier)}`)
+    .join(' • ');
+
+  const summary = `Getting Better: ${hpSummary} | Debris [d6=${debrisRoll}]: ${debrisDescription} | Abilities: ${abilitySummary}`;
+
+  return {
+    result: {
+      hpRollSum,
+      hpRolls,
+      hpIncreased,
+      hpGain,
+      oldMaxHp,
+      newMaxHp,
+      debrisRoll,
+      debrisType,
+      debrisDescription,
+      silverFound,
+      scrollFound,
+      abilityChanges,
+      summary,
+    },
+    updatedCharacter,
   };
 }

@@ -6,6 +6,7 @@ import {
   Scroll, 
   Weapon 
 } from './types/morkborg';
+import { Sparkles } from 'lucide-react';
 import { 
   generateRandomCharacter, 
   performAbilityCheck, 
@@ -14,7 +15,8 @@ import {
   performDefend, 
   performPowerTest, 
   performShortRest, 
-  performWeaponDamage 
+  performWeaponDamage,
+  GettingBetterResult
 } from './utils/morkborgRules';
 import { OBRService } from './obr/obrService';
 import { Header } from './components/Header';
@@ -28,6 +30,7 @@ import { RollResultModal } from './components/RollResultModal';
 import { SpendOmenModal } from './components/SpendOmenModal';
 import { BrokenModal } from './components/BrokenModal';
 import { ExportImportModal } from './components/ExportImportModal';
+import { GettingBetterModal } from './components/GettingBetterModal';
 import { loadCharacterFromStorage, saveCharacterToStorage } from './utils/storage';
 
 export const App: React.FC = () => {
@@ -45,6 +48,7 @@ export const App: React.FC = () => {
   const [isRestModalOpen, setIsRestModalOpen] = useState(false);
   const [isSpendOmenOpen, setIsSpendOmenOpen] = useState(false);
   const [isBrokenModalOpen, setIsBrokenModalOpen] = useState(false);
+  const [isGettingBetterOpen, setIsGettingBetterOpen] = useState(false);
   const [exportImportModal, setExportImportModal] = useState<{
     isOpen: boolean;
     mode: 'export' | 'import';
@@ -334,6 +338,25 @@ export const App: React.FC = () => {
     triggerRoll(roll);
   };
 
+  // Getting Better
+  const handleApplyGettingBetter = (result: GettingBetterResult, updatedCharacter: Character) => {
+    setCharacter(updatedCharacter);
+    saveCharacterToStorage(updatedCharacter);
+    const roll: RollResult = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      characterName: character.name,
+      type: 'ability',
+      title: 'Getting Better (or worse)',
+      roll: result.debrisRoll,
+      modifier: 0,
+      total: result.hpRollSum,
+      details: result.summary,
+      flavor: 'An encounter survived, treasure recovered, or scenario completed.',
+    };
+    triggerRoll(roll);
+  };
+
   // Scvmbirther Generator
   const handleScvmbirther = () => {
     const confirmed = window.confirm(
@@ -423,6 +446,31 @@ export const App: React.FC = () => {
           onInvokeScroll={handleInvokeScroll}
         />
 
+        {/* 7. Getting Better (or worse) */}
+        <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 flex items-center justify-center bg-mb-yellow text-mb-black font-black text-xs border border-mb-black shrink-0">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <h3 className="font-brutal font-black text-xs tracking-wider uppercase text-mb-white">
+                GETTING BETTER (OR WORSE)
+              </h3>
+              <p className="font-punk text-[9px] text-mb-white/60">
+                Core Rules p. 33 • Scenario completion & advancement
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsGettingBetterOpen(true)}
+            className="mb-btn mb-btn-yellow text-xs py-1 px-3 shadow-brutal-sm shrink-0 flex items-center gap-1.5"
+            title="Roll Getting Better: HP increase, debris search, and ability score modifications"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>GETTING BETTER</span>
+          </button>
+        </section>
+
         {/* Roll History Log Drawer */}
         {showLog && (
           <section className="p-3 bg-mb-dark border-t-2 border-mb-yellow animate-in slide-in-from-bottom-2 duration-150">
@@ -500,6 +548,13 @@ export const App: React.FC = () => {
         isOpen={isBrokenModalOpen}
         onClose={() => setIsBrokenModalOpen(false)}
         onApplyBrokenResult={handleApplyBrokenResult}
+      />
+
+      <GettingBetterModal
+        character={character}
+        isOpen={isGettingBetterOpen}
+        onClose={() => setIsGettingBetterOpen(false)}
+        onApplyGettingBetter={handleApplyGettingBetter}
       />
 
       <RollResultModal
