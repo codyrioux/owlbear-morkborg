@@ -45,6 +45,13 @@ let localGMState: GMState = (() => {
   return { ...DEFAULT_GM_STATE };
 })();
 
+export interface GMEvent {
+  type: string;
+  payload: any;
+  targetPlayerId?: string;
+  senderName?: string;
+}
+
 export class GMService {
   /**
    * Check if OBR is available
@@ -119,12 +126,9 @@ export class GMService {
   }
 
   /**
-   * Broadcast a GM event (e.g. Misery revealed, turn changed, monster prompt)
+   * Broadcast a GM event (e.g. Misery revealed, turn changed, monster prompt, whisper)
    */
-  public static async broadcastGMEvent(event: {
-    type: string;
-    payload: any;
-  }): Promise<void> {
+  public static async broadcastGMEvent(event: GMEvent): Promise<void> {
     if (OBR.isAvailable) {
       try {
         await OBR.broadcast.sendMessage(GM_BROADCAST_CHANNEL, event, { destination: 'ALL' });
@@ -137,14 +141,14 @@ export class GMService {
   /**
    * Subscribe to GM event broadcasts
    */
-  public static subscribeToGMEvents(callback: (event: { type: string; payload: any }) => void): () => void {
+  public static subscribeToGMEvents(callback: (event: GMEvent) => void): () => void {
     if (!OBR.isAvailable) {
       return () => {};
     }
 
     return OBR.broadcast.onMessage(GM_BROADCAST_CHANNEL, (msg) => {
       if (msg.data && typeof msg.data === 'object') {
-        callback(msg.data as { type: string; payload: any });
+        callback(msg.data as GMEvent);
       }
     });
   }

@@ -406,4 +406,38 @@ export class OBRService {
       console.warn('Could not open floating GM popover:', err);
     }
   }
+
+  /**
+   * Get the current player's ID
+   */
+  public static async getPlayerId(): Promise<string> {
+    if (!OBR.isAvailable) return 'standalone-player';
+    try {
+      return await OBR.player.getId();
+    } catch {
+      return 'unknown-player';
+    }
+  }
+
+  /**
+   * Get list of all connected players in the OBR room
+   */
+  public static async getPartyPlayers(): Promise<
+    Array<{ id: string; name: string; role: 'GM' | 'PLAYER'; color?: string }>
+  > {
+    if (!OBR.isAvailable) {
+      return [{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }];
+    }
+    try {
+      const players = await OBR.party.getPlayers();
+      return players.map((p) => ({
+        id: p.id,
+        name: p.name || 'Anonymous Scvm',
+        role: p.role,
+        color: p.color,
+      }));
+    } catch {
+      return [];
+    }
+  }
 }

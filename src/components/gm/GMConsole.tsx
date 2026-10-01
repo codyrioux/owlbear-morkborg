@@ -6,6 +6,7 @@ import { SceneCharacterItem } from '../Header';
 import { CalendarNechrubel } from './CalendarNechrubel';
 import { CombatTracker } from './CombatTracker';
 import { BestiarySection } from './BestiarySection';
+import { OraclesSection } from './OraclesSection';
 
 export type GMConsoleTab = 'calendar' | 'combat' | 'bestiary' | 'oracles';
 
@@ -172,12 +173,7 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
 
         {activeTab === 'oracles' && (
           <div>
-            {oraclesSlot || (
-              <div className="bg-mb-dark border-2 border-mb-yellow/40 p-4 text-center">
-                <p className="font-gothic text-xl text-mb-yellow">ORACLES & CORPSE PLUNDERING</p>
-                <p className="font-punk text-xs text-mb-bone/70 mt-1">d66 corpse loot, weather, and dungeon devilry.</p>
-              </div>
-            )}
+            {oraclesSlot || <OraclesSection />}
           </div>
         )}
       </div>

@@ -32,6 +32,7 @@ import { BrokenModal } from './components/BrokenModal';
 import { ExportImportModal } from './components/ExportImportModal';
 import { GettingBetterModal } from './components/GettingBetterModal';
 import { MiseryNotificationModal } from './components/MiseryNotificationModal';
+import { WhisperNotificationModal, WhisperData } from './components/WhisperNotificationModal';
 import { GMService, TriggeredMisery } from './obr/gmService';
 import { BadgeService } from './obr/badgeService';
 import { 
@@ -220,6 +221,7 @@ export const App: React.FC = () => {
   }>({ isOpen: false, mode: 'export' });
   const [rollHistory, setRollHistory] = useState<RollResult[]>([]);
   const [showLog, setShowLog] = useState(false);
+  const [activeWhisper, setActiveWhisper] = useState<WhisperData | null>(null);
 
   // Dynamic height adjustment for Owlbear Rodeo Action Popover
   const contentRef = useRef<HTMLDivElement>(null);
@@ -232,7 +234,8 @@ export const App: React.FC = () => {
     isBrokenModalOpen ||
     isGettingBetterOpen ||
     exportImportModal.isOpen ||
-    activeMiseryNotification
+    activeMiseryNotification ||
+    activeWhisper
   );
 
   const updateHeight = useCallback(() => {
@@ -354,9 +357,14 @@ export const App: React.FC = () => {
     });
 
     // Listen to GM events from room (e.g. Miseries)
-    const unsubGMEvents = GMService.subscribeToGMEvents((event) => {
+    const unsubGMEvents = GMService.subscribeToGMEvents(async (event) => {
       if (event.type === 'MISERY_TRIGGERED' && event.payload) {
         setActiveMiseryNotification(event.payload as TriggeredMisery);
+      } else if (event.type === 'WHISPER_SENT' && event.payload) {
+        const myId = await OBRService.getPlayerId();
+        if (!event.targetPlayerId || event.targetPlayerId === myId) {
+          setActiveWhisper(event.payload as WhisperData);
+        }
       }
     });
 
@@ -903,6 +911,11 @@ export const App: React.FC = () => {
       <MiseryNotificationModal
         misery={activeMiseryNotification}
         onClose={() => setActiveMiseryNotification(null)}
+      />
+
+      <WhisperNotificationModal
+        whisper={activeWhisper}
+        onClose={() => setActiveWhisper(null)}
       />
     </div>
   );
