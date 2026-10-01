@@ -60,7 +60,7 @@ export const GettingBetterModal: React.FC<GettingBetterModalProps> = ({
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-gothic text-2xl text-mb-yellow leading-none uppercase">
+            <h2 className="font-gothic text-2xl text-mb-yellow leading-none">
               Getting Better
             </h2>
             <p className="font-punk text-[10px] text-mb-white/70">

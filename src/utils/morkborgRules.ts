@@ -71,7 +71,7 @@ export function performAbilityCheck(
     timestamp: Date.now(),
     characterName,
     type: 'ability',
-    title: `${ability.toUpperCase()} Test`,
+    title: `${ability.charAt(0).toUpperCase() + ability.slice(1)} Test`,
     roll: d20,
     modifier,
     total,
@@ -118,7 +118,7 @@ export function performDefend(
     timestamp: Date.now(),
     characterName,
     type: 'defense',
-    title: 'DEFEND Roll',
+    title: 'Defend Roll',
     roll: d20,
     modifier: agilityModifier,
     total,
@@ -376,7 +376,7 @@ export function rollBrokenTable(): {
   if (roll === 1) {
     return {
       roll: 1,
-      title: 'DEAD',
+      title: 'Dead',
       description: 'Your life ends. Your wretched corpse rots in the soil of a dying world.'
     };
   } else if (roll === 2) {
@@ -384,7 +384,7 @@ export function rollBrokenTable(): {
     const hp = rollDie(4);
     return {
       roll: 2,
-      title: 'UNCONSCIOUS',
+      title: 'Unconscious',
       description: `Unconscious for ${hours} hours. You awaken with ${hp} HP.`,
       hpGained: hp,
       hoursDisabled: hours,
@@ -394,7 +394,7 @@ export function rollBrokenTable(): {
     const hp = rollDie(4);
     return {
       roll: 3,
-      title: 'CRIPPLED / SEVERED LIMB',
+      title: 'Crippled / Severed Limb',
       description: `Smashed or severed limb. Unable to act for ${hours} hours, then awaken with ${hp} HP. Permanent scar/loss.`,
       hpGained: hp,
       hoursDisabled: hours,
@@ -403,7 +403,7 @@ export function rollBrokenTable(): {
     const hours = rollDie(2);
     return {
       roll: 4,
-      title: 'HEMORRHAGING',
+      title: 'Hemorrhaging',
       description: `Bleeding out rapidly. Dead in ${hours} hours unless treated. All tests are DR16 until fully healed!`,
       hoursDisabled: hours,
     };

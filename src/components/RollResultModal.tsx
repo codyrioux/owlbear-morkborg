@@ -10,6 +10,14 @@ interface RollResultModalProps {
   onSpendOmenLowerDR?: () => void;
 }
 
+function formatTitleCase(str: string): string {
+  return str.replace(/\b[a-zA-Z0-9]+\b/g, (word) => {
+    if (/^d\d+$/i.test(word) || /^\d+d\d+.*$/i.test(word)) return word.toLowerCase();
+    if (word.toUpperCase() === 'DR' || word.toUpperCase() === 'HP') return word.toUpperCase();
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  });
+}
+
 export const RollResultModal: React.FC<RollResultModalProps> = ({
   roll,
   omensAvailable,
@@ -51,8 +59,8 @@ export const RollResultModal: React.FC<RollResultModalProps> = ({
           <span className="font-punk text-[10px] tracking-widest text-mb-yellow uppercase block">
             {roll.characterName}
           </span>
-          <h2 className="font-gothic text-2xl text-mb-white tracking-wide uppercase">
-            {roll.title}
+          <h2 className="font-gothic text-2xl text-mb-white tracking-wide">
+            {formatTitleCase(roll.title)}
           </h2>
         </div>
 

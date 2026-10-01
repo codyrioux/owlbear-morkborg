@@ -47,8 +47,8 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-gothic text-2xl text-mb-yellow leading-none uppercase">
-              Spend an Omen
+            <h2 className="font-gothic text-2xl text-mb-yellow leading-none">
+              Spend An Omen
             </h2>
             <p className="font-punk text-xs text-mb-white/60">
               Manipulate Fate ({omensAvailable} remaining)
@@ -71,7 +71,7 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
               <Sword className="w-4 h-4" />
             </div>
             <div>
-              <strong className="block text-xs font-brutal uppercase text-mb-white group-hover:text-mb-yellow">
+              <strong className="block text-xs font-brutal text-mb-white group-hover:text-mb-yellow">
                 1. Maximum Attack Damage
               </strong>
               <span className="text-[11px] font-punk text-mb-white/60">
@@ -93,7 +93,7 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
               <RotateCcw className="w-4 h-4" />
             </div>
             <div>
-              <strong className="block text-xs font-brutal uppercase text-mb-white group-hover:text-mb-yellow">
+              <strong className="block text-xs font-brutal text-mb-white group-hover:text-mb-yellow">
                 2. Reroll Any Die
               </strong>
               <span className="text-[11px] font-punk text-mb-white/60">
@@ -110,7 +110,7 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
               <ShieldAlert className="w-4 h-4" />
             </div>
             <div>
-              <strong className="block text-xs font-brutal uppercase text-mb-white group-hover:text-mb-yellow">
+              <strong className="block text-xs font-brutal text-mb-white group-hover:text-mb-yellow">
                 3. Lower Damage Taken by d6
               </strong>
               <span className="text-[11px] font-punk text-mb-white/60">
@@ -132,7 +132,7 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
               <Zap className="w-4 h-4" />
             </div>
             <div>
-              <strong className="block text-xs font-brutal uppercase text-mb-white group-hover:text-mb-yellow">
+              <strong className="block text-xs font-brutal text-mb-white group-hover:text-mb-yellow">
                 4. Neutralize Crit or Fumble
               </strong>
               <span className="text-[11px] font-punk text-mb-white/60">
@@ -154,7 +154,7 @@ export const SpendOmenModal: React.FC<SpendOmenModalProps> = ({
               <Compass className="w-4 h-4" />
             </div>
             <div>
-              <strong className="block text-xs font-brutal uppercase text-mb-white group-hover:text-mb-yellow">
+              <strong className="block text-xs font-brutal text-mb-white group-hover:text-mb-yellow">
                 5. Lower Test DR by 4
               </strong>
               <span className="text-[11px] font-punk text-mb-white/60">

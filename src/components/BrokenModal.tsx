@@ -56,8 +56,8 @@ export const BrokenModal: React.FC<BrokenModalProps> = ({
           <div className="p-2 bg-mb-pink text-mb-white rounded-full">
             <Skull className="w-8 h-8" />
           </div>
-          <h2 className="font-gothic text-3xl text-mb-pink tracking-tight uppercase">
-            BROKEN & BLEEDING
+          <h2 className="font-gothic text-3xl text-mb-pink tracking-tight">
+            Broken & Bleeding
           </h2>
           <p className="font-punk text-xs text-mb-white/70">
             0 Hit Points. Fate decides your misery.

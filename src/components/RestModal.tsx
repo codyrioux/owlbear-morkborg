@@ -56,7 +56,7 @@ export const RestModal: React.FC<RestModalProps> = ({
             <Moon className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-gothic text-2xl text-mb-yellow leading-none uppercase">
+            <h2 className="font-gothic text-2xl text-mb-yellow leading-none">
               A Night's Sleep
             </h2>
             <p className="font-punk text-xs text-mb-white/70">
