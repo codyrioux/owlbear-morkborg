@@ -505,6 +505,150 @@ export function performShortRest(character: Character): {
 }
 
 /**
+ * Canonical Item Stack Presets and Ammunition Rules
+ * - Arrows: 20 per stack, Ammunition (first stack of 20 = 0 slots)
+ * - Crossbow Bolts: 10 per stack, Ammunition (first stack of 10 = 0 slots)
+ * - Sling Bullets: 20 per stack, Ammunition (first stack of 20 = 0 slots)
+ * - Chalk: 10 per stack
+ * - Torches: 4 per stack
+ * - Dried Food / Rations: 4 per stack
+ * - Iron Nails: 10 per stack
+ * - Caltrops: 2 per stack
+ * - Needles: 10 per stack
+ * - Magnesium Strips: 4 per stack
+ * - Throwing Knives: 3 per stack
+ * - Poison / Elixirs: 4 per stack
+ */
+export interface ItemStackPreset {
+  name: string;
+  stackSize: number;
+  slots: number;
+  isAmmunition?: boolean;
+}
+
+export const ITEM_STACK_PRESETS: Record<string, { stackSize: number; slots: number; isAmmunition?: boolean }> = {
+  // Ammunition (first stack of stackSize consumes 0 slots)
+  'arrow': { stackSize: 20, slots: 1, isAmmunition: true },
+  'arrows': { stackSize: 20, slots: 1, isAmmunition: true },
+  'crossbow bolt': { stackSize: 10, slots: 1, isAmmunition: true },
+  'crossbow bolts': { stackSize: 10, slots: 1, isAmmunition: true },
+  'bolt': { stackSize: 10, slots: 1, isAmmunition: true },
+  'bolts': { stackSize: 10, slots: 1, isAmmunition: true },
+  'sling bullet': { stackSize: 20, slots: 1, isAmmunition: true },
+  'sling bullets': { stackSize: 20, slots: 1, isAmmunition: true },
+  'sling stone': { stackSize: 20, slots: 1, isAmmunition: true },
+  'sling stones': { stackSize: 20, slots: 1, isAmmunition: true },
+
+  // General stackables
+  'chalk': { stackSize: 10, slots: 1 },
+  'torch': { stackSize: 4, slots: 1 },
+  'torches': { stackSize: 4, slots: 1 },
+  'ration': { stackSize: 4, slots: 1 },
+  'rations': { stackSize: 4, slots: 1 },
+  'dry ration': { stackSize: 4, slots: 1 },
+  'dry rations': { stackSize: 4, slots: 1 },
+  'dried food': { stackSize: 4, slots: 1 },
+  'food': { stackSize: 4, slots: 1 },
+  'iron nail': { stackSize: 10, slots: 1 },
+  'iron nails': { stackSize: 10, slots: 1 },
+  'nail': { stackSize: 10, slots: 1 },
+  'nails': { stackSize: 10, slots: 1 },
+  'caltrop': { stackSize: 2, slots: 1 },
+  'caltrops': { stackSize: 2, slots: 1 },
+  'needle': { stackSize: 10, slots: 1 },
+  'needles': { stackSize: 10, slots: 1 },
+  'magnesium strip': { stackSize: 4, slots: 1 },
+  'magnesium strips': { stackSize: 4, slots: 1 },
+  'chewing tobacco': { stackSize: 4, slots: 1 },
+  'tobacco': { stackSize: 4, slots: 1 },
+  'throwing knife': { stackSize: 3, slots: 1 },
+  'throwing knives': { stackSize: 3, slots: 1 },
+  'poison': { stackSize: 4, slots: 1 },
+  'poisons': { stackSize: 4, slots: 1 },
+  'elixir': { stackSize: 4, slots: 1 },
+  'elixirs': { stackSize: 4, slots: 1 },
+};
+
+/**
+ * Looks up default stack presets for common MÖRK BORG items by name.
+ */
+export function getItemPreset(name: string): { stackSize: number; slots: number; isAmmunition?: boolean } | null {
+  const normalized = name.trim().toLowerCase();
+  if (ITEM_STACK_PRESETS[normalized]) {
+    return ITEM_STACK_PRESETS[normalized];
+  }
+  // Substring matching for descriptive variations like "Silver Arrows" or "Tallow Torches"
+  if (normalized.includes('arrow')) {
+    return { stackSize: 20, slots: 1, isAmmunition: true };
+  }
+  if (normalized.includes('bolt')) {
+    return { stackSize: 10, slots: 1, isAmmunition: true };
+  }
+  if (normalized.includes('sling bullet') || normalized.includes('sling stone')) {
+    return { stackSize: 20, slots: 1, isAmmunition: true };
+  }
+  if (normalized.includes('chalk')) {
+    return { stackSize: 10, slots: 1 };
+  }
+  if (normalized.includes('torch')) {
+    return { stackSize: 4, slots: 1 };
+  }
+  if (normalized.includes('ration') || normalized.includes('dried food')) {
+    return { stackSize: 4, slots: 1 };
+  }
+  if (normalized.includes('nail')) {
+    return { stackSize: 10, slots: 1 };
+  }
+  if (normalized.includes('caltrop')) {
+    return { stackSize: 2, slots: 1 };
+  }
+  if (normalized.includes('needle')) {
+    return { stackSize: 10, slots: 1 };
+  }
+  if (normalized.includes('magnesium')) {
+    return { stackSize: 4, slots: 1 };
+  }
+  if (normalized.includes('throwing knife') || normalized.includes('throwing knives')) {
+    return { stackSize: 3, slots: 1 };
+  }
+  return null;
+}
+
+/**
+ * Calculates how many inventory slots an item consumes based on quantity, stack size, and ammunition rules.
+ * 
+ * Rules:
+ * 1. If quantity <= 0 or slots <= 0, consumes 0 slots.
+ * 2. If item is Ammunition (isAmmunition is true):
+ *    The first stack of n items (where n is stackSize, e.g. 20 for arrows, 10 for bolts, 20 for sling bullets)
+ *    consumes 0 slots (similar to how the first 100 silver does not consume a slot).
+ *    Subsequent stacks consume slots normally: Math.max(0, Math.ceil(quantity / stackSize) - 1) * slots.
+ * 3. For standard stackable items (stackSize > 1):
+ *    Consumes Math.ceil(quantity / stackSize) * slots.
+ * 4. For non-stacking items:
+ *    Consumes quantity * slots.
+ */
+export function calculateItemSlots(item: InventoryItem): number {
+  if (item.quantity <= 0 || item.slots <= 0) return 0;
+
+  const preset = getItemPreset(item.name);
+  const stackSize = Math.max(1, item.stackSize ?? preset?.stackSize ?? 1);
+  const isAmmunition = item.isAmmunition ?? preset?.isAmmunition ?? false;
+
+  if (isAmmunition) {
+    const stacks = Math.ceil(item.quantity / stackSize);
+    return Math.max(0, stacks - 1) * item.slots;
+  }
+
+  if (stackSize > 1) {
+    const stacks = Math.ceil(item.quantity / stackSize);
+    return stacks * item.slots;
+  }
+
+  return item.slots * item.quantity;
+}
+
+/**
  * Carrying Capacity: Strength + 8 items
  * Bulky/Heavy items count as 2 slots.
  * 100 silver counts as 1 normal item.
@@ -531,7 +675,7 @@ export function calculateCarryingCapacity(
   scrollsSlots: number;
 } {
   const maxSlots = Math.max(8, strengthModifier + 8);
-  const itemsSlots = inventory.reduce((acc, item) => acc + (item.slots * item.quantity), 0);
+  const itemsSlots = inventory.reduce((acc, item) => acc + calculateItemSlots(item), 0);
   const silverSlots = Math.floor(silver / 100);
   const armorSlots = armor && armor.tier > 0 ? 1 : 0;
   const shieldSlots = armor && armor.hasShield ? 1 : 0;
@@ -776,10 +920,22 @@ export function generateRandomCharacter(): Character {
   // Starting inventory
   const inventory: InventoryItem[] = [
     { id: crypto.randomUUID(), name: 'Waterskin', slots: 1, quantity: 1, description: 'Contains stale brackish water' },
-    { id: crypto.randomUUID(), name: 'Torches', slots: 1, quantity: 4, description: 'Burns for 1 hour each' },
-    { id: crypto.randomUUID(), name: 'Dry Rations', slots: 1, quantity: 4, description: 'Stale salt pork and hardtack' },
+    { id: crypto.randomUUID(), name: 'Torches', slots: 1, quantity: 4, stackSize: 4, description: 'Burns for 1 hour each' },
+    { id: crypto.randomUUID(), name: 'Dry Rations', slots: 1, quantity: 4, stackSize: 4, description: 'Stale salt pork and hardtack' },
     { id: crypto.randomUUID(), name: 'Hemp Rope (30ft)', slots: 1, quantity: 1, description: 'Frayed hemp cord' },
   ];
+
+  if (startingWeapon.name === 'Crossbow') {
+    inventory.push({
+      id: crypto.randomUUID(),
+      name: 'Crossbow Bolts',
+      slots: 1,
+      quantity: 10,
+      stackSize: 10,
+      isAmmunition: true,
+      description: '10 iron-tipped crossbow quarrels'
+    });
+  }
 
   const scrolls: Scroll[] = [];
   if (pickedClass.name === 'Esoteric Hermit' || pickedClass.name === 'Heretical Priest' || Math.random() < 0.25) {

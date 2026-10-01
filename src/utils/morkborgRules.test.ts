@@ -4,6 +4,9 @@ import {
   performLongRest, 
   performShortRest, 
   calculateCarryingCapacity, 
+  calculateItemSlots,
+  getItemPreset,
+  ITEM_STACK_PRESETS,
   rollBrokenTable, 
   generateRandomCharacter,
   performArmorSoak,
@@ -53,7 +56,7 @@ describe('MÖRK BORG Rules Engine', () => {
       { id: 'w1', name: 'Shortsword', type: 'melee', damageDie: 'd6' }
     ],
     inventory: [
-      { id: 'i1', name: 'Torch', slots: 1, quantity: 2 },
+      { id: 'i1', name: 'Crowbar', slots: 1, quantity: 2 },
       { id: 'i2', name: 'Heavy Anvil', slots: 2, quantity: 1 },
     ],
     scrolls: [],
@@ -134,7 +137,7 @@ describe('MÖRK BORG Rules Engine', () => {
 
   it('calculateCarryingCapacity should handle STR + 8, items, silver weight, armor, and shield', () => {
     // STR modifier = 0 -> capacity = 8
-    // Items: 2 torches (2 slots) + 1 heavy anvil (2 slots) = 4 slots
+    // Items: 2 crowbars (2 slots) + 1 heavy anvil (2 slots) = 4 slots
     // Silver: 250 silver -> floor(250/100) = 2 slots
     // Total used slots without armor = 6 / 8
     const capWithoutArmor = calculateCarryingCapacity(0, mockCharacter.inventory, mockCharacter.silver);
@@ -463,6 +466,168 @@ describe('MÖRK BORG Rules Engine', () => {
 
       // Summary string exists
       expect(result.summary.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Inventory Stacking & Ammunition Rules', () => {
+    it('getItemPreset should recognize canonical stackable items and ammunition', () => {
+      // Canonical dictionary and ammunition presets
+      expect(ITEM_STACK_PRESETS['arrows'].stackSize).toBe(20);
+      expect(ITEM_STACK_PRESETS['chalk'].stackSize).toBe(10);
+
+      const arrowPreset = getItemPreset('Arrows');
+      expect(arrowPreset).toBeDefined();
+      expect(arrowPreset?.stackSize).toBe(20);
+      expect(arrowPreset?.isAmmunition).toBe(true);
+
+      const boltPreset = getItemPreset('Crossbow Bolts');
+      expect(boltPreset).toBeDefined();
+      expect(boltPreset?.stackSize).toBe(10);
+      expect(boltPreset?.isAmmunition).toBe(true);
+
+      const bulletPreset = getItemPreset('sling bullets');
+      expect(bulletPreset).toBeDefined();
+      expect(bulletPreset?.stackSize).toBe(20);
+      expect(bulletPreset?.isAmmunition).toBe(true);
+
+      // Chalk preset: 10
+      const chalkPreset = getItemPreset('Chalk');
+      expect(chalkPreset).toBeDefined();
+      expect(chalkPreset?.stackSize).toBe(10);
+      expect(chalkPreset?.isAmmunition).toBeFalsy();
+
+      // Torches preset: 4
+      const torchPreset = getItemPreset('Torches');
+      expect(torchPreset).toBeDefined();
+      expect(torchPreset?.stackSize).toBe(4);
+
+      // Dry Rations preset: 4
+      const rationPreset = getItemPreset('Dry Rations');
+      expect(rationPreset).toBeDefined();
+      expect(rationPreset?.stackSize).toBe(4);
+
+      // Caltrops preset: 2
+      const caltropPreset = getItemPreset('Caltrops');
+      expect(caltropPreset).toBeDefined();
+      expect(caltropPreset?.stackSize).toBe(2);
+
+      // Substring matching on descriptive names
+      expect(getItemPreset('Quiver of 20 Iron Arrows')?.stackSize).toBe(20);
+      expect(getItemPreset('Bundle of Tallow Torches')?.stackSize).toBe(4);
+
+      // Non-preset item
+      expect(getItemPreset('Grappling Hook')).toBeNull();
+    });
+
+    it('calculateItemSlots should handle non-stacking items correctly', () => {
+      expect(calculateItemSlots({ id: '1', name: 'Crowbar', slots: 1, quantity: 1 })).toBe(1);
+      expect(calculateItemSlots({ id: '2', name: 'Crowbar', slots: 1, quantity: 3 })).toBe(3);
+      expect(calculateItemSlots({ id: '3', name: 'Anvil', slots: 2, quantity: 2 })).toBe(4);
+      expect(calculateItemSlots({ id: '4', name: 'Flute', slots: 0, quantity: 5 })).toBe(0);
+      expect(calculateItemSlots({ id: '5', name: 'Crowbar', slots: 1, quantity: 0 })).toBe(0);
+    });
+
+    it('calculateItemSlots should handle general stackable items (torches, rations, chalk, caltrops)', () => {
+      // Chalk (stackSize: 10)
+      const chalk = { id: 'c', name: 'Chalk', slots: 1, quantity: 10 };
+      expect(calculateItemSlots({ ...chalk, quantity: 0 })).toBe(0);
+      expect(calculateItemSlots({ ...chalk, quantity: 1 })).toBe(1);
+      expect(calculateItemSlots({ ...chalk, quantity: 9 })).toBe(1);
+      expect(calculateItemSlots({ ...chalk, quantity: 10 })).toBe(1);
+      expect(calculateItemSlots({ ...chalk, quantity: 11 })).toBe(2);
+      expect(calculateItemSlots({ ...chalk, quantity: 20 })).toBe(2);
+      expect(calculateItemSlots({ ...chalk, quantity: 21 })).toBe(3);
+
+      // Torches (stackSize: 4)
+      const torch = { id: 't', name: 'Torches', slots: 1, quantity: 4 };
+      expect(calculateItemSlots({ ...torch, quantity: 1 })).toBe(1);
+      expect(calculateItemSlots({ ...torch, quantity: 4 })).toBe(1);
+      expect(calculateItemSlots({ ...torch, quantity: 5 })).toBe(2);
+      expect(calculateItemSlots({ ...torch, quantity: 8 })).toBe(2);
+      expect(calculateItemSlots({ ...torch, quantity: 9 })).toBe(3);
+
+      // Caltrops (stackSize: 2)
+      const caltrop = { id: 'k', name: 'Caltrops', slots: 1, quantity: 2 };
+      expect(calculateItemSlots({ ...caltrop, quantity: 1 })).toBe(1);
+      expect(calculateItemSlots({ ...caltrop, quantity: 2 })).toBe(1);
+      expect(calculateItemSlots({ ...caltrop, quantity: 3 })).toBe(2);
+    });
+
+    it('calculateItemSlots should apply ammunition rule: first stack of size n consumes 0 slots', () => {
+      // Arrows (stackSize: 20, isAmmunition: true)
+      const arrows = { id: 'a', name: 'Arrows', slots: 1, quantity: 20, stackSize: 20, isAmmunition: true };
+      expect(calculateItemSlots({ ...arrows, quantity: 0 })).toBe(0);
+      expect(calculateItemSlots({ ...arrows, quantity: 1 })).toBe(0);
+      expect(calculateItemSlots({ ...arrows, quantity: 10 })).toBe(0);
+      expect(calculateItemSlots({ ...arrows, quantity: 19 })).toBe(0);
+      expect(calculateItemSlots({ ...arrows, quantity: 20 })).toBe(0); // 0 slots for first 20!
+
+      // Second stack: 21 to 40 arrows = 1 slot
+      expect(calculateItemSlots({ ...arrows, quantity: 21 })).toBe(1);
+      expect(calculateItemSlots({ ...arrows, quantity: 30 })).toBe(1);
+      expect(calculateItemSlots({ ...arrows, quantity: 40 })).toBe(1);
+
+      // Third stack: 41 to 60 arrows = 2 slots
+      expect(calculateItemSlots({ ...arrows, quantity: 41 })).toBe(2);
+      expect(calculateItemSlots({ ...arrows, quantity: 60 })).toBe(2);
+
+      // Fourth stack: 61 arrows = 3 slots
+      expect(calculateItemSlots({ ...arrows, quantity: 61 })).toBe(3);
+
+      // Crossbow Bolts (stackSize: 10, isAmmunition: true)
+      const bolts = { id: 'b', name: 'Crossbow Bolts', slots: 1, quantity: 10, stackSize: 10, isAmmunition: true };
+      expect(calculateItemSlots({ ...bolts, quantity: 0 })).toBe(0);
+      expect(calculateItemSlots({ ...bolts, quantity: 1 })).toBe(0);
+      expect(calculateItemSlots({ ...bolts, quantity: 10 })).toBe(0); // 0 slots for first 10!
+      expect(calculateItemSlots({ ...bolts, quantity: 11 })).toBe(1);
+      expect(calculateItemSlots({ ...bolts, quantity: 20 })).toBe(1);
+      expect(calculateItemSlots({ ...bolts, quantity: 21 })).toBe(2);
+
+      // Sling Bullets (stackSize: 20, isAmmunition: true)
+      const bullets = { id: 's', name: 'Sling Bullets', slots: 1, quantity: 20, stackSize: 20, isAmmunition: true };
+      expect(calculateItemSlots({ ...bullets, quantity: 20 })).toBe(0); // 0 slots for first 20!
+      expect(calculateItemSlots({ ...bullets, quantity: 21 })).toBe(1);
+      expect(calculateItemSlots({ ...bullets, quantity: 40 })).toBe(1);
+      expect(calculateItemSlots({ ...bullets, quantity: 41 })).toBe(2);
+    });
+
+    it('calculateCarryingCapacity should accurately integrate ammunition and stacking rules', () => {
+      const inventory = [
+        { id: '1', name: 'Arrows', slots: 1, quantity: 20, stackSize: 20, isAmmunition: true }, // 0 slots
+        { id: '2', name: 'Crossbow Bolts', slots: 1, quantity: 10, stackSize: 10, isAmmunition: true }, // 0 slots
+        { id: '3', name: 'Sling Bullets', slots: 1, quantity: 20, stackSize: 20, isAmmunition: true }, // 0 slots
+        { id: '4', name: 'Torches', slots: 1, quantity: 4, stackSize: 4 }, // 1 slot
+        { id: '5', name: 'Dry Rations', slots: 1, quantity: 4, stackSize: 4 }, // 1 slot
+        { id: '6', name: 'Chalk', slots: 1, quantity: 10, stackSize: 10 }, // 1 slot
+      ];
+
+      // STR modifier = 0 -> capacity = 8
+      // Silver = 50 -> 0 slots
+      const cap = calculateCarryingCapacity(0, inventory, 50);
+      expect(cap.maxSlots).toBe(8);
+      expect(cap.usedSlots).toBe(3); // Only torches (1), rations (1), chalk (1)
+      expect(cap.isOverencumbered).toBe(false);
+
+      // Now add 1 arrow (21 arrows) -> arrows now consume 1 slot (total = 4)
+      const invWith21Arrows = inventory.map(item => 
+        item.name === 'Arrows' ? { ...item, quantity: 21 } : item
+      );
+      const capWith21Arrows = calculateCarryingCapacity(0, invWith21Arrows, 50);
+      expect(capWith21Arrows.usedSlots).toBe(4);
+
+      // Now add 1 bolt (11 bolts) -> bolts now consume 1 slot (total = 5)
+      const invWith11Bolts = invWith21Arrows.map(item =>
+        item.name === 'Crossbow Bolts' ? { ...item, quantity: 11 } : item
+      );
+      const capWith11Bolts = calculateCarryingCapacity(0, invWith11Bolts, 50);
+      expect(capWith11Bolts.usedSlots).toBe(5);
+
+      // Now add 1 chalk (11 chalk) -> chalk now consumes 2 slots (total = 6)
+      const invWith11Chalk = invWith11Bolts.map(item =>
+        item.name === 'Chalk' ? { ...item, quantity: 11 } : item
+      );
+      const capWith11Chalk = calculateCarryingCapacity(0, invWith11Chalk, 50);
+      expect(capWith11Chalk.usedSlots).toBe(6);
     });
   });
 });

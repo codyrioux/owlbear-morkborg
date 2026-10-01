@@ -30,6 +30,8 @@ export interface InventoryItem {
   name: string;
   slots: number; // 1 = normal, 2 = heavy/bulky, 0 = negligible
   quantity: number;
+  stackSize?: number; // Number of items per stack (e.g. 20 arrows, 10 bolts, 4 torches)
+  isAmmunition?: boolean; // Ammunition items have their first stack (up to stackSize) consume 0 slots
   description?: string;
 }
 
