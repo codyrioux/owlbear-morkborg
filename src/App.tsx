@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { 
   AbilityName, 
   Character, 
@@ -89,6 +89,66 @@ export const App: React.FC = () => {
   }>({ isOpen: false, mode: 'export' });
   const [rollHistory, setRollHistory] = useState<RollResult[]>([]);
   const [showLog, setShowLog] = useState(false);
+
+  // Dynamic height adjustment for Owlbear Rodeo Action Popover
+  const contentRef = useRef<HTMLDivElement>(null);
+  const lastHeightRef = useRef<number>(0);
+
+  const isAnyModalOpen = Boolean(
+    activeRoll ||
+    isRestModalOpen ||
+    isSpendOmenOpen ||
+    isBrokenModalOpen ||
+    isGettingBetterOpen ||
+    exportImportModal.isOpen
+  );
+
+  const updateHeight = useCallback(() => {
+    if (!contentRef.current) return;
+
+    // Get the exact unconstrained bounding height of the sheet content
+    const naturalHeight = Math.ceil(contentRef.current.getBoundingClientRect().height);
+
+    // If a modal dialog is open, guarantee at least 600px of comfortable height
+    // Otherwise, clamp between 400px (all collapsed) and 850px max
+    let targetHeight = isAnyModalOpen
+      ? Math.max(600, naturalHeight)
+      : Math.max(400, naturalHeight);
+
+    targetHeight = Math.min(850, targetHeight);
+
+    if (Math.abs(targetHeight - lastHeightRef.current) >= 4) {
+      lastHeightRef.current = targetHeight;
+      OBRService.setActionHeight(targetHeight);
+    }
+  }, [isAnyModalOpen]);
+
+  // Adjust height on modal open/close
+  useEffect(() => {
+    updateHeight();
+  }, [isAnyModalOpen, updateHeight]);
+
+  // Monitor DOM content size changes (section toggles, drawers, equipment changes)
+  useEffect(() => {
+    updateHeight();
+
+    if (typeof ResizeObserver === 'undefined' || !contentRef.current) return;
+
+    let frameId: number | null = null;
+    const observer = new ResizeObserver(() => {
+      if (frameId) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        updateHeight();
+      });
+    });
+
+    observer.observe(contentRef.current);
+
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      observer.disconnect();
+    };
+  }, [updateHeight]);
 
   // Initialize Owlbear Rodeo SDK
   useEffect(() => {
@@ -427,25 +487,26 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-mb-black text-mb-white flex flex-col font-brutal">
-      {/* 1. Header & Identity */}
-      <Header
-        character={character}
-        onUpdateCharacter={setCharacter}
-        onScvmbirther={handleScvmbirther}
-        onOpenLongRest={() => setIsRestModalOpen(true)}
-        onShortRest={handleShortRest}
-        onLinkToken={handleLinkToken}
-        linkedTokenName={linkedToken?.name}
-        onExport={handleExport}
-        onImport={handleImport}
-        allCollapsed={allCollapsed}
-        onToggleCollapseAll={handleToggleCollapseAll}
-        isCollapsed={collapsedSections.header}
-        onToggleCollapse={() => handleToggleSection('header')}
-      />
+      <div ref={contentRef} className="w-full flex flex-col">
+        {/* 1. Header & Identity */}
+        <Header
+          character={character}
+          onUpdateCharacter={setCharacter}
+          onScvmbirther={handleScvmbirther}
+          onOpenLongRest={() => setIsRestModalOpen(true)}
+          onShortRest={handleShortRest}
+          onLinkToken={handleLinkToken}
+          linkedTokenName={linkedToken?.name}
+          onExport={handleExport}
+          onImport={handleImport}
+          allCollapsed={allCollapsed}
+          onToggleCollapseAll={handleToggleCollapseAll}
+          isCollapsed={collapsedSections.header}
+          onToggleCollapse={() => handleToggleSection('header')}
+        />
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col">
+        {/* Main Content Area */}
+        <main className="flex flex-col">
         {/* 2. Core Abilities with Roll Buttons */}
         <AbilitiesGrid
           character={character}
@@ -560,6 +621,7 @@ export const App: React.FC = () => {
           </button>
         </div>
       </footer>
+      </div>
 
       {/* MODALS */}
       <RestModal

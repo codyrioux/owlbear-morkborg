@@ -174,4 +174,28 @@ export class OBRService {
     }
     return null;
   }
+
+  /**
+   * Dynamically adjust the action popover height in Owlbear Rodeo
+   */
+  public static async setActionHeight(height: number): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.action.setHeight(height);
+    } catch (err) {
+      console.warn('Could not set action height in OBR:', err);
+    }
+  }
+
+  /**
+   * Get the current action popover height from Owlbear Rodeo
+   */
+  public static async getActionHeight(): Promise<number | undefined> {
+    if (!OBR.isAvailable) return undefined;
+    try {
+      return await OBR.action.getHeight();
+    } catch {
+      return undefined;
+    }
+  }
 }
