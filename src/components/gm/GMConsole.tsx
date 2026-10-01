@@ -4,6 +4,8 @@ import { GMService, GMState, DEFAULT_GM_STATE } from '../../obr/gmService';
 import { OBRService } from '../../obr/obrService';
 import { SceneCharacterItem } from '../Header';
 import { CalendarNechrubel } from './CalendarNechrubel';
+import { CombatTracker } from './CombatTracker';
+import { BestiarySection } from './BestiarySection';
 
 export type GMConsoleTab = 'calendar' | 'combat' | 'bestiary' | 'oracles';
 
@@ -18,8 +20,8 @@ interface GMConsoleProps {
 }
 
 export const GMConsole: React.FC<GMConsoleProps> = ({
-  sceneCharacters: _sceneCharacters,
-  onSelectToken: _onSelectToken,
+  sceneCharacters = [],
+  onSelectToken,
   calendarSlot,
   combatSlot,
   bestiarySlot,
@@ -152,22 +154,19 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
         {activeTab === 'combat' && (
           <div>
             {combatSlot || (
-              <div className="bg-mb-dark border-2 border-mb-yellow/40 p-4 text-center">
-                <p className="font-gothic text-xl text-mb-yellow">COMBAT & TURN COMMANDER</p>
-                <p className="font-punk text-xs text-mb-bone/70 mt-1">Group d6 initiative, mob morale checks, and party tracking.</p>
-              </div>
+              <CombatTracker
+                gmState={gmState}
+                onUpdateGMState={(updater) => GMService.updateGMState(updater)}
+                sceneCharacters={sceneCharacters}
+                onSelectToken={onSelectToken}
+              />
             )}
           </div>
         )}
 
         {activeTab === 'bestiary' && (
           <div>
-            {bestiarySlot || (
-              <div className="bg-mb-dark border-2 border-mb-yellow/40 p-4 text-center">
-                <p className="font-gothic text-xl text-mb-yellow">MONSTER BESTIARY</p>
-                <p className="font-punk text-xs text-mb-bone/70 mt-1">Core rulebook creatures, token assignment, and click-to-attack.</p>
-              </div>
-            )}
+            {bestiarySlot || <BestiarySection />}
           </div>
         )}
 
