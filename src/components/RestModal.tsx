@@ -25,7 +25,11 @@ export const RestModal: React.FC<RestModalProps> = ({
     // Generate the rest rolls with current toggles
     const charWithToggles: Character = {
       ...character,
-      conditions: { starving, infected },
+      conditions: {
+        ...character.conditions,
+        starving,
+        infected,
+      },
     };
 
     const result = performLongRest(charWithToggles);

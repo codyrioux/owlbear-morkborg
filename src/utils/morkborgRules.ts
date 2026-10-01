@@ -727,6 +727,7 @@ export function generateRandomCharacter(): Character {
     inventory,
     scrolls,
     conditions: {
+      broken: false,
       infected: false,
       starving: false,
     },

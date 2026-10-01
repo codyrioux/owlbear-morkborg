@@ -43,6 +43,7 @@ export interface Scroll {
 }
 
 export interface Conditions {
+  broken: boolean; // At 0 HP, disabled/dying
   infected: boolean; // No heal on rest, loses d6 HP daily
   starving: boolean; // No heal on rest
 }

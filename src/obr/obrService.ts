@@ -1,10 +1,18 @@
 import OBR from '@owlbear-rodeo/sdk';
 import { BroadcastPayload, Character, RollResult } from '../types/morkborg';
 import { loadCharacterFromStorage, saveCharacterToStorage } from '../utils/storage';
+import { MonsterTokenData, MONSTER_METADATA_KEY } from '../utils/combatRules';
 
-const METADATA_KEY = 'com.morkborg.character-sheet/character';
+export const METADATA_KEY = 'com.morkborg.character-sheet/character';
+export { MONSTER_METADATA_KEY };
 const BROADCAST_CHANNEL = 'com.morkborg.character-sheet/roll';
 const CONTEXT_MENU_ID = 'com.morkborg.character-sheet/context-menu';
+
+export interface SceneMonsterItem {
+  id: string;
+  name: string;
+  monster: MonsterTokenData;
+}
 
 export class OBRService {
   private static isInitialized = false;
@@ -129,6 +137,9 @@ export class OBRService {
         await OBR.scene.items.updateItems([tokenId], (items) => {
           if (items[0]) {
             items[0].metadata[METADATA_KEY] = character;
+            if (items[0].metadata[MONSTER_METADATA_KEY]) {
+              delete items[0].metadata[MONSTER_METADATA_KEY];
+            }
           }
         });
       } catch (err) {
@@ -151,6 +162,76 @@ export class OBRService {
       console.warn('Could not load character from token:', err);
     }
     return null;
+  }
+
+  /**
+   * Save monster to token metadata
+   */
+  public static async saveMonster(monster: MonsterTokenData, tokenId: string): Promise<void> {
+    if (OBR.isAvailable && tokenId) {
+      try {
+        await OBR.scene.items.updateItems([tokenId], (items) => {
+          if (items[0]) {
+            items[0].metadata[MONSTER_METADATA_KEY] = monster;
+            if (items[0].metadata[METADATA_KEY]) {
+              delete items[0].metadata[METADATA_KEY];
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('Could not save monster to token metadata:', err);
+      }
+    }
+  }
+
+  /**
+   * Load monster specifically from a token's metadata
+   */
+  public static async loadMonsterFromToken(tokenId: string): Promise<MonsterTokenData | null> {
+    if (!OBR.isAvailable || !tokenId) return null;
+    try {
+      const items = await OBR.scene.items.getItems([tokenId]);
+      if (items[0] && items[0].metadata[MONSTER_METADATA_KEY]) {
+        return items[0].metadata[MONSTER_METADATA_KEY] as MonsterTokenData;
+      }
+    } catch (err) {
+      console.warn('Could not load monster from token:', err);
+    }
+    return null;
+  }
+
+  /**
+   * Remove monster metadata from a token
+   */
+  public static async unlinkMonsterToken(tokenId: string): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.scene.items.updateItems([tokenId], (items) => {
+        if (items[0] && items[0].metadata) {
+          delete items[0].metadata[MONSTER_METADATA_KEY];
+        }
+      });
+    } catch (err) {
+      console.warn('Could not unlink monster metadata:', err);
+    }
+  }
+
+  /**
+   * Get all tokens in the scene that have MÖRK BORG monster metadata
+   */
+  public static async getSceneMonsters(): Promise<Array<{ id: string; name: string; monster: MonsterTokenData }>> {
+    if (!OBR.isAvailable) return [];
+    try {
+      const items = await OBR.scene.items.getItems((item) => Boolean(item.metadata && item.metadata[MONSTER_METADATA_KEY]));
+      return items.map((item) => ({
+        id: item.id,
+        name: item.name || 'Map Token',
+        monster: item.metadata[MONSTER_METADATA_KEY] as MonsterTokenData,
+      }));
+    } catch (err) {
+      console.warn('Failed to get scene monsters:', err);
+      return [];
+    }
   }
 
   /**
@@ -177,8 +258,13 @@ export class OBRService {
         const items = await OBR.scene.items.getItems(selection);
         if (items.length > 0) {
           const item = items[0];
-          // Accept character layer tokens, tokens with character metadata, or images
-          if (item.layer === 'CHARACTER' || item.metadata[METADATA_KEY] || item.type === 'IMAGE') {
+          // Accept character layer tokens, tokens with character/monster metadata, or images
+          if (
+            item.layer === 'CHARACTER' ||
+            item.metadata[METADATA_KEY] ||
+            item.metadata[MONSTER_METADATA_KEY] ||
+            item.type === 'IMAGE'
+          ) {
             return {
               id: item.id,
               name: item.name || 'Map Token',
@@ -197,7 +283,12 @@ export class OBRService {
    * Ignores multi-selections (selection.length > 1) and empty canvas selections.
    */
   public static subscribeToSelection(
-    callback: (selection: { id: string; name: string; character: Character | null } | null) => void
+    callback: (selection: {
+      id: string;
+      name: string;
+      character: Character | null;
+      monster?: MonsterTokenData | null;
+    } | null) => void
   ): () => void {
     if (!OBR.isAvailable) {
       return () => {};
@@ -215,12 +306,19 @@ export class OBRService {
         const items = await OBR.scene.items.getItems([tokenId]);
         if (items.length > 0) {
           const item = items[0];
-          if (item.layer === 'CHARACTER' || item.metadata[METADATA_KEY] || item.type === 'IMAGE') {
+          if (
+            item.layer === 'CHARACTER' ||
+            item.metadata[METADATA_KEY] ||
+            item.metadata[MONSTER_METADATA_KEY] ||
+            item.type === 'IMAGE'
+          ) {
             const character = (item.metadata[METADATA_KEY] as Character) || null;
+            const monster = (item.metadata[MONSTER_METADATA_KEY] as MonsterTokenData) || null;
             callback({
               id: item.id,
               name: item.name || 'Map Token',
               character,
+              monster,
             });
           }
         }
@@ -249,11 +347,12 @@ export class OBRService {
   }
 
   /**
-   * Subscribe to scene item changes (for roster and token lifecycle monitoring)
+   * Subscribe to scene item changes (for roster, monsters, and token lifecycle monitoring)
    */
   public static subscribeToSceneItems(
     callback: (sceneData: {
       characters: Array<{ id: string; name: string; character: Character }>;
+      monsters: Array<{ id: string; name: string; monster: MonsterTokenData }>;
       itemIds: Set<string>;
     }) => void
   ): () => void {
@@ -261,12 +360,18 @@ export class OBRService {
 
     return OBR.scene.items.onChange((items) => {
       const charItems = items.filter((item) => Boolean(item.metadata && item.metadata[METADATA_KEY]));
+      const monsterItems = items.filter((item) => Boolean(item.metadata && item.metadata[MONSTER_METADATA_KEY]));
       const itemIds = new Set(items.map((i) => i.id));
       callback({
         characters: charItems.map((item) => ({
           id: item.id,
           name: item.name || 'Map Token',
           character: item.metadata[METADATA_KEY] as Character,
+        })),
+        monsters: monsterItems.map((item) => ({
+          id: item.id,
+          name: item.name || 'Map Token',
+          monster: item.metadata[MONSTER_METADATA_KEY] as MonsterTokenData,
         })),
         itemIds,
       });
@@ -301,7 +406,7 @@ export class OBRService {
   }
 
   /**
-   * Remove character metadata from a token
+   * Remove character or monster metadata from a token
    */
   public static async unlinkToken(tokenId: string): Promise<void> {
     if (!OBR.isAvailable) return;
@@ -309,6 +414,7 @@ export class OBRService {
       await OBR.scene.items.updateItems([tokenId], (items) => {
         if (items[0] && items[0].metadata) {
           delete items[0].metadata[METADATA_KEY];
+          delete items[0].metadata[MONSTER_METADATA_KEY];
         }
       });
     } catch (err) {

@@ -2,15 +2,16 @@ import React from 'react';
 import { Swords, Eye, Shield, Heart, Sparkles, Skull, AlertCircle, RefreshCw } from 'lucide-react';
 import { Character } from '../../types/morkborg';
 import { GMState, GMService } from '../../obr/gmService';
-import { OBRService } from '../../obr/obrService';
+import { OBRService, SceneMonsterItem } from '../../obr/obrService';
 import { BadgeService } from '../../obr/badgeService';
 import { SceneCharacterItem } from '../Header';
-import { rollGroupInitiative } from '../../utils/combatRules';
+import { rollGroupInitiative, MonsterTokenData, rollMonsterMorale, rollMonsterAttack } from '../../utils/combatRules';
 
 interface CombatTrackerProps {
   gmState: GMState;
   onUpdateGMState: (updater: Partial<GMState> | ((prev: GMState) => GMState)) => Promise<GMState>;
   sceneCharacters: SceneCharacterItem[];
+  sceneMonsters?: SceneMonsterItem[];
   onSelectToken?: (tokenId: string) => void;
 }
 
@@ -18,6 +19,7 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
   gmState,
   onUpdateGMState,
   sceneCharacters,
+  sceneMonsters,
   onSelectToken,
 }) => {
   const handleRollInitiative = async () => {
@@ -71,18 +73,26 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
     } else if (condition === 'starving') {
       updated.conditions.starving = !updated.conditions.starving;
     } else if (condition === 'broken') {
-      const isNowBroken = !updated.broken?.isBroken;
+      const isNowBroken = !updated.conditions.broken;
+      updated.conditions.broken = isNowBroken;
       updated.broken = { isBroken: isNowBroken };
-      if (isNowBroken && updated.hp.current > 0) updated.hp.current = 0;
+      if (isNowBroken) {
+        updated.hp.current = 0;
+      } else {
+        updated.hp.current = 1;
+      }
     } else if (condition === 'dead') {
       const isDead = updated.broken?.result?.roll === 4;
       if (isDead) {
         updated.broken = { isBroken: false };
+        updated.conditions.broken = false;
+        updated.hp.current = 1;
       } else {
         updated.broken = {
           isBroken: true,
           result: { roll: 4, title: 'Dead', description: 'Slain in combat.' },
         };
+        updated.conditions.broken = true;
         updated.hp.current = 0;
       }
     }
@@ -95,6 +105,47 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
       dead: updated.broken?.result?.roll === 4,
     });
     OBRService.notify(`Toggled ${condition.toUpperCase()} on "${char.name}"`);
+  };
+
+  const handleMonsterHpChange = async (tokenId: string, monster: MonsterTokenData, amount: number) => {
+    const nextHp = Math.max(0, Math.min(monster.hp.max, monster.hp.current + amount));
+    const updated: MonsterTokenData = {
+      ...monster,
+      hp: { ...monster.hp, current: nextHp },
+    };
+    await OBRService.saveMonster(updated, tokenId);
+    await BadgeService.syncTokenConditionBadges(tokenId, {
+      broken: nextHp <= 0,
+      infected: false,
+      starving: false,
+      dead: nextHp <= 0,
+    });
+  };
+
+  const handleMonsterMorale = async (monsterName: string, morale: number | 'special' | null) => {
+    const result = rollMonsterMorale(monsterName, morale);
+    await GMService.broadcastGMEvent({
+      type: 'MORALE_CHECKED',
+      payload: { monsterName, result },
+    });
+    await OBRService.notify(result.description);
+  };
+
+  const handleMonsterAttack = async (
+    monsterName: string,
+    attack: { name: string; damageDie: string; special?: string },
+    specialRules: string[] = []
+  ) => {
+    const isDR14 = specialRules.some((r) => r.includes('DR14'));
+    const isDR10 = specialRules.some((r) => r.includes('DR10'));
+    const defenseDR = isDR14 ? 14 : isDR10 ? 10 : 12;
+
+    const result = rollMonsterAttack(monsterName, attack, defenseDR);
+    await GMService.broadcastGMEvent({
+      type: 'MONSTER_ATTACK',
+      payload: { monsterName, attack, result },
+    });
+    await OBRService.notify(result.prompt);
   };
 
   return (
@@ -186,7 +237,7 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
           <div className="space-y-2">
             {sceneCharacters.map(({ id, name, character }) => {
               const hpPercent = Math.max(0, Math.min(100, (character.hp.current / character.hp.max) * 100));
-              const isBroken = character.hp.current <= 0 || character.broken?.isBroken;
+              const isBroken = character.hp.current <= 0 || Boolean(character.conditions.broken) || Boolean(character.broken?.isBroken);
 
               return (
                 <div
@@ -293,6 +344,120 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
           </div>
         )}
       </div>
+
+      {/* 3. Enemies & Monsters Tactical Roster */}
+      {sceneMonsters && sceneMonsters.length > 0 && (
+        <div className="bg-mb-dark border-2 border-purple-500/40 p-3 shadow-brutal space-y-3">
+          <div className="flex items-center justify-between border-b border-purple-500/20 pb-2">
+            <div className="flex items-center gap-2">
+              <Skull className="w-5 h-5 text-purple-400" />
+              <h3 className="font-gothic text-lg text-purple-300 tracking-wide uppercase">
+                Enemies & Monsters ({sceneMonsters.length})
+              </h3>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {sceneMonsters.map(({ id, name, monster }) => {
+              const hpPercent = Math.max(0, Math.min(100, (monster.hp.current / monster.hp.max) * 100));
+              const isSlain = monster.hp.current <= 0;
+
+              return (
+                <div
+                  key={id}
+                  className={`p-2.5 border-2 transition-all shadow-brutal-sm ${
+                    isSlain ? 'bg-purple-950/30 border-purple-900/60' : 'bg-mb-black border-purple-500/30'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <button
+                        onClick={() => handleFocusToken(id)}
+                        className="p-1 hover:bg-purple-600 hover:text-white text-purple-400 border border-purple-500/40 transition-colors shrink-0"
+                        title="Focus and zoom to monster token on map"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="font-bold text-xs sm:text-sm text-purple-200 truncate">
+                        {monster.name}
+                      </span>
+                      <span className="text-[9px] font-mono text-zinc-400 truncate">
+                        ({name})
+                      </span>
+                      {isSlain && (
+                        <span className="bg-mb-blood text-white text-[9px] font-black px-1 uppercase animate-pulse">
+                          SLAIN
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => handleMonsterMorale(monster.name, monster.morale)}
+                        className="text-[9px] font-black uppercase px-2 py-0.5 bg-purple-900/60 hover:bg-purple-700 text-purple-200 border border-purple-500/50"
+                        title="Roll Morale (2d6)"
+                      >
+                        Morale ({monster.morale !== null ? monster.morale : '—'})
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* HP Bar */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-brutal">
+                      <span className="text-zinc-400">Hit Points</span>
+                      <span className={`font-bold ${isSlain ? 'text-mb-pink' : 'text-purple-300'}`}>
+                        {monster.hp.current} / {monster.hp.max} HP
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-mb-dark border border-black overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          hpPercent <= 25 ? 'bg-mb-pink' : hpPercent <= 50 ? 'bg-amber-500' : 'bg-purple-500'
+                        }`}
+                        style={{ width: `${hpPercent}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* HP & Attack Buttons */}
+                  <div className="flex flex-wrap items-center justify-between gap-1 mt-2 pt-1 border-t border-purple-500/10">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleMonsterHpChange(id, monster, -1)}
+                        className="bg-zinc-900 hover:bg-mb-pink text-white text-[10px] font-bold px-1.5 py-0.5 border border-zinc-700"
+                        title="Apply 1 damage"
+                      >
+                        -1
+                      </button>
+                      <button
+                        onClick={() => handleMonsterHpChange(id, monster, 1)}
+                        className="bg-zinc-900 hover:bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 border border-zinc-700"
+                        title="Heal 1 HP"
+                      >
+                        +1
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1">
+                      {monster.attacks.map((att, attIdx) => (
+                        <button
+                          key={attIdx}
+                          onClick={() => handleMonsterAttack(monster.name, att, monster.specialRules)}
+                          className="bg-mb-blood hover:bg-red-700 text-white font-black text-[9px] px-2 py-0.5 uppercase border border-black shadow-brutal-sm"
+                          title={`Roll attack: ${att.name} (${att.damageDie})`}
+                        >
+                          {att.name} [{att.damageDie}]
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

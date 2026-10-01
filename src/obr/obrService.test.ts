@@ -327,5 +327,55 @@ describe('OBRService', () => {
       const party = await OBRService.getPartyPlayers();
       expect(party).toEqual([{ id: 'test-player-id', name: 'Test Player', role: 'PLAYER', color: undefined }]);
     });
+
+    it('should save, load, unlink and list monsters on tokens in connected mode', async () => {
+      const monsterData = {
+        id: 'tok-monster-1',
+        monsterId: 'goblin',
+        name: 'Seth, Goblin',
+        hp: { current: 5, max: 5 },
+        morale: 7 as const,
+        armorTier: 0,
+        damageReduction: '0',
+        attacks: [{ name: 'Knife', damageDie: 'd4' }],
+        specialRules: ['Cursed'],
+        bounties: { silver: '10' },
+      };
+
+      // saveMonster
+      await OBRService.saveMonster(monsterData, 'tok-monster-1');
+      expect(mockOBR.scene.items.updateItems).toHaveBeenCalled();
+
+      // loadMonsterFromToken
+      mockOBR.scene.items.getItems.mockResolvedValueOnce([
+        {
+          id: 'tok-monster-1',
+          name: 'Goblin Token',
+          metadata: { 'com.morkborg.character-sheet/monster': monsterData },
+        },
+      ]);
+      const loaded = await OBRService.loadMonsterFromToken('tok-monster-1');
+      expect(loaded).toEqual(monsterData);
+
+      // getSceneMonsters
+      mockOBR.scene.items.getItems.mockImplementationOnce(async (predicate?: any) => {
+        const item = {
+          id: 'tok-monster-1',
+          name: 'Goblin Token',
+          metadata: { 'com.morkborg.character-sheet/monster': monsterData },
+        };
+        if (typeof predicate === 'function') {
+          return predicate(item) ? [item] : [];
+        }
+        return [item];
+      });
+      const sceneMonsters = await OBRService.getSceneMonsters();
+      expect(sceneMonsters).toHaveLength(1);
+      expect(sceneMonsters[0].monster.name).toBe('Seth, Goblin');
+
+      // unlinkMonsterToken
+      await OBRService.unlinkMonsterToken('tok-monster-1');
+      expect(mockOBR.scene.items.updateItems).toHaveBeenCalled();
+    });
   });
 });

@@ -4,7 +4,6 @@ import { getMonsters, MonsterData } from '../../data';
 import { OBRService } from '../../obr/obrService';
 import { GMService } from '../../obr/gmService';
 import {
-  MONSTER_METADATA_KEY,
   createMonsterTokenData,
   rollMonsterMorale,
   rollMonsterAttack,
@@ -31,20 +30,9 @@ export const BestiarySection: React.FC = () => {
 
     try {
       const monsterTokenData = createMonsterTokenData(token.id, selectedMonster);
-      // Save monster data to token metadata
-      const items = await (window as any).OBR?.scene?.items?.getItems([token.id]);
-      if (items && items[0]) {
-        await (window as any).OBR.scene.items.updateItems([token.id], (toUpdate: any[]) => {
-          if (toUpdate[0]) {
-            toUpdate[0].metadata[MONSTER_METADATA_KEY] = monsterTokenData;
-          }
-        });
-        OBRService.notify(`Assigned ${selectedMonster.name} to token "${token.name}"!`);
-        setLastActionResult(`Token "${token.name}" is now bound as ${selectedMonster.name} (${selectedMonster.hp} HP).`);
-      } else {
-        OBRService.notify(`Assigned ${selectedMonster.name} to token "${token.name}"!`);
-        setLastActionResult(`Assigned ${selectedMonster.name} to token "${token.name}".`);
-      }
+      await OBRService.saveMonster(monsterTokenData, token.id);
+      OBRService.notify(`Assigned ${selectedMonster.name} to token "${token.name}"!`);
+      setLastActionResult(`Token "${token.name}" is now bound as ${selectedMonster.name} (${selectedMonster.hp} HP).`);
     } catch (err) {
       console.warn('Could not assign monster to token:', err);
     }

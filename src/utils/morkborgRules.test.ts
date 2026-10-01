@@ -61,6 +61,7 @@ describe('MÖRK BORG Rules Engine', () => {
     ],
     scrolls: [],
     conditions: {
+      broken: false,
       infected: false,
       starving: false,
     },
@@ -110,7 +111,7 @@ describe('MÖRK BORG Rules Engine', () => {
     const char = { 
       ...mockCharacter, 
       hp: { current: 3, max: 10 },
-      conditions: { infected: false, starving: true }
+      conditions: { broken: false, infected: false, starving: true }
     };
     const rest = performLongRest(char);
     expect(rest.healedHp).toBe(0);
@@ -121,7 +122,7 @@ describe('MÖRK BORG Rules Engine', () => {
     const char = { 
       ...mockCharacter, 
       hp: { current: 7, max: 10 },
-      conditions: { infected: true, starving: false }
+      conditions: { broken: false, infected: true, starving: false }
     };
     const rest = performLongRest(char);
     expect(rest.newHp).toBeLessThan(7);
@@ -237,6 +238,11 @@ describe('MÖRK BORG Rules Engine', () => {
     expect(scumbag.weapons.length).toBeGreaterThanOrEqual(1);
     expect(scumbag.inventory.length).toBeGreaterThanOrEqual(1);
     expect(['d2', 'd4']).toContain(scumbag.omens.dieType);
+    expect(scumbag.conditions).toEqual({
+      broken: false,
+      infected: false,
+      starving: false,
+    });
   });
 
   it('performArmorSoak should calculate soak with shield', () => {

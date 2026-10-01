@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Skull, Swords, Dices, ExternalLink, Flame } from 'lucide-react';
+import { Skull, Swords, Dices, Flame } from 'lucide-react';
 import { GMService, GMState, DEFAULT_GM_STATE } from '../../obr/gmService';
-import { OBRService } from '../../obr/obrService';
 import { SceneCharacterItem } from '../Header';
 import { CalendarNechrubel } from './CalendarNechrubel';
 import { CombatTracker } from './CombatTracker';
 import { BestiarySection } from './BestiarySection';
 import { OraclesSection } from './OraclesSection';
 
+import { SceneMonsterItem } from '../../obr/obrService';
+
 export type GMConsoleTab = 'calendar' | 'combat' | 'bestiary' | 'oracles';
 
 interface GMConsoleProps {
   sceneCharacters?: SceneCharacterItem[];
+  sceneMonsters?: SceneMonsterItem[];
   onSelectToken?: (tokenId: string) => void;
   // Subcomponents can be slotted or imported
   calendarSlot?: React.ReactNode;
@@ -22,6 +24,7 @@ interface GMConsoleProps {
 
 export const GMConsole: React.FC<GMConsoleProps> = ({
   sceneCharacters = [],
+  sceneMonsters = [],
   onSelectToken,
   calendarSlot,
   combatSlot,
@@ -42,10 +45,6 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
 
     return () => unsub();
   }, []);
-
-  const handlePopout = async () => {
-    await OBRService.openFloatingGMConsole();
-  };
 
   return (
     <div className="bg-mb-black text-mb-bone min-h-[500px] flex flex-col font-brutal">
@@ -72,19 +71,6 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
               <span>Die: <strong className="text-mb-pink uppercase">{gmState.campaignDurationDie}</strong></span>
             </div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {OBRService.isAvailable() && (
-            <button
-              onClick={handlePopout}
-              className="bg-mb-yellow/20 hover:bg-mb-yellow hover:text-mb-black text-mb-yellow text-xs font-bold uppercase px-2 py-1 border border-mb-yellow transition-colors flex items-center gap-1 shadow-brutal-sm"
-              title="Pop out into a standalone floating window in Owlbear Rodeo"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Pop Out</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -159,6 +145,7 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
                 gmState={gmState}
                 onUpdateGMState={(updater) => GMService.updateGMState(updater)}
                 sceneCharacters={sceneCharacters}
+                sceneMonsters={sceneMonsters}
                 onSelectToken={onSelectToken}
               />
             )}

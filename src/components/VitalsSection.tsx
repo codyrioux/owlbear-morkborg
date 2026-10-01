@@ -27,9 +27,18 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   const handleHpChange = (amount: number) => {
     onUpdateCharacter((prev) => {
       const nextHp = Math.max(0, Math.min(prev.hp.max, prev.hp.current + amount));
+      const isBroken = nextHp <= 0;
       return {
         ...prev,
         hp: { ...prev.hp, current: nextHp },
+        broken: {
+          ...prev.broken,
+          isBroken,
+        },
+        conditions: {
+          ...prev.conditions,
+          broken: isBroken,
+        },
       };
     });
   };
@@ -170,12 +179,22 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             <input
               type="number"
               value={hpCurrent}
-              onChange={(e) =>
+              onChange={(e) => {
+                const nextHp = Math.max(0, parseInt(e.target.value, 10) || 0);
+                const isBroken = nextHp <= 0;
                 onUpdateCharacter((prev) => ({
                   ...prev,
-                  hp: { ...prev.hp, current: parseInt(e.target.value, 10) || 0 },
-                }))
-              }
+                  hp: { ...prev.hp, current: nextHp },
+                  broken: {
+                    ...prev.broken,
+                    isBroken,
+                  },
+                  conditions: {
+                    ...prev.conditions,
+                    broken: isBroken,
+                  },
+                }));
+              }}
               className={`w-10 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-charcoal focus:outline-none ${
                 isZeroHp ? 'text-mb-pink' : 'text-mb-white'
               }`}

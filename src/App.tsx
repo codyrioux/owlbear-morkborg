@@ -17,9 +17,14 @@ import {
   performWeaponDamage,
   GettingBetterResult
 } from './utils/morkborgRules';
-import { OBRService } from './obr/obrService';
+import { OBRService, SceneMonsterItem } from './obr/obrService';
 import { Header, SceneCharacterItem } from './components/Header';
+import { TopBar } from './components/TopBar';
+import { MonsterSheet } from './components/MonsterSheet';
+import { TokenDesignationModal } from './components/gm/TokenDesignationModal';
 import { GMConsole } from './components/gm/GMConsole';
+import { MonsterTokenData, createMonsterTokenData } from './utils/combatRules';
+import { MonsterData } from './data';
 import { AbilitiesGrid } from './components/AbilitiesGrid';
 import { VitalsSection } from './components/VitalsSection';
 import { CombatSection } from './components/CombatSection';
@@ -53,6 +58,9 @@ export const App: React.FC = () => {
   });
   const [linkedToken, setLinkedToken] = useState<{ id: string; name: string } | null>(null);
   const [sceneCharacters, setSceneCharacters] = useState<SceneCharacterItem[]>([]);
+  const [sceneMonsters, setSceneMonsters] = useState<SceneMonsterItem[]>([]);
+  const [linkedMonster, setLinkedMonster] = useState<{ id: string; name: string; monster: MonsterTokenData } | null>(null);
+  const [unboundDesignationToken, setUnboundDesignationToken] = useState<{ id: string; name: string } | null>(null);
   const [userRole, setUserRole] = useState<'GM' | 'PLAYER'>('PLAYER');
   const [activeView, setActiveView] = useState<'player' | 'gm'>(() => {
     try {
@@ -80,6 +88,12 @@ export const App: React.FC = () => {
   const linkedTokenRef = useRef(linkedToken);
   linkedTokenRef.current = linkedToken;
 
+  const linkedMonsterRef = useRef(linkedMonster);
+  linkedMonsterRef.current = linkedMonster;
+
+  const userRoleRef = useRef(userRole);
+  userRoleRef.current = userRole;
+
   const isSwitchingRef = useRef(false);
 
   // Switch to an existing character bound to a token
@@ -91,6 +105,7 @@ export const App: React.FC = () => {
       if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
         await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
       }
+      setLinkedMonster(null);
       // 2. Load target character if not provided
       const targetChar = existingChar || (await OBRService.loadCharacterFromToken(tokenId));
       if (targetChar) {
@@ -115,6 +130,7 @@ export const App: React.FC = () => {
       if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
         await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
       }
+      setLinkedMonster(null);
       // 2. Generate new scvm
       const newScvm = generateRandomCharacter();
       setLinkedToken({ id: tokenId, name: tokenName });
@@ -158,6 +174,48 @@ export const App: React.FC = () => {
     }
   };
 
+  // Update monster on token
+  const handleUpdateMonster = async (updater: (prev: MonsterTokenData) => MonsterTokenData) => {
+    if (!linkedMonster) return;
+    const next = updater(linkedMonster.monster);
+    setLinkedMonster((prev) => (prev ? { ...prev, monster: next } : null));
+    await OBRService.saveMonster(next, linkedMonster.id);
+  };
+
+  // Detach monster from token
+  const handleUnlinkMonster = async () => {
+    if (!linkedMonster) return;
+    const { id, name } = linkedMonster;
+    await OBRService.unlinkMonsterToken(id);
+    setLinkedMonster(null);
+    setSceneMonsters((prev) => prev.filter((m) => m.id !== id));
+    OBRService.notify(`Detached monster from token "${name}".`);
+  };
+
+  // Designate token as Player Character
+  const handleDesignateCharacter = async () => {
+    if (!unboundDesignationToken) return;
+    const token = unboundDesignationToken;
+    setUnboundDesignationToken(null);
+    await handleUnboundToken(token.id, token.name);
+  };
+
+  // Designate token as Monster
+  const handleDesignateMonster = async (monster: MonsterData) => {
+    if (!unboundDesignationToken) return;
+    const token = unboundDesignationToken;
+    setUnboundDesignationToken(null);
+    const monsterData = createMonsterTokenData(token.id, monster);
+    await OBRService.saveMonster(monsterData, token.id);
+    setLinkedToken(null);
+    setLinkedMonster({ id: token.id, name: token.name, monster: monsterData });
+    setSceneMonsters((prev) => [
+      ...prev.filter((m) => m.id !== token.id),
+      { id: token.id, name: token.name, monster: monsterData },
+    ]);
+    OBRService.notify(`Attached monster "${monster.name}" to token "${token.name}"!`);
+  };
+
   // Switch to standalone local storage sheet
   const handleSelectStandalone = async () => {
     if (isSwitchingRef.current) return;
@@ -169,6 +227,7 @@ export const App: React.FC = () => {
       }
       // 2. Set to standalone mode
       setLinkedToken(null);
+      setLinkedMonster(null);
       // 3. Load standalone character from local storage
       const localChar = loadCharacterFromStorage();
       if (localChar) {
@@ -235,7 +294,8 @@ export const App: React.FC = () => {
     isGettingBetterOpen ||
     exportImportModal.isOpen ||
     activeMiseryNotification ||
-    activeWhisper
+    activeWhisper ||
+    unboundDesignationToken
   );
 
   const updateHeight = useCallback(() => {
@@ -288,22 +348,38 @@ export const App: React.FC = () => {
   // Initialize Owlbear Rodeo SDK and register listeners
   useEffect(() => {
     OBRService.init(async () => {
+      // Check player role (GM vs Player)
+      const role = await OBRService.getUserRole();
+      setUserRole(role);
+      userRoleRef.current = role;
+
+      if (activeView === 'gm') {
+        await OBRService.setActionWidth(700);
+        await OBRService.setActionHeight(680);
+      }
+
       // Check if there is an active single selection on the map
       const selected = await OBRService.getSelectedToken();
       if (selected) {
         const tokenChar = await OBRService.loadCharacterFromToken(selected.id);
         if (tokenChar) {
           setLinkedToken(selected);
+          setLinkedMonster(null);
           setCharacter(tokenChar);
           saveCharacterToStorage(tokenChar);
         } else {
-          // Empty token selected when sheet opened! Auto-generate scvm for this token!
-          const newScvm = generateRandomCharacter();
-          setLinkedToken(selected);
-          setCharacter(newScvm);
-          saveCharacterToStorage(newScvm);
-          await OBRService.saveCharacter(newScvm, selected.id);
-          OBRService.notify(`Rolled new scvm ${newScvm.name} for token "${selected.name}"!`);
+          const tokenMonster = await OBRService.loadMonsterFromToken(selected.id);
+          if (tokenMonster) {
+            setLinkedToken(null);
+            setLinkedMonster({ id: selected.id, name: selected.name, monster: tokenMonster });
+          } else {
+            // Unbound token on startup
+            if (role === 'GM') {
+              setUnboundDesignationToken(selected);
+            } else {
+              await handleUnboundToken(selected.id, selected.name);
+            }
+          }
         }
       } else {
         // Fallback: load from local storage
@@ -313,40 +389,77 @@ export const App: React.FC = () => {
         }
       }
 
-      // Check player role (GM vs Player)
-      const role = await OBRService.getUserRole();
-      setUserRole(role);
-      if (activeView === 'gm') {
-        await OBRService.setActionWidth(700);
-        await OBRService.setActionHeight(680);
-      }
-
-      // Load initial scene characters for the roster
+      // Load initial scene characters & monsters for the roster
       const chars = await OBRService.getSceneCharacters();
       setSceneCharacters(chars);
+      const monsters = await OBRService.getSceneMonsters();
+      setSceneMonsters(monsters);
     });
 
     // Reactive single token selection on map
     const unsubSelection = OBRService.subscribeToSelection(async (selectionData) => {
       if (!selectionData) return;
-      if (selectionData.id === linkedTokenRef.current?.id) return;
+      if (
+        selectionData.id === linkedTokenRef.current?.id ||
+        selectionData.id === linkedMonsterRef.current?.id
+      ) {
+        return;
+      }
 
       if (selectionData.character) {
         // Existing character on token
+        setLinkedMonster(null);
         await handleSwitchToToken(selectionData.id, selectionData.name, selectionData.character);
+      } else if (selectionData.monster) {
+        // Existing monster on token
+        setLinkedToken(null);
+        setLinkedMonster({
+          id: selectionData.id,
+          name: selectionData.name,
+          monster: selectionData.monster,
+        });
+        OBRService.notify(`Selected monster "${selectionData.monster.name}" (${selectionData.name})`);
       } else {
-        // Unbound token on map! Auto-generate scvm!
-        await handleUnboundToken(selectionData.id, selectionData.name);
+        // Unbound token on map!
+        if (userRoleRef.current === 'GM') {
+          setUnboundDesignationToken({ id: selectionData.id, name: selectionData.name });
+        } else {
+          await handleUnboundToken(selectionData.id, selectionData.name);
+        }
       }
     });
 
-    // Watch scene items for roster updates and token deletion
-    const unsubScene = OBRService.subscribeToSceneItems(({ characters, itemIds }) => {
+    // Watch scene items for roster updates, remote modifications, and token deletion
+    const unsubScene = OBRService.subscribeToSceneItems(({ characters, monsters, itemIds }) => {
       setSceneCharacters(characters);
+      setSceneMonsters(monsters);
+
       if (linkedTokenRef.current) {
         if (!itemIds.has(linkedTokenRef.current.id)) {
           setLinkedToken(null);
           OBRService.notify('Bound token was removed from the map. Retained as standalone sheet.');
+        } else {
+          // If remote character changed (e.g. GM toggled conditions or changed HP)
+          const remoteChar = characters.find((c) => c.id === linkedTokenRef.current?.id);
+          if (remoteChar && JSON.stringify(remoteChar.character) !== JSON.stringify(characterRef.current)) {
+            setCharacter(remoteChar.character);
+            saveCharacterToStorage(remoteChar.character);
+          }
+        }
+      }
+
+      if (linkedMonsterRef.current) {
+        if (!itemIds.has(linkedMonsterRef.current.id)) {
+          setLinkedMonster(null);
+          OBRService.notify('Bound monster token was removed from the map.');
+        } else {
+          const remoteMonster = monsters.find((m) => m.id === linkedMonsterRef.current?.id);
+          if (
+            remoteMonster &&
+            JSON.stringify(remoteMonster.monster) !== JSON.stringify(linkedMonsterRef.current?.monster)
+          ) {
+            setLinkedMonster(remoteMonster);
+          }
         }
       }
     });
@@ -488,12 +601,17 @@ export const App: React.FC = () => {
     newPowers: number,
     restLog: string
   ) => {
-    setCharacter((prev) => ({
-      ...prev,
-      hp: { ...prev.hp, current: newHp },
-      omens: { ...prev.omens, current: newOmens },
-      powers: { ...prev.powers, current: newPowers, max: Math.max(1, newPowers) },
-    }));
+    setCharacter((prev) => {
+      const isBroken = newHp <= 0;
+      return {
+        ...prev,
+        hp: { ...prev.hp, current: newHp },
+        omens: { ...prev.omens, current: newOmens },
+        powers: { ...prev.powers, current: newPowers, max: Math.max(1, newPowers) },
+        broken: { ...prev.broken, isBroken },
+        conditions: { ...prev.conditions, broken: isBroken },
+      };
+    });
 
     const roll: RollResult = {
       id: crypto.randomUUID(),
@@ -513,10 +631,15 @@ export const App: React.FC = () => {
   // Short Rest Handler
   const handleShortRest = () => {
     const rest = performShortRest(character);
-    setCharacter((prev) => ({
-      ...prev,
-      hp: { ...prev.hp, current: rest.newHp },
-    }));
+    setCharacter((prev) => {
+      const isBroken = rest.newHp <= 0;
+      return {
+        ...prev,
+        hp: { ...prev.hp, current: rest.newHp },
+        broken: { ...prev.broken, isBroken },
+        conditions: { ...prev.conditions, broken: isBroken },
+      };
+    });
 
     const roll: RollResult = {
       id: crypto.randomUUID(),
@@ -616,11 +739,13 @@ export const App: React.FC = () => {
         ...prev,
         hp: { ...prev.hp, current: result.hpGained! },
         broken: { isBroken: false, result },
+        conditions: { ...prev.conditions, broken: false },
       }));
     } else {
       setCharacter((prev) => ({
         ...prev,
         broken: { isBroken: true, result },
+        conditions: { ...prev.conditions, broken: true },
       }));
     }
 
@@ -688,6 +813,7 @@ export const App: React.FC = () => {
         );
         if (!confirmOverwrite) return;
       }
+      setLinkedMonster(null);
       setLinkedToken(selected);
       await OBRService.saveCharacter(character, selected.id);
       OBRService.notify(`Sheet successfully bound to token "${selected.name}"!`);
@@ -709,29 +835,17 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-mb-black text-mb-white flex flex-col font-brutal">
       <div ref={contentRef} className="w-full flex flex-col">
-        {/* 1. Header & Identity */}
-        <Header
-          character={character}
-          onUpdateCharacter={setCharacter}
-          onScvmbirther={handleScvmbirther}
-          onOpenLongRest={() => setIsRestModalOpen(true)}
-          onShortRest={handleShortRest}
-          onLinkToken={handleLinkToken}
-          linkedTokenName={linkedToken?.name}
-          linkedTokenId={linkedToken?.id}
-          sceneCharacters={sceneCharacters}
-          onSelectRosterCharacter={handleSwitchToToken}
-          onSelectStandalone={handleSelectStandalone}
-          onUnlinkToken={handleUnlinkToken}
-          onExport={handleExport}
-          onImport={handleImport}
-          allCollapsed={allCollapsed}
-          onToggleCollapseAll={handleToggleCollapseAll}
-          isCollapsed={collapsedSections.header}
-          onToggleCollapse={() => handleToggleSection('header')}
+        {/* TopBar: Persistent across both Player and GM views */}
+        <TopBar
           userRole={userRole}
           activeView={activeView}
           onToggleView={handleToggleView}
+          linkedToken={linkedToken}
+          linkedMonster={linkedMonster}
+          onUnlinkToken={handleUnlinkToken}
+          onUnlinkMonster={handleUnlinkMonster}
+          allCollapsed={allCollapsed}
+          onToggleCollapseAll={handleToggleCollapseAll}
         />
 
         {/* Main Content Area */}
@@ -739,10 +853,39 @@ export const App: React.FC = () => {
           {activeView === 'gm' ? (
             <GMConsole
               sceneCharacters={sceneCharacters}
+              sceneMonsters={sceneMonsters}
               onSelectToken={handleSwitchToToken}
+            />
+          ) : linkedMonster ? (
+            <MonsterSheet
+              monster={linkedMonster.monster}
+              tokenId={linkedMonster.id}
+              tokenName={linkedMonster.name}
+              onUpdateMonster={handleUpdateMonster}
+              onUnlinkMonster={handleUnlinkMonster}
+              onSwitchToCharacterSheet={() => setLinkedMonster(null)}
             />
           ) : (
             <>
+              {/* 1. Header & Identity */}
+              <Header
+                character={character}
+                onUpdateCharacter={setCharacter}
+                onScvmbirther={handleScvmbirther}
+                onOpenLongRest={() => setIsRestModalOpen(true)}
+                onShortRest={handleShortRest}
+                onLinkToken={handleLinkToken}
+                linkedTokenName={linkedToken?.name}
+                linkedTokenId={linkedToken?.id}
+                sceneCharacters={sceneCharacters}
+                onSelectRosterCharacter={handleSwitchToToken}
+                onSelectStandalone={handleSelectStandalone}
+                onUnlinkToken={handleUnlinkToken}
+                onExport={handleExport}
+                onImport={handleImport}
+                isCollapsed={collapsedSections.header}
+                onToggleCollapse={() => handleToggleSection('header')}
+              />
               {/* 2. Core Abilities with Roll Buttons */}
               <AbilitiesGrid
                 character={character}
@@ -916,6 +1059,14 @@ export const App: React.FC = () => {
       <WhisperNotificationModal
         whisper={activeWhisper}
         onClose={() => setActiveWhisper(null)}
+      />
+
+      <TokenDesignationModal
+        isOpen={Boolean(unboundDesignationToken)}
+        token={unboundDesignationToken}
+        onDesignateCharacter={handleDesignateCharacter}
+        onDesignateMonster={handleDesignateMonster}
+        onCancel={() => setUnboundDesignationToken(null)}
       />
     </div>
   );
