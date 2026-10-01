@@ -553,6 +553,116 @@ export function calculateCarryingCapacity(
 }
 
 /**
+ * Canonical MÖRK BORG Scrolls (Pages 34-35 of Rulebook)
+ * 10 Unclean Scrolls + 10 Sacred Scrolls
+ */
+export const CANONICAL_SCROLLS: Omit<Scroll, 'id'>[] = [
+  // --- UNCLEAN SCROLLS (d10) ---
+  {
+    name: 'Palms Open the Southern Gate',
+    type: 'unclean',
+    description: 'A ball of fire hits d2 creatures dealing d8 damage per creature.',
+  },
+  {
+    name: 'Tongue of Eris',
+    type: 'unclean',
+    description: 'A creature of your choice is confused for 10 minutes.',
+  },
+  {
+    name: 'Te-le-kin-esis',
+    type: 'unclean',
+    description: 'Move an object up to d10×10 feet for d6 minutes.',
+  },
+  {
+    name: 'Lucy-fires Levitation',
+    type: 'unclean',
+    description: 'Hover for Presence + d10 rounds.',
+  },
+  {
+    name: 'Daemon of Capillaries',
+    type: 'unclean',
+    description: 'One creature suffocates for d6 rounds, losing d4 HP per round.',
+  },
+  {
+    name: 'Nine Violet Signs Unknot the Storm',
+    type: 'unclean',
+    description: 'Produce d2 lightning bolts dealing d6 damage each.',
+  },
+  {
+    name: 'Metzhuotl Blind Your Eye',
+    type: 'unclean',
+    description: 'A creature becomes invisible for d6 rounds or until it is damaged, attacking/defending with DR6.',
+  },
+  {
+    name: 'Foul Psychopomp',
+    type: 'unclean',
+    description: 'Summon (d6): 1–3: d4 skeletons, 4–6: d4 zombies.',
+  },
+  {
+    name: 'Eyelid Blinds the Mind',
+    type: 'unclean',
+    description: 'd4 creatures fall asleep for one hour unless they succeed a DR14 test.',
+  },
+  {
+    name: 'Death',
+    type: 'unclean',
+    description: 'All creatures within 30 feet lose a total of 4d10 HP.',
+  },
+
+  // --- SACRED SCROLLS (d10) ---
+  {
+    name: 'Grace of a Dead Saint',
+    type: 'sacred',
+    description: 'd2 creatures regain d10 HP each.',
+  },
+  {
+    name: 'Grace for a Sinner',
+    type: 'sacred',
+    description: 'A creature of your choice gets +d6 on one roll (damage, tests etc.).',
+  },
+  {
+    name: 'Whispers Pass the Gate',
+    type: 'sacred',
+    description: 'Ask three questions to a deceased creature.',
+  },
+  {
+    name: 'Aegis of Sorrow',
+    type: 'sacred',
+    description: 'A creature of your choice gains 2d6 extra HP for 10 rounds.',
+  },
+  {
+    name: 'Unmet Fate',
+    type: 'sacred',
+    description: 'One creature, dead for no more than a week, is awakened with terrible memories.',
+  },
+  {
+    name: 'Bestial Speech',
+    type: 'sacred',
+    description: 'You may speak with animals for d20 minutes.',
+  },
+  {
+    name: "False Dawn / Night's Chariot",
+    type: 'sacred',
+    description: 'Light or pitch black for 3d10 minutes.',
+  },
+  {
+    name: 'Hermetic Step',
+    type: 'sacred',
+    description: 'You find all traps in your path for 2d10 minutes.',
+  },
+  {
+    name: "Roskoe's Consuming Glare",
+    type: 'sacred',
+    description: 'd4 creatures lose d8 HP each.',
+  },
+  {
+    name: 'Enochian Syntax',
+    type: 'sacred',
+    description: 'One creature blindly obeys a single command.',
+  },
+];
+
+/**
  * SCVMBIRTHER: Random MÖRK BORG Character Generator
  */
 export function generateRandomCharacter(): Character {
@@ -671,19 +781,13 @@ export function generateRandomCharacter(): Character {
     { id: crypto.randomUUID(), name: 'Hemp Rope (30ft)', slots: 1, quantity: 1, description: 'Frayed hemp cord' },
   ];
 
-  // Scrolls pool
-  const scrollsPool: Scroll[] = [
-    { id: crypto.randomUUID(), name: "Palmaum's Step", type: 'unclean', description: 'Float across pits or water for d6 minutes.' },
-    { id: crypto.randomUUID(), name: 'Tephra Prognostic', type: 'unclean', description: 'Ask the ashes a question; receive a cryptic omen.' },
-    { id: crypto.randomUUID(), name: 'Metamorphosis', type: 'unclean', description: 'Turn into a rat or bat for 10 minutes.' },
-    { id: crypto.randomUUID(), name: 'Nine Pale Palms', type: 'sacred', description: 'Spectral hands block 2d6 incoming damage.' },
-    { id: crypto.randomUUID(), name: "Roskoe's Consuming Glare", type: 'sacred', description: 'Target bursts into yellow flames for d10 damage.' },
-    { id: crypto.randomUUID(), name: 'Enochian Teleport', type: 'sacred', description: 'Instantly vanish and appear 30 paces away.' },
-  ];
-
   const scrolls: Scroll[] = [];
   if (pickedClass.name === 'Esoteric Hermit' || pickedClass.name === 'Heretical Priest' || Math.random() < 0.25) {
-    scrolls.push(scrollsPool[Math.floor(Math.random() * scrollsPool.length)]);
+    const pickedPreset = CANONICAL_SCROLLS[Math.floor(Math.random() * CANONICAL_SCROLLS.length)];
+    scrolls.push({
+      id: crypto.randomUUID(),
+      ...pickedPreset,
+    });
   }
 
   const names = [

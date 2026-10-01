@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scroll as ScrollIcon, Plus, Trash2, Wand2, BookOpen, AlertTriangle } from 'lucide-react';
 import { Character, Scroll } from '../types/morkborg';
+import { CANONICAL_SCROLLS } from '../utils/morkborgRules';
 import { SectionHeader } from './SectionHeader';
 
 interface ScrollsSectionProps {
@@ -8,17 +9,6 @@ interface ScrollsSectionProps {
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   onInvokeScroll: (scroll: Scroll) => void;
 }
-
-const PRESET_SCROLLS: Omit<Scroll, 'id'>[] = [
-  { name: "Palmaum's Step", type: 'unclean', description: 'Levitate and glide across chasms or water for d6 minutes.' },
-  { name: 'Tephra Prognostic', type: 'unclean', description: 'Read ashes to divine a cryptic truth or warning from the GM.' },
-  { name: 'Metamorphosis', type: 'unclean', description: 'Assume the form of an insignificant vermin (rat, bat, spider) for 10 minutes.' },
-  { name: 'Tongue of the Basilisk', type: 'unclean', description: 'Spit noxious venom dealing d8 damage (DR12 Presence to aim).' },
-  { name: 'Nine Pale Palms', type: 'sacred', description: 'Conjures spectral floating palms absorbing 2d6 incoming damage.' },
-  { name: "Roskoe's Consuming Glare", type: 'sacred', description: 'A creature bursts into yellow blinding flames taking d10 damage.' },
-  { name: 'Grace for a Sinner', type: 'sacred', description: 'Cleanse poison, disease, or infection, and restore d4 HP.' },
-  { name: 'Enochian Teleport', type: 'sacred', description: 'Vanish into black smoke and reappear 30 paces away.' },
-];
 
 export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   character,
@@ -29,9 +19,15 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   const [newScrollType, setNewScrollType] = useState<'unclean' | 'sacred'>('unclean');
   const [newScrollDesc, setNewScrollDesc] = useState('');
   const [showPresets, setShowPresets] = useState(false);
+  const [filterType, setFilterType] = useState<'all' | 'unclean' | 'sacred'>('all');
 
   const effectiveTier = Math.max(0, character.armor.tier - character.armor.degraded);
   const isArmorRestricted = effectiveTier >= 2;
+
+  const filteredPresets = CANONICAL_SCROLLS.filter((s) => {
+    if (filterType === 'all') return true;
+    return s.type === filterType;
+  });
 
   const handleAddScroll = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,29 +112,69 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       {/* Preset Library Drawer */}
       {showPresets && (
         <div className="mb-2 p-2 bg-mb-black border border-mb-yellow shadow-brutal-sm">
-          <h4 className="font-gothic text-xs text-mb-yellow mb-1">
-            Canon Scrolls Library (Click to Learn)
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-40 overflow-y-auto pr-1">
-            {PRESET_SCROLLS.map((p, idx) => (
+          <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-mb-charcoal flex-wrap gap-1">
+            <h4 className="font-gothic text-xs text-mb-yellow">
+              Canon Scrolls Library ({filteredPresets.length})
+            </h4>
+            <div className="flex items-center gap-1 text-[9px] font-mono font-bold">
+              <button
+                type="button"
+                onClick={() => setFilterType('all')}
+                className={`px-1.5 py-0.5 border ${
+                  filterType === 'all'
+                    ? 'bg-mb-yellow text-mb-black border-mb-yellow'
+                    : 'bg-mb-dark text-mb-white/60 border-mb-charcoal hover:text-mb-white'
+                }`}
+              >
+                ALL (20)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType('unclean')}
+                className={`px-1.5 py-0.5 border ${
+                  filterType === 'unclean'
+                    ? 'bg-mb-pink text-mb-white border-mb-pink'
+                    : 'bg-mb-dark text-mb-white/60 border-mb-charcoal hover:text-mb-white'
+                }`}
+              >
+                UNCLEAN (10)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType('sacred')}
+                className={`px-1.5 py-0.5 border ${
+                  filterType === 'sacred'
+                    ? 'bg-mb-yellow text-mb-black border-mb-yellow'
+                    : 'bg-mb-dark text-mb-white/60 border-mb-charcoal hover:text-mb-white'
+                }`}
+              >
+                SACRED (10)
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 max-h-48 overflow-y-auto pr-1">
+            {filteredPresets.map((p, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => handleAddPreset(p)}
                 className="text-left p-1 bg-mb-dark hover:bg-mb-charcoal border border-mb-charcoal flex flex-col justify-between group"
+                title={`Learn ${p.name} (${p.type})`}
               >
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full gap-1">
                   <span className="font-bold text-xs text-mb-white group-hover:text-mb-yellow truncate">
                     {p.name}
                   </span>
                   <span
-                    className={`text-[8px] font-mono px-1 uppercase font-bold shrink-0 ml-1 ${
+                    className={`text-[8px] font-mono px-1 uppercase font-bold shrink-0 ${
                       p.type === 'sacred' ? 'bg-mb-yellow text-mb-black' : 'bg-mb-pink text-mb-white'
                     }`}
                   >
                     {p.type}
                   </span>
                 </div>
-                <p className="font-punk text-[9px] text-mb-white/60 line-clamp-1">
+                <p className="font-punk text-[9px] text-mb-white/60 line-clamp-2 mt-0.5">
                   {p.description}
                 </p>
               </button>

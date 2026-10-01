@@ -9,7 +9,8 @@ import {
   performArmorSoak,
   performDefend,
   getAbilityDRPenalty,
-  performWeaponDamage
+  performWeaponDamage,
+  CANONICAL_SCROLLS
 } from './morkborgRules';
 import { Character } from '../types/morkborg';
 
@@ -289,5 +290,46 @@ describe('MÖRK BORG Rules Engine', () => {
     expect(max1d8plus1.total).toBe(9);
     expect(max1d8plus1.diceRolls).toEqual([8]);
     expect(max1d8plus1.details).toContain('MAX DAMAGE (Omen spent): 9 damage!');
+  });
+
+  it('CANONICAL_SCROLLS should contain all 20 canonical scrolls (10 unclean and 10 sacred)', () => {
+    expect(CANONICAL_SCROLLS).toHaveLength(20);
+
+    const unclean = CANONICAL_SCROLLS.filter((s) => s.type === 'unclean');
+    const sacred = CANONICAL_SCROLLS.filter((s) => s.type === 'sacred');
+
+    expect(unclean).toHaveLength(10);
+    expect(sacred).toHaveLength(10);
+
+    // Verify key canonical scrolls exist
+    const uncleanNames = unclean.map((s) => s.name);
+    expect(uncleanNames).toContain('Palms Open the Southern Gate');
+    expect(uncleanNames).toContain('Tongue of Eris');
+    expect(uncleanNames).toContain('Te-le-kin-esis');
+    expect(uncleanNames).toContain('Lucy-fires Levitation');
+    expect(uncleanNames).toContain('Daemon of Capillaries');
+    expect(uncleanNames).toContain('Nine Violet Signs Unknot the Storm');
+    expect(uncleanNames).toContain('Metzhuotl Blind Your Eye');
+    expect(uncleanNames).toContain('Foul Psychopomp');
+    expect(uncleanNames).toContain('Eyelid Blinds the Mind');
+    expect(uncleanNames).toContain('Death');
+
+    const sacredNames = sacred.map((s) => s.name);
+    expect(sacredNames).toContain('Grace of a Dead Saint');
+    expect(sacredNames).toContain('Grace for a Sinner');
+    expect(sacredNames).toContain('Whispers Pass the Gate');
+    expect(sacredNames).toContain('Aegis of Sorrow');
+    expect(sacredNames).toContain('Unmet Fate');
+    expect(sacredNames).toContain('Bestial Speech');
+    expect(sacredNames).toContain("False Dawn / Night's Chariot");
+    expect(sacredNames).toContain('Hermetic Step');
+    expect(sacredNames).toContain("Roskoe's Consuming Glare");
+    expect(sacredNames).toContain('Enochian Syntax');
+
+    // All scrolls must have descriptive effects
+    CANONICAL_SCROLLS.forEach((s) => {
+      expect(s.name.trim().length).toBeGreaterThan(0);
+      expect(s.description.trim().length).toBeGreaterThan(0);
+    });
   });
 });
