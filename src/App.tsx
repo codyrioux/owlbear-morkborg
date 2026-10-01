@@ -31,6 +31,8 @@ import { SpendOmenModal } from './components/SpendOmenModal';
 import { BrokenModal } from './components/BrokenModal';
 import { ExportImportModal } from './components/ExportImportModal';
 import { GettingBetterModal } from './components/GettingBetterModal';
+import { MiseryNotificationModal } from './components/MiseryNotificationModal';
+import { GMService, TriggeredMisery } from './obr/gmService';
 import { 
   loadCharacterFromStorage, 
   saveCharacterToStorage,
@@ -57,6 +59,7 @@ export const App: React.FC = () => {
     } catch {}
     return 'player';
   });
+  const [activeMiseryNotification, setActiveMiseryNotification] = useState<TriggeredMisery | null>(null);
 
   const handleToggleView = async (view: 'player' | 'gm') => {
     setActiveView(view);
@@ -227,7 +230,8 @@ export const App: React.FC = () => {
     isSpendOmenOpen ||
     isBrokenModalOpen ||
     isGettingBetterOpen ||
-    exportImportModal.isOpen
+    exportImportModal.isOpen ||
+    activeMiseryNotification
   );
 
   const updateHeight = useCallback(() => {
@@ -348,10 +352,18 @@ export const App: React.FC = () => {
       setRollHistory((prev) => [payload.roll, ...prev.slice(0, 19)]);
     });
 
+    // Listen to GM events from room (e.g. Miseries)
+    const unsubGMEvents = GMService.subscribeToGMEvents((event) => {
+      if (event.type === 'MISERY_TRIGGERED' && event.payload) {
+        setActiveMiseryNotification(event.payload as TriggeredMisery);
+      }
+    });
+
     return () => {
       unsubSelection();
       unsubScene();
       unsubRolls();
+      unsubGMEvents();
     };
   }, []);
 
@@ -876,6 +888,11 @@ export const App: React.FC = () => {
           setCharacter(imported);
           saveCharacterToStorage(imported);
         }}
+      />
+
+      <MiseryNotificationModal
+        misery={activeMiseryNotification}
+        onClose={() => setActiveMiseryNotification(null)}
       />
     </div>
   );

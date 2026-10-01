@@ -3,6 +3,7 @@ import { Skull, Swords, Dices, ExternalLink, Flame } from 'lucide-react';
 import { GMService, GMState, DEFAULT_GM_STATE } from '../../obr/gmService';
 import { OBRService } from '../../obr/obrService';
 import { SceneCharacterItem } from '../Header';
+import { CalendarNechrubel } from './CalendarNechrubel';
 
 export type GMConsoleTab = 'calendar' | 'combat' | 'bestiary' | 'oracles';
 
@@ -135,18 +136,18 @@ export const GMConsole: React.FC<GMConsoleProps> = ({
         </button>
       </div>
 
-      {/* Tab Content Body */}
-      <div className="flex-1 p-3 overflow-y-auto">
-        {activeTab === 'calendar' && (
-          <div>
-            {calendarSlot || (
-              <div className="bg-mb-dark border-2 border-mb-yellow/40 p-4 text-center">
-                <p className="font-gothic text-xl text-mb-yellow">THE CALENDAR OF NECHRUBEL</p>
-                <p className="font-punk text-xs text-mb-bone/70 mt-1">Roll the dawn die. Count the miseries until everything burns.</p>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Tab Content Body */}
+        <div className="flex-1 p-3 overflow-y-auto">
+          {activeTab === 'calendar' && (
+            <div>
+              {calendarSlot || (
+                <CalendarNechrubel
+                  gmState={gmState}
+                  onUpdateGMState={(updater) => GMService.updateGMState(updater)}
+                />
+              )}
+            </div>
+          )}
 
         {activeTab === 'combat' && (
           <div>
