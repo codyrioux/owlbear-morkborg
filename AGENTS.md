@@ -114,10 +114,12 @@ owlbear-morkborg/
 - The repository uses `.github/workflows/deploy.yml` which deploys `./dist` to the `gh-pages` branch on every push to `main`.
 - **Do not** introduce local manual git scripts that commit directly to `gh-pages`, as they will conflict with GitHub Actions commits.
 
-### F. Manifest Versioning
+### F. Manifest Versioning & Release Tagging
 - **Always bump the "patch" component** of the version string in `public/manifest.json` before pushing changes to `main` (e.g., `1.1.1` → `1.1.2`).
 - Also mirror this version bump in `package.json` to keep project metadata synchronized.
 - Owlbear Rodeo inspects the manifest version to detect updates for installed extensions. Bumping the patch version ensures OBR recognizes the extension update and room participants receive the latest code without caching stale assets.
+- **No Version Numbers in Commit Messages**: Never include the version number in git commit messages (e.g., avoid `feat: add feature (v1.3.4)` or `bump version to 1.3.0`). Keep commit messages focused purely on the semantic changes made.
+- **Use Git Tags for Releases**: Always use `git tag` to record version releases instead of commit messages (e.g., `git tag v1.3.4` and `git push origin v1.3.4` or `git push --tags`).
 
 ---
 
@@ -195,5 +197,7 @@ Before pushing commits or finishing any task, run through this checklist:
    Increment the patch component of `"version"` in `public/manifest.json` (e.g., `1.1.1` → `1.1.2`) and mirror it in `package.json` before committing so Owlbear Rodeo recognizes the extension update.
 4. **OBR Icon Integrity**:
    Verify `public/icon.svg` has not been altered to add background fills or non-transparent backdrops.
-5. **Git Discipline**:
-   Push exclusively to `main`. GitHub Actions will automatically handle the build and deployment to `gh-pages`.
+5. **Git Discipline & Tagging**:
+   - Push exclusively to `main`. GitHub Actions will automatically handle the build and deployment to `gh-pages`.
+   - **Do not put version numbers in commit messages**: Describe the changes clearly and concisely without appending version numbers or tags.
+   - **Use `git tag` for release versioning**: Create a tag matching the bumped manifest version (e.g., `git tag v1.1.2`) and push tags using `git push origin v1.1.2` or `git push --tags`.

@@ -18,7 +18,7 @@ import {
   GettingBetterResult
 } from './utils/morkborgRules';
 import { OBRService } from './obr/obrService';
-import { Header } from './components/Header';
+import { Header, SceneCharacterItem } from './components/Header';
 import { AbilitiesGrid } from './components/AbilitiesGrid';
 import { VitalsSection } from './components/VitalsSection';
 import { CombatSection } from './components/CombatSection';
@@ -47,6 +47,71 @@ export const App: React.FC = () => {
     return fresh;
   });
   const [linkedToken, setLinkedToken] = useState<{ id: string; name: string } | null>(null);
+  const [sceneCharacters, setSceneCharacters] = useState<SceneCharacterItem[]>([]);
+
+  // Refs to prevent stale closures and concurrency race conditions during token switching
+  const characterRef = useRef(character);
+  characterRef.current = character;
+
+  const linkedTokenRef = useRef(linkedToken);
+  linkedTokenRef.current = linkedToken;
+
+  const isSwitchingRef = useRef(false);
+
+  // Switch to an existing character bound to a token
+  const handleSwitchToToken = async (tokenId: string, tokenName?: string, existingChar?: Character) => {
+    if (isSwitchingRef.current) return;
+    isSwitchingRef.current = true;
+    try {
+      // 1. Auto-persist outgoing character to current linked token if applicable
+      if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
+        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+      }
+      // 2. Load target character if not provided
+      const targetChar = existingChar || (await OBRService.loadCharacterFromToken(tokenId));
+      if (targetChar) {
+        const name = tokenName || sceneCharacters.find((c) => c.id === tokenId)?.name || 'Map Token';
+        setLinkedToken({ id: tokenId, name });
+        setCharacter(targetChar);
+        saveCharacterToStorage(targetChar);
+        await OBRService.selectToken(tokenId);
+        OBRService.notify(`Switched sheet to ${targetChar.name} (${name})`);
+      }
+    } finally {
+      isSwitchingRef.current = false;
+    }
+  };
+
+  // Generate a random scvm for a new / unbound token
+  const handleUnboundToken = async (tokenId: string, tokenName: string) => {
+    if (isSwitchingRef.current) return;
+    isSwitchingRef.current = true;
+    try {
+      // 1. Auto-persist outgoing character to current linked token
+      if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
+        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+      }
+      // 2. Generate new scvm
+      const newScvm = generateRandomCharacter();
+      setLinkedToken({ id: tokenId, name: tokenName });
+      setCharacter(newScvm);
+      saveCharacterToStorage(newScvm);
+      await OBRService.saveCharacter(newScvm, tokenId);
+      OBRService.notify(`Rolled new scvm ${newScvm.name} for token "${tokenName}"!`);
+    } finally {
+      isSwitchingRef.current = false;
+    }
+  };
+
+  // Detach sheet from token to standalone mode
+  const handleUnlinkToken = async () => {
+    if (linkedTokenRef.current) {
+      await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+      const name = linkedTokenRef.current.name;
+      setLinkedToken(null);
+      OBRService.notify(`Detached from token "${name}". Operating in standalone mode.`);
+    }
+  };
 
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState<CollapsedSections>(() => {
@@ -150,37 +215,79 @@ export const App: React.FC = () => {
     };
   }, [updateHeight]);
 
-  // Initialize Owlbear Rodeo SDK
+  // Initialize Owlbear Rodeo SDK and register listeners
   useEffect(() => {
     OBRService.init(async () => {
-      // Check if there is an active selection on the map
+      // Check if there is an active single selection on the map
       const selected = await OBRService.getSelectedToken();
       if (selected) {
-        setLinkedToken(selected);
-        const tokenChar = await OBRService.loadCharacter(selected.id);
+        const tokenChar = await OBRService.loadCharacterFromToken(selected.id);
         if (tokenChar) {
+          setLinkedToken(selected);
           setCharacter(tokenChar);
-          return;
+          saveCharacterToStorage(tokenChar);
+        } else {
+          // Empty token selected when sheet opened! Auto-generate scvm for this token!
+          const newScvm = generateRandomCharacter();
+          setLinkedToken(selected);
+          setCharacter(newScvm);
+          saveCharacterToStorage(newScvm);
+          await OBRService.saveCharacter(newScvm, selected.id);
+          OBRService.notify(`Rolled new scvm ${newScvm.name} for token "${selected.name}"!`);
+        }
+      } else {
+        // Fallback: load from local storage
+        const localChar = loadCharacterFromStorage();
+        if (localChar) {
+          setCharacter(localChar);
         }
       }
 
-      // Fallback: load from local storage
-      const localChar = await OBRService.loadCharacter();
-      if (localChar) {
-        setCharacter(localChar);
+      // Load initial scene characters for the roster
+      const chars = await OBRService.getSceneCharacters();
+      setSceneCharacters(chars);
+    });
+
+    // Reactive single token selection on map
+    const unsubSelection = OBRService.subscribeToSelection(async (selectionData) => {
+      if (!selectionData) return;
+      if (selectionData.id === linkedTokenRef.current?.id) return;
+
+      if (selectionData.character) {
+        // Existing character on token
+        await handleSwitchToToken(selectionData.id, selectionData.name, selectionData.character);
+      } else {
+        // Unbound token on map! Auto-generate scvm!
+        await handleUnboundToken(selectionData.id, selectionData.name);
+      }
+    });
+
+    // Watch scene items for roster updates and token deletion
+    const unsubScene = OBRService.subscribeToSceneItems(({ characters, itemIds }) => {
+      setSceneCharacters(characters);
+      if (linkedTokenRef.current) {
+        if (!itemIds.has(linkedTokenRef.current.id)) {
+          setLinkedToken(null);
+          OBRService.notify('Bound token was removed from the map. Retained as standalone sheet.');
+        }
       }
     });
 
     // Listen to roll broadcasts from room
-    const unsubscribe = OBRService.subscribeToRolls((payload) => {
+    const unsubRolls = OBRService.subscribeToRolls((payload) => {
       setRollHistory((prev) => [payload.roll, ...prev.slice(0, 19)]);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubSelection();
+      unsubScene();
+      unsubRolls();
+    };
   }, []);
 
   // Auto-persist character changes
   useEffect(() => {
+    if (isSwitchingRef.current) return;
     OBRService.saveCharacter(character, linkedToken?.id);
   }, [character, linkedToken]);
 
@@ -460,16 +567,30 @@ export const App: React.FC = () => {
       const newChar = generateRandomCharacter();
       setCharacter(newChar);
       saveCharacterToStorage(newChar);
+      if (linkedToken) {
+        OBRService.saveCharacter(newChar, linkedToken.id);
+      }
     }
   };
 
-  // Link to selected Token
+  // Link or bind active sheet to selected Token
   const handleLinkToken = async () => {
     const selected = await OBRService.getSelectedToken();
     if (selected) {
+      if (linkedToken?.id === selected.id) {
+        alert(`Sheet is already bound to token "${selected.name}". Use ROSTER or DETACH to change.`);
+        return;
+      }
+      const existing = await OBRService.loadCharacterFromToken(selected.id);
+      if (existing) {
+        const confirmOverwrite = window.confirm(
+          `Token "${selected.name}" already has character "${existing.name}". Overwrite with current sheet "${character.name}"?`
+        );
+        if (!confirmOverwrite) return;
+      }
       setLinkedToken(selected);
       await OBRService.saveCharacter(character, selected.id);
-      alert(`Sheet successfully bound to token "${selected.name}"!`);
+      OBRService.notify(`Sheet successfully bound to token "${selected.name}"!`);
     } else {
       alert('Select a character token on the map first, then click TOKEN to bind.');
     }
@@ -497,6 +618,10 @@ export const App: React.FC = () => {
           onShortRest={handleShortRest}
           onLinkToken={handleLinkToken}
           linkedTokenName={linkedToken?.name}
+          linkedTokenId={linkedToken?.id}
+          sceneCharacters={sceneCharacters}
+          onSelectRosterCharacter={handleSwitchToToken}
+          onUnlinkToken={handleUnlinkToken}
           onExport={handleExport}
           onImport={handleImport}
           allCollapsed={allCollapsed}

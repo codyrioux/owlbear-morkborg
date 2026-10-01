@@ -1,6 +1,12 @@
-import React from 'react';
-import { Skull, Moon, Sun, Dices, Download, Upload, Link, Minimize2, Maximize2, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Skull, Moon, Sun, Dices, Download, Upload, Link, Unlink, Users, Minimize2, Maximize2, ChevronDown, ChevronRight } from 'lucide-react';
 import { Character } from '../types/morkborg';
+
+export interface SceneCharacterItem {
+  id: string;
+  name: string;
+  character: Character;
+}
 
 interface HeaderProps {
   character: Character;
@@ -10,6 +16,10 @@ interface HeaderProps {
   onShortRest: () => void;
   onLinkToken: () => void;
   linkedTokenName?: string | null;
+  linkedTokenId?: string | null;
+  sceneCharacters?: SceneCharacterItem[];
+  onSelectRosterCharacter?: (tokenId: string) => void;
+  onUnlinkToken?: () => void;
   onExport: () => void;
   onImport: () => void;
   allCollapsed?: boolean;
@@ -36,6 +46,10 @@ export const Header: React.FC<HeaderProps> = ({
   onShortRest,
   onLinkToken,
   linkedTokenName,
+  linkedTokenId,
+  sceneCharacters,
+  onSelectRosterCharacter,
+  onUnlinkToken,
   onExport,
   onImport,
   allCollapsed,
@@ -43,6 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
   isCollapsed = false,
   onToggleCollapse,
 }) => {
+  const [isRosterOpen, setIsRosterOpen] = useState(false);
   return (
     <header className={`relative bg-mb-yellow text-mb-black px-3 ${isCollapsed ? 'py-1.5' : 'py-2'} border-b-4 border-mb-black shadow-brutal select-none transition-all`}>
       {/* Top Banner with Logo, Collapsed Info, and Actions */}
@@ -141,6 +156,23 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">SCVMBIRTHER</span>
           </button>
 
+          {sceneCharacters !== undefined && (
+            <button
+              onClick={() => setIsRosterOpen((prev) => !prev)}
+              className={`mb-btn text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform flex items-center gap-1 ${
+                isRosterOpen
+                  ? 'bg-mb-pink text-white border-black'
+                  : sceneCharacters.length > 0
+                    ? 'bg-mb-black text-mb-yellow border-black'
+                    : 'bg-mb-white text-mb-black border-black'
+              }`}
+              title="Scene Character Roster: view all characters on map tokens"
+            >
+              <Users className="w-3 h-3" />
+              <span>ROSTER ({sceneCharacters.length})</span>
+            </button>
+          )}
+
           <button
             onClick={onLinkToken}
             className="mb-btn bg-mb-white text-mb-black text-[11px] py-0.5 px-1.5"
@@ -178,12 +210,122 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
+      {/* Roster Popover Menu */}
+      {isRosterOpen && sceneCharacters && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-3 top-11 z-50 w-72 sm:w-80 bg-mb-black text-mb-bone border-2 border-mb-yellow shadow-brutal p-3 font-brutal"
+        >
+          <div className="flex items-center justify-between border-b border-mb-yellow/40 pb-1.5 mb-2">
+            <div className="flex items-center gap-1.5">
+              <Users className="w-4 h-4 text-mb-yellow" />
+              <span className="text-xs font-black uppercase text-mb-yellow tracking-wider">
+                SCENE ROSTER ({sceneCharacters.length})
+              </span>
+            </div>
+            <button
+              onClick={() => setIsRosterOpen(false)}
+              className="text-zinc-400 hover:text-mb-pink font-bold text-xs p-0.5"
+              title="Close Roster"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1 mb-2">
+            {sceneCharacters.length === 0 ? (
+              <div className="text-[11px] font-mono text-zinc-400 p-3 text-center border border-dashed border-zinc-700 bg-zinc-950">
+                No character tokens found on the map yet. Drag an image token to the map to roll a doomed scvm!
+              </div>
+            ) : (
+              sceneCharacters.map((sc) => {
+                const isCurrent = linkedTokenId === sc.id;
+                return (
+                  <div
+                    key={sc.id}
+                    onClick={() => {
+                      if (onSelectRosterCharacter) {
+                        onSelectRosterCharacter(sc.id);
+                        setIsRosterOpen(false);
+                      }
+                    }}
+                    className={`p-2 border cursor-pointer transition-colors ${
+                      isCurrent
+                        ? 'bg-mb-yellow/20 border-mb-yellow text-mb-yellow'
+                        : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-mb-bone'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-bold text-xs uppercase truncate">
+                        {sc.character.name || 'Unnamed Scvm'}
+                      </span>
+                      {isCurrent && (
+                        <span className="text-[9px] font-mono bg-mb-yellow text-mb-black px-1 font-black shrink-0">
+                          ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mt-1">
+                      <span className="truncate max-w-[130px]">{sc.character.characterClass || 'Classless'}</span>
+                      <span className="font-bold text-mb-pink">
+                        HP: {sc.character.hp.current}/{sc.character.hp.max}
+                      </span>
+                    </div>
+                    <div className="text-[9px] font-mono text-zinc-500 mt-0.5 truncate">
+                      TOKEN: {sc.name}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Standalone / Detach Option */}
+          <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono">
+            {linkedTokenId ? (
+              <button
+                onClick={() => {
+                  if (onUnlinkToken) {
+                    onUnlinkToken();
+                    setIsRosterOpen(false);
+                  }
+                }}
+                className="text-mb-pink hover:underline flex items-center gap-1 font-bold uppercase"
+                title="Detach active sheet from token to standalone mode"
+              >
+                <Unlink className="w-3 h-3" />
+                Detach to Standalone
+              </button>
+            ) : (
+              <span className="text-zinc-500">Standalone Sheet (Local)</span>
+            )}
+            <span className="text-[9px] text-zinc-500">Click character to switch</span>
+          </div>
+        </div>
+      )}
+
       {!isCollapsed && (
         <>
-          {linkedTokenName && (
-            <div className="mb-2 text-[10px] font-mono bg-mb-black text-mb-yellow px-1.5 py-0.5 inline-flex items-center gap-1 border border-mb-yellow">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span>BOUND TO TOKEN: <strong>{linkedTokenName}</strong></span>
+          {linkedTokenName ? (
+            <div className="mb-2 text-[10px] font-mono bg-mb-black text-mb-yellow px-1.5 py-0.5 inline-flex items-center gap-2 border border-mb-yellow">
+              <div className="inline-flex items-center gap-1">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span>BOUND TO TOKEN: <strong>{linkedTokenName}</strong></span>
+              </div>
+              {onUnlinkToken && (
+                <button
+                  onClick={onUnlinkToken}
+                  className="text-mb-pink hover:underline uppercase text-[9px] font-bold ml-1"
+                  title="Detach from map token to standalone mode"
+                >
+                  [DETACH]
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="mb-2 text-[10px] font-mono bg-zinc-900 text-zinc-400 px-1.5 py-0.5 inline-flex items-center gap-1.5 border border-zinc-700">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-zinc-500" />
+              <span>STANDALONE SHEET (NOT BOUND TO TOKEN)</span>
             </div>
           )}
 

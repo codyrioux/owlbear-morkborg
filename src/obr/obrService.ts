@@ -61,6 +61,8 @@ export class OBRService {
         onClick: async (context) => {
           const selectedItems = context.items;
           if (selectedItems.length > 0) {
+            // Explicitly select the token in OBR
+            await OBR.player.select([selectedItems[0].id]);
             // Open the action popover if not already open
             const isOpen = await OBR.action.isOpen();
             if (!isOpen) {
@@ -135,44 +137,183 @@ export class OBRService {
   }
 
   /**
+   * Load character specifically from a token's metadata (does not fallback to localStorage)
+   */
+  public static async loadCharacterFromToken(tokenId: string): Promise<Character | null> {
+    if (!OBR.isAvailable || !tokenId) return null;
+    try {
+      const items = await OBR.scene.items.getItems([tokenId]);
+      if (items[0] && items[0].metadata[METADATA_KEY]) {
+        return items[0].metadata[METADATA_KEY] as Character;
+      }
+    } catch (err) {
+      console.warn('Could not load character from token:', err);
+    }
+    return null;
+  }
+
+  /**
    * Load character from token or local storage
    */
   public static async loadCharacter(tokenId?: string): Promise<Character | null> {
     if (OBR.isAvailable && tokenId) {
-      try {
-        const items = await OBR.scene.items.getItems([tokenId]);
-        if (items[0] && items[0].metadata[METADATA_KEY]) {
-          return items[0].metadata[METADATA_KEY] as Character;
-        }
-      } catch (err) {
-        console.warn('Could not load character from token:', err);
-      }
+      const tokenChar = await this.loadCharacterFromToken(tokenId);
+      if (tokenChar) return tokenChar;
     }
 
     return loadCharacterFromStorage();
   }
 
   /**
-   * Get currently selected token from the OBR scene
+   * Get currently selected single token from the OBR scene.
+   * Ignores multi-selections (selection.length > 1).
    */
   public static async getSelectedToken(): Promise<{ id: string; name: string } | null> {
     if (!OBR.isAvailable) return null;
     try {
       const selection = await OBR.player.getSelection();
-      if (selection && selection.length > 0) {
+      if (selection && selection.length === 1) {
         const items = await OBR.scene.items.getItems(selection);
         if (items.length > 0) {
           const item = items[0];
-          return {
-            id: item.id,
-            name: item.name || 'Map Token',
-          };
+          // Accept character layer tokens, tokens with character metadata, or images
+          if (item.layer === 'CHARACTER' || item.metadata[METADATA_KEY] || item.type === 'IMAGE') {
+            return {
+              id: item.id,
+              name: item.name || 'Map Token',
+            };
+          }
         }
       }
     } catch {
       // Ignore
     }
     return null;
+  }
+
+  /**
+   * Subscribe to single token selection changes on the map.
+   * Ignores multi-selections (selection.length > 1) and empty canvas selections.
+   */
+  public static subscribeToSelection(
+    callback: (selection: { id: string; name: string; character: Character | null } | null) => void
+  ): () => void {
+    if (!OBR.isAvailable) {
+      return () => {};
+    }
+
+    return OBR.player.onChange(async (player) => {
+      const selection = player.selection;
+      // Ignore multi-selections or empty selections
+      if (!selection || selection.length !== 1) {
+        return;
+      }
+
+      const tokenId = selection[0];
+      try {
+        const items = await OBR.scene.items.getItems([tokenId]);
+        if (items.length > 0) {
+          const item = items[0];
+          if (item.layer === 'CHARACTER' || item.metadata[METADATA_KEY] || item.type === 'IMAGE') {
+            const character = (item.metadata[METADATA_KEY] as Character) || null;
+            callback({
+              id: item.id,
+              name: item.name || 'Map Token',
+              character,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Error handling selection change:', err);
+      }
+    });
+  }
+
+  /**
+   * Get all tokens in the scene that have MÖRK BORG character metadata
+   */
+  public static async getSceneCharacters(): Promise<Array<{ id: string; name: string; character: Character }>> {
+    if (!OBR.isAvailable) return [];
+    try {
+      const items = await OBR.scene.items.getItems((item) => Boolean(item.metadata && item.metadata[METADATA_KEY]));
+      return items.map((item) => ({
+        id: item.id,
+        name: item.name || 'Map Token',
+        character: item.metadata[METADATA_KEY] as Character,
+      }));
+    } catch (err) {
+      console.warn('Failed to get scene characters:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Subscribe to scene item changes (for roster and token lifecycle monitoring)
+   */
+  public static subscribeToSceneItems(
+    callback: (sceneData: {
+      characters: Array<{ id: string; name: string; character: Character }>;
+      itemIds: Set<string>;
+    }) => void
+  ): () => void {
+    if (!OBR.isAvailable) return () => {};
+
+    return OBR.scene.items.onChange((items) => {
+      const charItems = items.filter((item) => Boolean(item.metadata && item.metadata[METADATA_KEY]));
+      const itemIds = new Set(items.map((i) => i.id));
+      callback({
+        characters: charItems.map((item) => ({
+          id: item.id,
+          name: item.name || 'Map Token',
+          character: item.metadata[METADATA_KEY] as Character,
+        })),
+        itemIds,
+      });
+    });
+  }
+
+  /**
+   * Select a token on the map and center the viewport on it if possible
+   */
+  public static async selectToken(tokenId: string): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.player.select([tokenId]);
+      const bounds = await OBR.scene.items.getItemBounds([tokenId]);
+      if (bounds) {
+        await OBR.viewport.animateToBounds(bounds);
+      }
+    } catch (err) {
+      console.warn('Failed to select/center token:', err);
+    }
+  }
+
+  /**
+   * Remove character metadata from a token
+   */
+  public static async unlinkToken(tokenId: string): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.scene.items.updateItems([tokenId], (items) => {
+        if (items[0]) {
+          delete items[0].metadata[METADATA_KEY];
+        }
+      });
+    } catch (err) {
+      console.warn('Could not unlink token metadata:', err);
+    }
+  }
+
+  /**
+   * Display an in-room OBR notification toast
+   */
+  public static async notify(message: string): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.notification.show(message);
+    } catch {
+      // Ignore
+    }
   }
 
   /**
