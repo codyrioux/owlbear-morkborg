@@ -381,11 +381,13 @@ export class OBRService {
    * Defaults to 'GM' when running in standalone mode outside OBR so all tools can be tested.
    */
   public static async getUserRole(): Promise<'GM' | 'PLAYER'> {
-    if (!OBR.isAvailable) return 'GM';
+    if (!OBR.isAvailable || !OBR.player || typeof OBR.player.getRole !== 'function') {
+      return 'GM';
+    }
     try {
       return await OBR.player.getRole();
     } catch {
-      return 'PLAYER';
+      return 'GM';
     }
   }
 
@@ -411,11 +413,13 @@ export class OBRService {
    * Get the current player's ID
    */
   public static async getPlayerId(): Promise<string> {
-    if (!OBR.isAvailable) return 'standalone-player';
+    if (!OBR.isAvailable || !OBR.player || typeof OBR.player.getId !== 'function') {
+      return 'standalone-player';
+    }
     try {
       return await OBR.player.getId();
     } catch {
-      return 'unknown-player';
+      return 'standalone-player';
     }
   }
 
@@ -425,7 +429,7 @@ export class OBRService {
   public static async getPartyPlayers(): Promise<
     Array<{ id: string; name: string; role: 'GM' | 'PLAYER'; color?: string }>
   > {
-    if (!OBR.isAvailable) {
+    if (!OBR.isAvailable || !OBR.party || typeof OBR.party.getPlayers !== 'function') {
       return [{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }];
     }
     try {
@@ -437,7 +441,7 @@ export class OBRService {
         color: p.color,
       }));
     } catch {
-      return [];
+      return [{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }];
     }
   }
 }

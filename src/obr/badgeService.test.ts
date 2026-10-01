@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import {
   getActiveBadgeTypes,
   getBadgeUrl,
@@ -67,6 +67,14 @@ import { BadgeService } from './badgeService';
 describe('BadgeService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOBR.isAvailable = false;
+  });
+
+  afterEach(() => {
+    mockOBR.isAvailable = false;
+  });
+
+  afterAll(() => {
     mockOBR.isAvailable = false;
   });
 

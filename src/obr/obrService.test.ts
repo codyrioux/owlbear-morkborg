@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { generateRandomCharacter } from '../utils/morkborgRules';
 
 // Provide window global mock for bun test environment
@@ -49,6 +49,14 @@ const mockOBR = {
     getSelection: vi.fn().mockResolvedValue([]),
     select: vi.fn().mockResolvedValue(undefined),
     onChange: vi.fn().mockReturnValue(() => {}),
+    getRole: vi.fn().mockResolvedValue('PLAYER'),
+    getId: vi.fn().mockResolvedValue('test-player-id'),
+  },
+  party: {
+    getPlayers: vi.fn().mockResolvedValue([
+      { id: 'test-player-id', name: 'Test Player', role: 'PLAYER' },
+    ]),
+    onChange: vi.fn().mockReturnValue(() => {}),
   },
   scene: {
     items: {
@@ -95,6 +103,14 @@ describe('OBRService', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    mockOBR.isAvailable = false;
+  });
+
+  afterEach(() => {
+    mockOBR.isAvailable = false;
+  });
+
+  afterAll(() => {
     mockOBR.isAvailable = false;
   });
 
@@ -148,6 +164,24 @@ describe('OBRService', () => {
       await expect(OBRService.selectToken('tok-1')).resolves.toBeUndefined();
       await expect(OBRService.unlinkToken('tok-1')).resolves.toBeUndefined();
       await expect(OBRService.notify('Test notification')).resolves.toBeUndefined();
+    });
+
+    it('should default to GM role outside OBR environment', async () => {
+      mockOBR.isAvailable = false;
+      const role = await OBRService.getUserRole();
+      expect(role).toBe('GM');
+    });
+
+    it('should return standalone player ID outside OBR environment', async () => {
+      mockOBR.isAvailable = false;
+      const id = await OBRService.getPlayerId();
+      expect(id).toBe('standalone-player');
+    });
+
+    it('should return standalone default party list outside OBR environment', async () => {
+      mockOBR.isAvailable = false;
+      const party = await OBRService.getPartyPlayers();
+      expect(party).toEqual([{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }]);
     });
   });
 
@@ -272,6 +306,26 @@ describe('OBRService', () => {
     it('should display in-room notifications via OBR.notification.show', async () => {
       await OBRService.notify('Beware the Basilisk!');
       expect(mockOBR.notification.show).toHaveBeenCalledWith('Beware the Basilisk!');
+    });
+
+    it('should return player role from OBR.player.getRole in connected mode', async () => {
+      mockOBR.player.getRole.mockResolvedValue('GM');
+      const roleGM = await OBRService.getUserRole();
+      expect(roleGM).toBe('GM');
+
+      mockOBR.player.getRole.mockResolvedValue('PLAYER');
+      const rolePlayer = await OBRService.getUserRole();
+      expect(rolePlayer).toBe('PLAYER');
+    });
+
+    it('should return player ID from OBR.player.getId in connected mode', async () => {
+      const id = await OBRService.getPlayerId();
+      expect(id).toBe('test-player-id');
+    });
+
+    it('should return connected players from OBR.party.getPlayers in connected mode', async () => {
+      const party = await OBRService.getPartyPlayers();
+      expect(party).toEqual([{ id: 'test-player-id', name: 'Test Player', role: 'PLAYER', color: undefined }]);
     });
   });
 });

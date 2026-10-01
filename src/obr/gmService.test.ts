@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import OBR from '@owlbear-rodeo/sdk';
 import { GMService, DEFAULT_GM_STATE, GM_METADATA_KEY } from './gmService';
 import { OBRService } from './obrService';
 
@@ -26,6 +27,15 @@ globalThis.localStorage = new LocalStorageMock();
 describe('GMService & Role Detection', () => {
   beforeEach(() => {
     localStorage.clear();
+    if (OBR && 'isAvailable' in OBR) {
+      (OBR as any).isAvailable = false;
+    }
+  });
+
+  afterEach(() => {
+    if (OBR && 'isAvailable' in OBR) {
+      (OBR as any).isAvailable = false;
+    }
   });
 
   it('provides default GM state when empty', async () => {
