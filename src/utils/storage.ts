@@ -63,7 +63,7 @@ export function clearCharacterStorage(): void {
   }
 }
 
-export const COLLAPSED_SECTIONS_STORAGE_KEY = 'morkborg_collapsed_sections';
+export const COLLAPSED_SECTIONS_STORAGE_KEY = 'morkborg_collapsed_sections_v2';
 
 export interface CollapsedSections {
   header: boolean;
@@ -75,12 +75,12 @@ export interface CollapsedSections {
 }
 
 export const DEFAULT_COLLAPSED_SECTIONS: CollapsedSections = {
-  header: false,
-  abilities: false,
-  vitals: false,
-  combat: false,
-  inventory: false,
-  scrolls: false,
+  header: true,
+  abilities: true,
+  vitals: true,
+  combat: true,
+  inventory: true,
+  scrolls: true,
 };
 
 /**
@@ -91,18 +91,23 @@ export function loadCollapsedSectionsFromStorage(): CollapsedSections {
     const storage = getStorage();
     if (!storage) return DEFAULT_COLLAPSED_SECTIONS;
 
+    // Clean up older v1 key if present
+    if (storage.getItem('morkborg_collapsed_sections')) {
+      storage.removeItem('morkborg_collapsed_sections');
+    }
+
     const raw = storage.getItem(COLLAPSED_SECTIONS_STORAGE_KEY);
     if (!raw) return DEFAULT_COLLAPSED_SECTIONS;
 
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') {
       return {
-        header: Boolean(parsed.header),
-        abilities: Boolean(parsed.abilities),
-        vitals: Boolean(parsed.vitals),
-        combat: Boolean(parsed.combat),
-        inventory: Boolean(parsed.inventory),
-        scrolls: Boolean(parsed.scrolls),
+        header: parsed.header !== undefined ? Boolean(parsed.header) : DEFAULT_COLLAPSED_SECTIONS.header,
+        abilities: parsed.abilities !== undefined ? Boolean(parsed.abilities) : DEFAULT_COLLAPSED_SECTIONS.abilities,
+        vitals: parsed.vitals !== undefined ? Boolean(parsed.vitals) : DEFAULT_COLLAPSED_SECTIONS.vitals,
+        combat: parsed.combat !== undefined ? Boolean(parsed.combat) : DEFAULT_COLLAPSED_SECTIONS.combat,
+        inventory: parsed.inventory !== undefined ? Boolean(parsed.inventory) : DEFAULT_COLLAPSED_SECTIONS.inventory,
+        scrolls: parsed.scrolls !== undefined ? Boolean(parsed.scrolls) : DEFAULT_COLLAPSED_SECTIONS.scrolls,
       };
     }
   } catch (err) {

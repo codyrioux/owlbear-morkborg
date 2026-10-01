@@ -23,8 +23,8 @@ export const RollResultModal: React.FC<RollResultModalProps> = ({
   const showOmenActions = isAbilityOrAttack && omensAvailable > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-sm bg-mb-black border-4 border-mb-yellow shadow-brutal p-5 text-mb-white text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="relative w-full max-w-sm bg-mb-black border-4 border-mb-yellow shadow-brutal p-4 sm:p-5 text-mb-white text-center my-auto max-h-[95vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={onClose}

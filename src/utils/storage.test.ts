@@ -129,8 +129,23 @@ describe('Local Storage Persistence', () => {
   });
 
   describe('Collapsed Sections Persistence', () => {
-    it('should return DEFAULT_COLLAPSED_SECTIONS when localStorage is empty', () => {
+    it('should return DEFAULT_COLLAPSED_SECTIONS with all sections collapsed (true) by default', () => {
+      expect(DEFAULT_COLLAPSED_SECTIONS).toEqual({
+        header: true,
+        abilities: true,
+        vitals: true,
+        combat: true,
+        inventory: true,
+        scrolls: true,
+      });
       expect(loadCollapsedSectionsFromStorage()).toEqual(DEFAULT_COLLAPSED_SECTIONS);
+    });
+
+    it('should clean up legacy v1 key when loading', () => {
+      localStorage.setItem('morkborg_collapsed_sections', JSON.stringify({ header: false, abilities: false }));
+      const loaded = loadCollapsedSectionsFromStorage();
+      expect(loaded).toEqual(DEFAULT_COLLAPSED_SECTIONS);
+      expect(localStorage.getItem('morkborg_collapsed_sections')).toBeNull();
     });
 
     it('should save and load collapsed sections accurately', () => {

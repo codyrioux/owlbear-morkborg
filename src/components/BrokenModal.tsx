@@ -42,8 +42,8 @@ export const BrokenModal: React.FC<BrokenModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md bg-mb-black border-4 border-mb-pink shadow-brutal-pink p-5 text-mb-white text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="relative w-full max-w-md bg-mb-black border-4 border-mb-pink shadow-brutal-pink p-4 sm:p-5 text-mb-white text-center my-auto max-h-[95vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-mb-white/60 hover:text-mb-pink p-1"
