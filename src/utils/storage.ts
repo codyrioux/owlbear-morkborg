@@ -66,6 +66,7 @@ export function clearCharacterStorage(): void {
 export const COLLAPSED_SECTIONS_STORAGE_KEY = 'morkborg_collapsed_sections';
 
 export interface CollapsedSections {
+  header: boolean;
   abilities: boolean;
   vitals: boolean;
   combat: boolean;
@@ -74,6 +75,7 @@ export interface CollapsedSections {
 }
 
 export const DEFAULT_COLLAPSED_SECTIONS: CollapsedSections = {
+  header: false,
   abilities: false,
   vitals: false,
   combat: false,
@@ -95,6 +97,7 @@ export function loadCollapsedSectionsFromStorage(): CollapsedSections {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') {
       return {
+        header: Boolean(parsed.header),
         abilities: Boolean(parsed.abilities),
         vitals: Boolean(parsed.vitals),
         combat: Boolean(parsed.combat),

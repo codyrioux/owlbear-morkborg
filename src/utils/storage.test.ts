@@ -135,6 +135,7 @@ describe('Local Storage Persistence', () => {
 
     it('should save and load collapsed sections accurately', () => {
       const state = {
+        header: true,
         abilities: true,
         vitals: false,
         combat: true,

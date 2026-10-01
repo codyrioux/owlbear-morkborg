@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dices, Shield, Eye, Dumbbell, HeartPulse } from 'lucide-react';
+import { Dices, Shield, Eye, Dumbbell, HeartPulse, Sparkles } from 'lucide-react';
 import { AbilityName, Character } from '../types/morkborg';
 import { formatModifier } from '../utils/dice';
 import { calculateCarryingCapacity, getAbilityDRPenalty } from '../utils/morkborgRules';
@@ -9,6 +9,7 @@ interface AbilitiesGridProps {
   character: Character;
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   onRollAbility: (ability: AbilityName, modifier: number, targetDR: number, drPenalty?: number) => void;
+  onOpenGettingBetter?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -56,6 +57,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
   character,
   onUpdateCharacter,
   onRollAbility,
+  onOpenGettingBetter,
   isCollapsed = false,
   onToggleCollapse,
 }) => {
@@ -193,9 +195,10 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
 
       {/* Grid of 4 Abilities */}
       {!isCollapsed && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {abilities.map((abilityKey) => {
-          const config = ABILITY_CONFIG[abilityKey];
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {abilities.map((abilityKey) => {
+              const config = ABILITY_CONFIG[abilityKey];
           const ability = character.abilities[abilityKey];
           const modifier = ability.modifier;
           const penalty = getAbilityDRPenalty(abilityKey, character.armor, capacity.isOverencumbered);
@@ -271,6 +274,34 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           );
         })}
       </div>
+
+      {/* Getting Better UI area at bottom of expanded Abilities panel */}
+      {onOpenGettingBetter && (
+        <div className="mt-2.5 pt-2 border-t border-mb-charcoal flex items-center justify-between gap-2 bg-mb-black p-2 border border-mb-charcoal shadow-brutal-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-5 h-5 flex items-center justify-center bg-mb-yellow text-mb-black shrink-0 border border-mb-black">
+              <Sparkles className="w-3 h-3" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase text-mb-white truncate">
+                GETTING BETTER (OR WORSE)
+              </h3>
+              <p className="font-punk text-[8.5px] text-mb-white/60 truncate">
+                Core Rules p. 33 • Scenario completion & advancement
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenGettingBetter}
+            className="mb-btn mb-btn-yellow text-xs py-1 px-2.5 shadow-brutal-sm shrink-0 flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+            title="Roll Getting Better: HP increase, debris search, and ability score modifications"
+          >
+            <Sparkles className="w-3 h-3" />
+            <span>GETTING BETTER</span>
+          </button>
+        </div>
+      )}
+        </>
       )}
     </section>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Skull, Moon, Sun, Dices, Download, Upload, Link, Minimize2, Maximize2 } from 'lucide-react';
+import { Skull, Moon, Sun, Dices, Download, Upload, Link, Minimize2, Maximize2, ChevronDown, ChevronRight } from 'lucide-react';
 import { Character } from '../types/morkborg';
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   onImport: () => void;
   allCollapsed?: boolean;
   onToggleCollapseAll?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const CLASSES = [
@@ -38,12 +40,32 @@ export const Header: React.FC<HeaderProps> = ({
   onImport,
   allCollapsed,
   onToggleCollapseAll,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   return (
-    <header className="relative bg-mb-yellow text-mb-black px-3 py-2 border-b-4 border-mb-black shadow-brutal select-none">
-      {/* Top Banner with Logo and Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-mb-black pb-2 mb-2">
-        <div className="flex items-center gap-1.5">
+    <header className={`relative bg-mb-yellow text-mb-black px-3 ${isCollapsed ? 'py-1.5' : 'py-2'} border-b-4 border-mb-black shadow-brutal select-none transition-all`}>
+      {/* Top Banner with Logo, Collapsed Info, and Actions */}
+      <div
+        onClick={onToggleCollapse}
+        className={`flex flex-wrap items-center justify-between gap-2 ${
+          isCollapsed ? '' : 'border-b-2 border-mb-black pb-2 mb-2'
+        } ${onToggleCollapse ? 'cursor-pointer select-none group/header' : ''}`}
+        title={onToggleCollapse ? (isCollapsed ? 'Click to expand character details' : 'Click to collapse character details') : undefined}
+      >
+        <div className="flex items-center gap-1.5 min-w-0">
+          {onToggleCollapse && (
+            <span
+              className="text-mb-black/60 group-hover/header:text-mb-black transition-colors shrink-0"
+              aria-hidden="true"
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </span>
+          )}
           <div className="bg-mb-black text-mb-yellow p-1 border border-mb-yellow rotate-[-2deg] shrink-0">
             <Skull className="w-5 h-5" />
           </div>
@@ -51,17 +73,50 @@ export const Header: React.FC<HeaderProps> = ({
             <h1 className="font-gothic text-2xl sm:text-3xl tracking-tight leading-none uppercase font-black">
               MÖRK BORG
             </h1>
-            <span className="font-punk text-[9px] tracking-widest text-mb-black/80 font-bold block -mt-0.5">
-              DOOMED SOUL SHEET
-            </span>
+            {!isCollapsed && (
+              <span className="font-punk text-[9px] tracking-widest text-mb-black/80 font-bold block -mt-0.5">
+                DOOMED SOUL SHEET
+              </span>
+            )}
           </div>
+
+          {/* When collapsed: Display Name, Class & Condition Badges */}
+          {isCollapsed && (
+            <div
+              className="flex items-center gap-1.5 ml-1 sm:ml-2 min-w-0 truncate"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span
+                className="font-punk font-bold text-xs sm:text-sm text-mb-black truncate max-w-[130px] sm:max-w-[190px]"
+                title={character.name || 'Unnamed Soul'}
+              >
+                {character.name || 'Unnamed Soul'}
+              </span>
+              <span className="bg-mb-black text-mb-yellow text-[9px] font-brutal font-bold px-1.5 py-0.5 uppercase shrink-0">
+                {character.characterClass}
+              </span>
+              {character.conditions.starving && (
+                <span className="bg-mb-pink text-white text-[8px] font-bold px-1 uppercase shrink-0">
+                  STARVING
+                </span>
+              )}
+              {character.conditions.infected && (
+                <span className="bg-mb-blood text-white text-[8px] font-bold px-1 uppercase animate-pulse shrink-0">
+                  INFECTED
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Action Toolbar */}
-        <div className="flex flex-wrap items-center gap-1">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-wrap items-center gap-1 shrink-0"
+        >
           <button
             onClick={onOpenLongRest}
-            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2"
+            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
             title="Night's Sleep: Heal d6, Reroll Omens, Reroll Powers"
           >
             <Moon className="w-3 h-3" />
@@ -70,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onShortRest}
-            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2"
+            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
             title="Catch Breath: Heal d4"
           >
             <Sun className="w-3 h-3" />
@@ -79,11 +134,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onScvmbirther}
-            className="mb-btn mb-btn-pink text-[11px] py-0.5 px-2"
+            className="mb-btn mb-btn-pink text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
             title="Generate a random unfortunate character"
           >
             <Dices className="w-3 h-3" />
-            <span>SCVMBIRTHER</span>
+            <span className="hidden sm:inline">SCVMBIRTHER</span>
           </button>
 
           <button
@@ -92,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
             title={linkedTokenName ? `Linked to ${linkedTokenName}` : "Link sheet to selected map token"}
           >
             <Link className="w-3 h-3" />
-            <span className="hidden sm:inline">{linkedTokenName ? 'LINKED' : 'TOKEN'}</span>
+            <span className="hidden md:inline">{linkedTokenName ? 'LINKED' : 'TOKEN'}</span>
           </button>
 
           <button
@@ -123,12 +178,14 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {linkedTokenName && (
-        <div className="mb-2 text-[10px] font-mono bg-mb-black text-mb-yellow px-1.5 py-0.5 inline-flex items-center gap-1 border border-mb-yellow">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span>BOUND TO TOKEN: <strong>{linkedTokenName}</strong></span>
-        </div>
-      )}
+      {!isCollapsed && (
+        <>
+          {linkedTokenName && (
+            <div className="mb-2 text-[10px] font-mono bg-mb-black text-mb-yellow px-1.5 py-0.5 inline-flex items-center gap-1 border border-mb-yellow">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span>BOUND TO TOKEN: <strong>{linkedTokenName}</strong></span>
+            </div>
+          )}
 
       {/* Character Identity Form */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -232,6 +289,8 @@ export const Header: React.FC<HeaderProps> = ({
           className="w-full bg-mb-black/10 text-mb-black font-punk text-xs px-2 py-1 border border-mb-black/40 focus:outline-none focus:bg-mb-white/80 resize-y min-h-[48px] leading-snug"
         />
       </div>
+        </>
+      )}
     </header>
   );
 };

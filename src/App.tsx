@@ -6,7 +6,6 @@ import {
   Scroll, 
   Weapon 
 } from './types/morkborg';
-import { Sparkles } from 'lucide-react';
 import { 
   generateRandomCharacter, 
   performAbilityCheck, 
@@ -67,6 +66,7 @@ export const App: React.FC = () => {
   const handleToggleCollapseAll = () => {
     const targetState = !allCollapsed;
     const next: CollapsedSections = {
+      header: targetState,
       abilities: targetState,
       vitals: targetState,
       combat: targetState,
@@ -440,6 +440,8 @@ export const App: React.FC = () => {
         onImport={handleImport}
         allCollapsed={allCollapsed}
         onToggleCollapseAll={handleToggleCollapseAll}
+        isCollapsed={collapsedSections.header}
+        onToggleCollapse={() => handleToggleSection('header')}
       />
 
       {/* Main Content Area */}
@@ -449,6 +451,7 @@ export const App: React.FC = () => {
           character={character}
           onUpdateCharacter={setCharacter}
           onRollAbility={handleRollAbility}
+          onOpenGettingBetter={() => setIsGettingBetterOpen(true)}
           isCollapsed={collapsedSections.abilities}
           onToggleCollapse={() => handleToggleSection('abilities')}
         />
@@ -491,31 +494,6 @@ export const App: React.FC = () => {
           isCollapsed={collapsedSections.scrolls}
           onToggleCollapse={() => handleToggleSection('scrolls')}
         />
-
-        {/* 7. Getting Better (or worse) */}
-        <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 flex items-center justify-center bg-mb-yellow text-mb-black font-black text-xs border border-mb-black shrink-0">
-              <Sparkles className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <h3 className="font-brutal font-black text-xs tracking-wider uppercase text-mb-white">
-                GETTING BETTER (OR WORSE)
-              </h3>
-              <p className="font-punk text-[9px] text-mb-white/60">
-                Core Rules p. 33 • Scenario completion & advancement
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsGettingBetterOpen(true)}
-            className="mb-btn mb-btn-yellow text-xs py-1 px-3 shadow-brutal-sm shrink-0 flex items-center gap-1.5"
-            title="Roll Getting Better: HP increase, debris search, and ability score modifications"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>GETTING BETTER</span>
-          </button>
-        </section>
 
         {/* Roll History Log Drawer */}
         {showLog && (
