@@ -29,6 +29,7 @@ export class OBRService {
       OBR.onReady(async () => {
         this.isInitialized = true;
         this.setupContextMenu();
+        await this.setActionWidth(525);
         if (onReady) onReady();
       });
     } else {
@@ -273,7 +274,7 @@ export class OBRService {
   }
 
   /**
-   * Select a token on the map and center the viewport on it if possible
+   * Select a token on the map and center the viewport on it with comfortable tactical zoom
    */
   public static async selectToken(tokenId: string): Promise<void> {
     if (!OBR.isAvailable) return;
@@ -281,7 +282,18 @@ export class OBRService {
       await OBR.player.select([tokenId]);
       const bounds = await OBR.scene.items.getItemBounds([tokenId]);
       if (bounds) {
-        await OBR.viewport.animateToBounds(bounds);
+        // Expand bounds around token center to provide a comfortable tactical zoom instead of an extreme close-up
+        const targetWidth = Math.max(bounds.width * 6, 2400);
+        const targetHeight = Math.max(bounds.height * 6, 1600);
+        const halfWidth = targetWidth / 2;
+        const halfHeight = targetHeight / 2;
+        await OBR.viewport.animateToBounds({
+          min: { x: bounds.center.x - halfWidth, y: bounds.center.y - halfHeight },
+          max: { x: bounds.center.x + halfWidth, y: bounds.center.y + halfHeight },
+          width: targetWidth,
+          height: targetHeight,
+          center: bounds.center,
+        });
       }
     } catch (err) {
       console.warn('Failed to select/center token:', err);
@@ -295,7 +307,7 @@ export class OBRService {
     if (!OBR.isAvailable) return;
     try {
       await OBR.scene.items.updateItems([tokenId], (items) => {
-        if (items[0]) {
+        if (items[0] && items[0].metadata) {
           delete items[0].metadata[METADATA_KEY];
         }
       });
@@ -313,6 +325,30 @@ export class OBRService {
       await OBR.notification.show(message);
     } catch {
       // Ignore
+    }
+  }
+
+  /**
+   * Dynamically adjust the action popover width in Owlbear Rodeo
+   */
+  public static async setActionWidth(width: number): Promise<void> {
+    if (!OBR.isAvailable) return;
+    try {
+      await OBR.action.setWidth(width);
+    } catch (err) {
+      console.warn('Could not set action width in OBR:', err);
+    }
+  }
+
+  /**
+   * Get the current action popover width from Owlbear Rodeo
+   */
+  public static async getActionWidth(): Promise<number | undefined> {
+    if (!OBR.isAvailable) return undefined;
+    try {
+      return await OBR.action.getWidth();
+    } catch {
+      return undefined;
     }
   }
 

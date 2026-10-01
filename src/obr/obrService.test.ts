@@ -68,6 +68,8 @@ const mockOBR = {
   action: {
     isOpen: vi.fn().mockResolvedValue(false),
     open: vi.fn().mockResolvedValue(undefined),
+    setWidth: vi.fn().mockResolvedValue(undefined),
+    getWidth: vi.fn().mockResolvedValue(525),
     setHeight: vi.fn().mockResolvedValue(undefined),
     getHeight: vi.fn().mockResolvedValue(600),
   },
@@ -243,10 +245,28 @@ describe('OBRService', () => {
       expect(capturedDraft[0].metadata[METADATA_KEY]).toBeUndefined();
     });
 
-    it('should select token and animate viewport bounds', async () => {
+    it('should select token and animate viewport bounds with reduced zoom padding', async () => {
+      mockOBR.scene.items.getItemBounds.mockResolvedValue({
+        min: { x: 0, y: 0 },
+        max: { x: 100, y: 100 },
+        width: 100,
+        height: 100,
+        center: { x: 50, y: 50 },
+      });
       await OBRService.selectToken('tok-1');
       expect(mockOBR.player.select).toHaveBeenCalledWith(['tok-1']);
-      expect(mockOBR.viewport.animateToBounds).toHaveBeenCalled();
+      expect(mockOBR.viewport.animateToBounds).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 2400,
+          height: 1600,
+          center: { x: 50, y: 50 },
+        })
+      );
+    });
+
+    it('should set action width via OBR.action.setWidth', async () => {
+      await OBRService.setActionWidth(525);
+      expect(mockOBR.action.setWidth).toHaveBeenCalledWith(525);
     });
 
     it('should display in-room notifications via OBR.notification.show', async () => {

@@ -19,7 +19,8 @@ interface HeaderProps {
   linkedTokenId?: string | null;
   sceneCharacters?: SceneCharacterItem[];
   onSelectRosterCharacter?: (tokenId: string) => void;
-  onUnlinkToken?: () => void;
+  onSelectStandalone?: () => void;
+  onUnlinkToken?: (tokenId?: string) => void;
   onExport: () => void;
   onImport: () => void;
   allCollapsed?: boolean;
@@ -49,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   linkedTokenId,
   sceneCharacters,
   onSelectRosterCharacter,
+  onSelectStandalone,
   onUnlinkToken,
   onExport,
   onImport,
@@ -233,6 +235,37 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1 mb-2">
+            {/* Standalone Local Character Card */}
+            {onSelectStandalone && (
+              <div
+                onClick={() => {
+                  onSelectStandalone();
+                  setIsRosterOpen(false);
+                }}
+                className={`p-2 border cursor-pointer transition-colors ${
+                  !linkedTokenId
+                    ? 'bg-mb-yellow/20 border-mb-yellow text-mb-yellow'
+                    : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-mb-bone'
+                }`}
+                title="Switch to standalone character (stored in local browser storage)"
+              >
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-bold text-xs uppercase truncate flex items-center gap-1.5">
+                    <span className={`inline-block w-2 h-2 rounded-full ${!linkedTokenId ? 'bg-green-500 animate-pulse' : 'bg-zinc-500'}`} />
+                    STANDALONE SHEET (LOCAL)
+                  </span>
+                  {!linkedTokenId && (
+                    <span className="text-[9px] font-mono bg-mb-yellow text-mb-black px-1 font-black shrink-0">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <div className="text-[9px] font-mono text-zinc-400 mt-0.5">
+                  Offline sheet not bound to any map token
+                </div>
+              </div>
+            )}
+
             {sceneCharacters.length === 0 ? (
               <div className="text-[11px] font-mono text-zinc-400 p-3 text-center border border-dashed border-zinc-700 bg-zinc-950">
                 No character tokens found on the map yet. Drag an image token to the map to roll a doomed scvm!
@@ -271,8 +304,20 @@ export const Header: React.FC<HeaderProps> = ({
                         HP: {sc.character.hp.current}/{sc.character.hp.max}
                       </span>
                     </div>
-                    <div className="text-[9px] font-mono text-zinc-500 mt-0.5 truncate">
-                      TOKEN: {sc.name}
+                    <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 mt-1">
+                      <span className="truncate">TOKEN: {sc.name}</span>
+                      {onUnlinkToken && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onUnlinkToken(sc.id);
+                          }}
+                          className="text-mb-pink hover:underline uppercase text-[9px] font-bold ml-1 shrink-0"
+                          title={`Detach "${sc.name}" from its character`}
+                        >
+                          [DETACH]
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -286,7 +331,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => {
                   if (onUnlinkToken) {
-                    onUnlinkToken();
+                    onUnlinkToken(linkedTokenId);
                     setIsRosterOpen(false);
                   }
                 }}
@@ -294,7 +339,7 @@ export const Header: React.FC<HeaderProps> = ({
                 title="Detach active sheet from token to standalone mode"
               >
                 <Unlink className="w-3 h-3" />
-                Detach to Standalone
+                Detach Active Token
               </button>
             ) : (
               <span className="text-zinc-500">Standalone Sheet (Local)</span>
@@ -314,7 +359,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               {onUnlinkToken && (
                 <button
-                  onClick={onUnlinkToken}
+                  onClick={() => onUnlinkToken(linkedTokenId || undefined)}
                   className="text-mb-pink hover:underline uppercase text-[9px] font-bold ml-1"
                   title="Detach from map token to standalone mode"
                 >

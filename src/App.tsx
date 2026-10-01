@@ -103,13 +103,56 @@ export const App: React.FC = () => {
     }
   };
 
-  // Detach sheet from token to standalone mode
-  const handleUnlinkToken = async () => {
-    if (linkedTokenRef.current) {
-      await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
-      const name = linkedTokenRef.current.name;
+  // Detach sheet from token to standalone mode (persists removal of metadata from token)
+  const handleUnlinkToken = async (targetTokenId?: string) => {
+    const tokenIdToUnlink = targetTokenId || linkedTokenRef.current?.id;
+    if (!tokenIdToUnlink) return;
+
+    if (isSwitchingRef.current) return;
+    isSwitchingRef.current = true;
+    try {
+      const isCurrent = linkedTokenRef.current?.id === tokenIdToUnlink;
+      const name = isCurrent
+        ? linkedTokenRef.current?.name
+        : sceneCharacters.find((c) => c.id === tokenIdToUnlink)?.name || 'Map Token';
+
+      // 1. Remove metadata from the token in OBR
+      await OBRService.unlinkToken(tokenIdToUnlink);
+
+      // 2. If it was the currently linked token, revert local sheet to standalone mode
+      if (isCurrent) {
+        setLinkedToken(null);
+        saveCharacterToStorage(characterRef.current);
+      }
+
+      // 3. Update scene characters list immediately
+      setSceneCharacters((prev) => prev.filter((c) => c.id !== tokenIdToUnlink));
+
+      OBRService.notify(`Detached token "${name}". It is no longer bound to any character.`);
+    } finally {
+      isSwitchingRef.current = false;
+    }
+  };
+
+  // Switch to standalone local storage sheet
+  const handleSelectStandalone = async () => {
+    if (isSwitchingRef.current) return;
+    isSwitchingRef.current = true;
+    try {
+      // 1. Auto-persist current token character if linked
+      if (linkedTokenRef.current) {
+        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+      }
+      // 2. Set to standalone mode
       setLinkedToken(null);
-      OBRService.notify(`Detached from token "${name}". Operating in standalone mode.`);
+      // 3. Load standalone character from local storage
+      const localChar = loadCharacterFromStorage();
+      if (localChar) {
+        setCharacter(localChar);
+      }
+      OBRService.notify('Switched to Standalone (Local) sheet.');
+    } finally {
+      isSwitchingRef.current = false;
     }
   };
 
@@ -621,6 +664,7 @@ export const App: React.FC = () => {
           linkedTokenId={linkedToken?.id}
           sceneCharacters={sceneCharacters}
           onSelectRosterCharacter={handleSwitchToToken}
+          onSelectStandalone={handleSelectStandalone}
           onUnlinkToken={handleUnlinkToken}
           onExport={handleExport}
           onImport={handleImport}
