@@ -8,12 +8,16 @@ interface ScrollsSectionProps {
   character: Character;
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   onInvokeScroll: (scroll: Scroll) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   character,
   onUpdateCharacter,
   onInvokeScroll,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const [newScrollName, setNewScrollName] = useState('');
   const [newScrollType, setNewScrollType] = useState<'unclean' | 'sacred'>('unclean');
@@ -69,6 +73,33 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
     }));
   };
 
+  const collapsedElement = (
+    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+      {isArmorRestricted ? (
+        <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1.5 py-0.5 uppercase">
+          DISABLED (ARMOR)
+        </span>
+      ) : (
+        <>
+          <span className="text-[10px] font-mono border border-mb-charcoal bg-mb-dark px-1.5 py-0.5 text-mb-white/80">
+            {character.scrolls.length} {character.scrolls.length === 1 ? 'scroll' : 'scrolls'}
+          </span>
+
+          {character.scrolls.length > 0 && (
+            <button
+              onClick={() => onInvokeScroll(character.scrolls[0])}
+              className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+              title={`Invoke ${character.scrolls[0].name} (Presence DR12)`}
+            >
+              <Wand2 className="w-3 h-3 shrink-0" />
+              <span className="truncate">{character.scrolls[0].name}</span>
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+
   return (
     <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-pink">
       {/* Standardized Section Header */}
@@ -77,6 +108,9 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
         subtitle="Presence DR12 to Invoke"
         icon={<ScrollIcon className="w-3.5 h-3.5 text-mb-pink" />}
         accentColor="pink"
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+        collapsedElement={collapsedElement}
         rightElement={
           <button
             disabled={isArmorRestricted}
@@ -94,7 +128,9 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
         }
       />
 
-      {/* Armor Restriction Banner */}
+      {!isCollapsed && (
+        <>
+          {/* Armor Restriction Banner */}
       {isArmorRestricted && (
         <div className="mb-2 p-1.5 bg-mb-pink/15 border border-mb-pink text-mb-pink flex items-center gap-2 shadow-brutal-sm">
           <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse text-mb-pink" />
@@ -278,6 +314,8 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
           </button>
         </fieldset>
       </form>
+        </>
+      )}
     </section>
   );
 };

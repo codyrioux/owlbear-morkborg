@@ -1,5 +1,5 @@
 import React from 'react';
-import { Skull, Moon, Sun, Dices, Download, Upload, Link } from 'lucide-react';
+import { Skull, Moon, Sun, Dices, Download, Upload, Link, Minimize2, Maximize2 } from 'lucide-react';
 import { Character } from '../types/morkborg';
 
 interface HeaderProps {
@@ -12,6 +12,8 @@ interface HeaderProps {
   linkedTokenName?: string | null;
   onExport: () => void;
   onImport: () => void;
+  allCollapsed?: boolean;
+  onToggleCollapseAll?: () => void;
 }
 
 const CLASSES = [
@@ -34,6 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   linkedTokenName,
   onExport,
   onImport,
+  allCollapsed,
+  onToggleCollapseAll,
 }) => {
   return (
     <header className="relative bg-mb-yellow text-mb-black px-3 py-2 border-b-4 border-mb-black shadow-brutal select-none">
@@ -106,6 +110,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Upload className="w-3 h-3" />
           </button>
+
+          {onToggleCollapseAll && (
+            <button
+              onClick={onToggleCollapseAll}
+              className="p-1 hover:bg-mb-black/15 border border-mb-black/40 text-mb-black"
+              title={allCollapsed ? "Expand All Sections" : "Collapse All Sections"}
+            >
+              {allCollapsed ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
+            </button>
+          )}
         </div>
       </div>
 

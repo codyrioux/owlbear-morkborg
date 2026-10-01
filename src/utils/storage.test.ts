@@ -3,7 +3,11 @@ import {
   loadCharacterFromStorage, 
   saveCharacterToStorage, 
   clearCharacterStorage, 
-  CHARACTER_STORAGE_KEY 
+  CHARACTER_STORAGE_KEY,
+  loadCollapsedSectionsFromStorage,
+  saveCollapsedSectionsToStorage,
+  DEFAULT_COLLAPSED_SECTIONS,
+  COLLAPSED_SECTIONS_STORAGE_KEY
 } from './storage';
 import { generateRandomCharacter } from './morkborgRules';
 import { Character } from '../types/morkborg';
@@ -122,5 +126,30 @@ describe('Local Storage Persistence', () => {
 
     clearCharacterStorage();
     expect(loadCharacterFromStorage()).toBeNull();
+  });
+
+  describe('Collapsed Sections Persistence', () => {
+    it('should return DEFAULT_COLLAPSED_SECTIONS when localStorage is empty', () => {
+      expect(loadCollapsedSectionsFromStorage()).toEqual(DEFAULT_COLLAPSED_SECTIONS);
+    });
+
+    it('should save and load collapsed sections accurately', () => {
+      const state = {
+        abilities: true,
+        vitals: false,
+        combat: true,
+        inventory: false,
+        scrolls: true,
+      };
+
+      saveCollapsedSectionsToStorage(state);
+      const loaded = loadCollapsedSectionsFromStorage();
+      expect(loaded).toEqual(state);
+    });
+
+    it('should fallback gracefully on corrupted json in collapsed sections', () => {
+      localStorage.setItem(COLLAPSED_SECTIONS_STORAGE_KEY, 'invalid json {');
+      expect(loadCollapsedSectionsFromStorage()).toEqual(DEFAULT_COLLAPSED_SECTIONS);
+    });
   });
 });

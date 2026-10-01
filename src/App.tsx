@@ -31,7 +31,13 @@ import { SpendOmenModal } from './components/SpendOmenModal';
 import { BrokenModal } from './components/BrokenModal';
 import { ExportImportModal } from './components/ExportImportModal';
 import { GettingBetterModal } from './components/GettingBetterModal';
-import { loadCharacterFromStorage, saveCharacterToStorage } from './utils/storage';
+import { 
+  loadCharacterFromStorage, 
+  saveCharacterToStorage,
+  loadCollapsedSectionsFromStorage,
+  saveCollapsedSectionsToStorage,
+  CollapsedSections
+} from './utils/storage';
 
 export const App: React.FC = () => {
   const [character, setCharacter] = useState<Character>(() => {
@@ -42,6 +48,34 @@ export const App: React.FC = () => {
     return fresh;
   });
   const [linkedToken, setLinkedToken] = useState<{ id: string; name: string } | null>(null);
+
+  // Collapsed sections state
+  const [collapsedSections, setCollapsedSections] = useState<CollapsedSections>(() => {
+    return loadCollapsedSectionsFromStorage();
+  });
+
+  const handleToggleSection = (section: keyof CollapsedSections) => {
+    setCollapsedSections((prev) => {
+      const next = { ...prev, [section]: !prev[section] };
+      saveCollapsedSectionsToStorage(next);
+      return next;
+    });
+  };
+
+  const allCollapsed = Object.values(collapsedSections).every(Boolean);
+
+  const handleToggleCollapseAll = () => {
+    const targetState = !allCollapsed;
+    const next: CollapsedSections = {
+      abilities: targetState,
+      vitals: targetState,
+      combat: targetState,
+      inventory: targetState,
+      scrolls: targetState,
+    };
+    setCollapsedSections(next);
+    saveCollapsedSectionsToStorage(next);
+  };
 
   // Modals state
   const [activeRoll, setActiveRoll] = useState<RollResult | null>(null);
@@ -404,6 +438,8 @@ export const App: React.FC = () => {
         linkedTokenName={linkedToken?.name}
         onExport={handleExport}
         onImport={handleImport}
+        allCollapsed={allCollapsed}
+        onToggleCollapseAll={handleToggleCollapseAll}
       />
 
       {/* Main Content Area */}
@@ -413,6 +449,8 @@ export const App: React.FC = () => {
           character={character}
           onUpdateCharacter={setCharacter}
           onRollAbility={handleRollAbility}
+          isCollapsed={collapsedSections.abilities}
+          onToggleCollapse={() => handleToggleSection('abilities')}
         />
 
         {/* 3. Vitals: HP, Omens, Powers, Silver */}
@@ -421,6 +459,8 @@ export const App: React.FC = () => {
           onUpdateCharacter={setCharacter}
           onOpenSpendOmen={() => setIsSpendOmenOpen(true)}
           onOpenBrokenModal={() => setIsBrokenModalOpen(true)}
+          isCollapsed={collapsedSections.vitals}
+          onToggleCollapse={() => handleToggleSection('vitals')}
         />
 
         {/* 4. Combat: Armor, Defense, Weapons */}
@@ -431,12 +471,16 @@ export const App: React.FC = () => {
           onSoakArmor={handleSoakArmor}
           onAttack={handleAttack}
           onDamage={handleDamage}
+          isCollapsed={collapsedSections.combat}
+          onToggleCollapse={() => handleToggleSection('combat')}
         />
 
         {/* 5. Inventory & Encumbrance */}
         <InventorySection
           character={character}
           onUpdateCharacter={setCharacter}
+          isCollapsed={collapsedSections.inventory}
+          onToggleCollapse={() => handleToggleSection('inventory')}
         />
 
         {/* 6. Scrolls & Occult Powers */}
@@ -444,6 +488,8 @@ export const App: React.FC = () => {
           character={character}
           onUpdateCharacter={setCharacter}
           onInvokeScroll={handleInvokeScroll}
+          isCollapsed={collapsedSections.scrolls}
+          onToggleCollapse={() => handleToggleSection('scrolls')}
         />
 
         {/* 7. Getting Better (or worse) */}
@@ -521,12 +567,20 @@ export const App: React.FC = () => {
       {/* Footer / Doom Reminder */}
       <footer className="bg-mb-dark p-2 border-t-2 border-mb-charcoal flex items-center justify-between text-[10px] text-mb-white/50 font-punk">
         <span>MÖRK BORG is © Ockult Örtmästare Games & Stockholm Kartell.</span>
-        <button
-          onClick={() => setShowLog(!showLog)}
-          className="text-mb-yellow hover:text-mb-white border border-mb-yellow/40 px-2 py-0.5 font-bold uppercase font-brutal"
-        >
-          {showLog ? 'Hide Roll Log' : `Roll Log (${rollHistory.length})`}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleCollapseAll}
+            className="text-mb-white/70 hover:text-mb-yellow border border-mb-charcoal hover:border-mb-yellow/40 px-2 py-0.5 font-bold uppercase font-brutal text-[10px]"
+          >
+            {allCollapsed ? 'Expand All' : 'Collapse All'}
+          </button>
+          <button
+            onClick={() => setShowLog(!showLog)}
+            className="text-mb-yellow hover:text-mb-white border border-mb-yellow/40 px-2 py-0.5 font-bold uppercase font-brutal"
+          >
+            {showLog ? 'Hide Roll Log' : `Roll Log (${rollHistory.length})`}
+          </button>
+        </div>
       </footer>
 
       {/* MODALS */}

@@ -11,6 +11,8 @@ interface CombatSectionProps {
   onSoakArmor: () => void;
   onAttack: (weapon: Weapon) => void;
   onDamage: (weapon: Weapon) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const ARMOR_TIERS: { tier: ArmorTier; name: string; dr: string; penalty: string }[] = [
@@ -27,6 +29,8 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
   onSoakArmor,
   onAttack,
   onDamage,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const [newWeaponName, setNewWeaponName] = useState('');
   const [newWeaponType, setNewWeaponType] = useState<'melee' | 'ranged'>('melee');
@@ -96,6 +100,44 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
     }));
   };
 
+  const collapsedElement = (
+    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+      {/* Armor Soak Badge */}
+      <span className="text-[10px] font-mono border border-mb-charcoal bg-mb-dark px-1.5 py-0.5 text-mb-white">
+        SOAK: <strong className="text-mb-yellow">{effectiveTier > 0 ? (effectiveTier === 1 ? '-d2' : effectiveTier === 2 ? '-d4' : '-d6') : '0'}{armor.hasShield ? ' -1' : ''}</strong>
+      </span>
+
+      {/* Tier Penalty Badge if active */}
+      {effectiveTier >= 2 && (
+        <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1 uppercase">
+          {effectiveTier === 2 ? '+2 DEF' : '+2 DEF'}
+        </span>
+      )}
+
+      {/* Defend Roll Button */}
+      <button
+        onClick={onDefend}
+        className="bg-mb-bone hover:bg-stone-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+        title="Roll Agility Defence against incoming attack"
+      >
+        <Shield className="w-3 h-3" />
+        <span>DEFEND</span>
+      </button>
+
+      {/* Primary Weapon Attack Button */}
+      {character.weapons.length > 0 && (
+        <button
+          onClick={() => onAttack(character.weapons[0])}
+          className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+          title={`Attack with ${character.weapons[0].name} (${character.weapons[0].damageDie})`}
+        >
+          <Sword className="w-3 h-3 shrink-0" />
+          <span className="truncate">{character.weapons[0].name}</span>
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-bone">
       {/* Standardized Section Header */}
@@ -104,6 +146,9 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
         subtitle="Armor • Attacks • Defense"
         icon={<Sword className="w-3.5 h-3.5 text-mb-bone" />}
         accentColor="bone"
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+        collapsedElement={collapsedElement}
         rightElement={
           effectiveTier >= 2 ? (
             <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1 uppercase">
@@ -113,7 +158,8 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+      {!isCollapsed && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
         {/* LEFT COLUMN: Armor & Defense */}
         <div className="bg-mb-black p-2 border border-mb-charcoal shadow-brutal-sm flex flex-col justify-between">
           <div>
@@ -358,6 +404,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
           </form>
         </div>
       </div>
+      )}
     </section>
   );
 };

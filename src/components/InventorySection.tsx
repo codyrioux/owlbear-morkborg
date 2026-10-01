@@ -7,11 +7,15 @@ import { SectionHeader } from './SectionHeader';
 interface InventorySectionProps {
   character: Character;
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const InventorySection: React.FC<InventorySectionProps> = ({
   character,
   onUpdateCharacter,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const [newItemName, setNewItemName] = useState('');
   const [newItemSlots, setNewItemSlots] = useState<number>(1);
@@ -68,6 +72,32 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
     }));
   };
 
+  const collapsedElement = (
+    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+      {/* Slots Chip */}
+      <span className={`text-[10px] font-mono px-1.5 py-0.5 border ${
+        capacity.isOverencumbered
+          ? 'border-mb-pink text-mb-pink bg-mb-pink/20 font-bold'
+          : 'border-mb-charcoal bg-mb-dark text-mb-white'
+      }`}>
+        SLOTS: <strong className={capacity.isOverencumbered ? 'text-mb-pink' : 'text-mb-yellow'}>{capacity.usedSlots}/{capacity.maxSlots}</strong>
+      </span>
+
+      {/* Items Count Chip */}
+      <span className="text-[10px] font-mono border border-mb-charcoal bg-mb-dark px-1.5 py-0.5 text-mb-white/80">
+        {character.inventory.length} {character.inventory.length === 1 ? 'item' : 'items'}
+      </span>
+
+      {/* Overencumbered Warning */}
+      {capacity.isOverencumbered && (
+        <span className="bg-mb-pink text-white text-[9px] font-black px-1.5 py-0.5 border border-black uppercase tracking-wider animate-pulse flex items-center gap-1 shadow-brutal-sm">
+          <AlertTriangle className="w-2.5 h-2.5" />
+          <span>+2 DR ENC</span>
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow">
       {/* Standardized Section Header */}
@@ -76,6 +106,9 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
         subtitle="STR + 8 Slots"
         icon={<Package className="w-3.5 h-3.5 text-mb-yellow" />}
         accentColor="yellow"
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+        collapsedElement={collapsedElement}
         rightElement={
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
             <div className="text-xs font-mono">
@@ -98,7 +131,9 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
         }
       />
 
-      {/* Breakdown helper if any fixed equipment exists */}
+      {!isCollapsed && (
+        <>
+          {/* Breakdown helper if any fixed equipment exists */}
       {(capacity.armorSlots > 0 || capacity.shieldSlots > 0 || capacity.weaponsSlots > 0 || capacity.scrollsSlots > 0 || Math.floor(character.silver / 100) > 0) && (
         <div className="text-[9px] font-mono text-mb-white/40 mb-1.5 px-1 truncate">
           Equipped slots:{' '}
@@ -197,6 +232,8 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
           <span>ADD</span>
         </button>
       </form>
+        </>
+      )}
     </section>
   );
 };

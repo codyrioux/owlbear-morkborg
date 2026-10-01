@@ -9,6 +9,8 @@ interface AbilitiesGridProps {
   character: Character;
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   onRollAbility: (ability: AbilityName, modifier: number, targetDR: number, drPenalty?: number) => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const ABILITY_CONFIG: Record<
@@ -54,10 +56,12 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
   character,
   onUpdateCharacter,
   onRollAbility,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const [targetDR, setTargetDR] = useState<number>(12);
 
-  const abilities: AbilityName[] = ['agility', 'presence', 'strength', 'toughness'];
+  const abilities: AbilityName[] = ['strength', 'agility', 'presence', 'toughness'];
 
   const capacity = calculateCarryingCapacity(
     character.abilities.strength.modifier,
@@ -82,6 +86,65 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
     }));
   };
 
+  const collapsedElement = (
+    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+      {/* Target DR Select */}
+      <div className="flex items-center gap-1">
+        <label className="font-brutal text-[9px] font-bold text-mb-white/80">DR:</label>
+        <select
+          value={targetDR}
+          onChange={(e) => setTargetDR(Number(e.target.value))}
+          className="bg-mb-black text-mb-yellow border border-mb-yellow/60 font-brutal font-bold text-[10px] px-1 py-0.5 focus:outline-none cursor-pointer"
+        >
+          {DR_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.value}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Penalty Badges */}
+      {effectiveTier === 2 && (
+        <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+          +2 AGI
+        </span>
+      )}
+      {effectiveTier >= 3 && (
+        <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+          +4 AGI
+        </span>
+      )}
+      {capacity.isOverencumbered && (
+        <span className="text-[9px] font-bold text-mb-pink border border-mb-pink px-1">
+          +2 ENC
+        </span>
+      )}
+
+      {/* Quick-Roll Buttons for STR, AGI, PRS, TGH */}
+      <div className="flex items-center gap-1">
+        {abilities.map((key) => {
+          const config = ABILITY_CONFIG[key];
+          const modifier = character.abilities[key].modifier;
+          const penalty = getAbilityDRPenalty(key, character.armor, capacity.isOverencumbered);
+          const effectiveDR = targetDR + penalty;
+
+          return (
+            <button
+              key={key}
+              onClick={() => onRollAbility(key, modifier, effectiveDR, penalty)}
+              className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black shadow-brutal-sm flex items-center gap-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+              title={`Roll ${config.label} (${formatModifier(modifier)}) vs DR ${effectiveDR}`}
+            >
+              <span>{config.shortLabel}</span>
+              <span className="font-mono font-black">{formatModifier(modifier)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <section className="p-2.5 bg-mb-dark border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow">
       {/* Standardized Section Header */}
@@ -90,6 +153,9 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
         subtitle="d20 + mod vs DR"
         icon={<Dices className="w-3.5 h-3.5 text-mb-yellow" />}
         accentColor="yellow"
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+        collapsedElement={collapsedElement}
         rightElement={
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
             <label className="font-brutal text-[10px] font-bold text-mb-white/80">
@@ -126,7 +192,8 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
       />
 
       {/* Grid of 4 Abilities */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      {!isCollapsed && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {abilities.map((abilityKey) => {
           const config = ABILITY_CONFIG[abilityKey];
           const ability = character.abilities[abilityKey];
@@ -204,6 +271,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           );
         })}
       </div>
+      )}
     </section>
   );
 };

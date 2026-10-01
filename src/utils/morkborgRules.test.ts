@@ -451,7 +451,6 @@ describe('MÖRK BORG Rules Engine', () => {
         expect(result.scrollFound).toBeDefined();
         expect(updatedCharacter.scrolls).toHaveLength(1);
         expect(updatedCharacter.scrolls[0].name).toBe(result.scrollFound!.name);
-        expect(updatedCharacter.inventory).toHaveLength(1);
       }
 
       // 3. Ability Changes

@@ -8,6 +8,8 @@ interface VitalsSectionProps {
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   onOpenSpendOmen: () => void;
   onOpenBrokenModal: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const VitalsSection: React.FC<VitalsSectionProps> = ({
@@ -15,6 +17,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   onUpdateCharacter,
   onOpenSpendOmen,
   onOpenBrokenModal,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const hpCurrent = character.hp.current;
   const hpMax = character.hp.max;
@@ -53,6 +57,72 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   // HP Bar Percentage
   const hpPercent = Math.max(0, Math.min(100, Math.round((hpCurrent / (hpMax || 1)) * 100)));
 
+  const collapsedElement = (
+    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+      {/* HP Chip */}
+      <div
+        className={`flex items-center gap-1 px-1.5 py-0.5 border text-[11px] font-mono font-bold ${
+          isZeroHp
+            ? 'border-mb-pink text-mb-pink bg-mb-pink/20 animate-pulse'
+            : 'border-mb-charcoal bg-mb-dark text-mb-white'
+        }`}
+        title={`Hit Points: ${hpCurrent}/${hpMax}`}
+      >
+        <Heart className={`w-3 h-3 ${isZeroHp ? 'text-mb-pink fill-mb-pink' : 'text-mb-pink'}`} />
+        <span>{hpCurrent}/{hpMax}</span>
+      </div>
+
+      {/* Omens Chip */}
+      <div
+        className="flex items-center gap-1 px-1.5 py-0.5 border border-mb-charcoal bg-mb-dark text-[11px] font-mono font-bold text-mb-yellow"
+        title={`Omens: ${character.omens.current}/${character.omens.max} (${character.omens.dieType})`}
+      >
+        <Sparkles className="w-3 h-3 text-mb-yellow" />
+        <span>{character.omens.current}/{character.omens.max}</span>
+      </div>
+
+      {/* Powers Chip */}
+      <div
+        className="flex items-center gap-1 px-1.5 py-0.5 border border-mb-charcoal bg-mb-dark text-[11px] font-mono font-bold text-mb-pink"
+        title={`Occult Powers: ${character.powers.current}/${character.powers.max}`}
+      >
+        <Wand2 className="w-3 h-3 text-mb-pink" />
+        <span>{character.powers.current}/{character.powers.max}</span>
+      </div>
+
+      {/* Silver Chip */}
+      <div
+        className="flex items-center gap-1 px-1.5 py-0.5 border border-mb-charcoal bg-mb-dark text-[11px] font-mono font-bold text-mb-bone"
+        title={`Silver: ${character.silver}`}
+      >
+        <Coins className="w-3 h-3 text-yellow-500" />
+        <span>{character.silver}s</span>
+      </div>
+
+      {/* Broken Action Button if 0 HP */}
+      {isZeroHp && (
+        <button
+          onClick={onOpenBrokenModal}
+          className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-black text-[10px] px-2 py-0.5 border border-black uppercase tracking-wider animate-pulse shadow-brutal-sm"
+          title="Roll on the Broken table (0 HP)"
+        >
+          BROKEN
+        </button>
+      )}
+
+      {/* Spend Omen Button if Omens available */}
+      {!isZeroHp && character.omens.current > 0 && (
+        <button
+          onClick={onOpenSpendOmen}
+          className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black uppercase tracking-wider shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+          title="Spend an Omen"
+        >
+          OMEN
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <section className="p-2.5 bg-mb-black border-b-2 border-mb-charcoal border-l-4 border-l-mb-pink">
       {/* Standardized Section Header */}
@@ -61,6 +131,9 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
         subtitle="HP • Omens • Powers • Silver"
         icon={<Heart className="w-3.5 h-3.5 text-mb-pink fill-mb-pink" />}
         accentColor="pink"
+        isCollapsed={isCollapsed}
+        onToggleCollapse={onToggleCollapse}
+        collapsedElement={collapsedElement}
         rightElement={
           isZeroHp ? (
             <span className="bg-mb-pink text-mb-white text-[10px] font-black px-1.5 py-0.5 uppercase tracking-wider animate-pulse border border-mb-black">
@@ -70,7 +143,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
         }
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      {!isCollapsed && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {/* 1. Hit Points */}
         <div
           className={`p-2 border flex flex-col justify-between shadow-brutal-sm ${
@@ -330,6 +404,7 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
           </div>
         </div>
       </div>
+      )}
     </section>
   );
 };
