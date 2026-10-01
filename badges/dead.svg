@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Outer circle -->
+  <circle cx="32" cy="32" r="30" fill="#0a0a0a" stroke="#ff0055" stroke-width="3" />
+  <circle cx="32" cy="32" r="26" fill="#0a0a0a" />
+
+  <!-- Tombstone Shape -->
+  <path d="
+    M 16 46
+    L 16 26
+    C 16 16, 48 16, 48 26
+    L 48 46
+    Z"
+    fill="#1a1a1a"
+    stroke="#ded9c5"
+    stroke-width="2"
+  />
+
+  <!-- Gothic Cross on Tombstone -->
+  <path d="M 32 18 L 32 40" stroke="#fee700" stroke-width="3" stroke-linecap="square" />
+  <path d="M 24 26 L 40 26" stroke="#fee700" stroke-width="3" stroke-linecap="square" />
+
+  <!-- Blood Splatters -->
+  <circle cx="21" cy="38" r="2" fill="#900c14" />
+  <circle cx="43" cy="36" r="1.5" fill="#900c14" />
+  <path d="M 32 40 L 32 45" stroke="#900c14" stroke-width="2" />
+
+  <!-- DEAD Banner -->
+  <rect x="8" y="46" width="48" height="14" fill="#ff0055" stroke="#0a0a0a" stroke-width="2" rx="1" />
+  <text x="32" y="57" fill="#fee700" font-family="monospace, sans-serif" font-weight="900" font-size="10" text-anchor="middle" letter-spacing="2">DEAD</text>
+</svg>
