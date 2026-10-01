@@ -1,7 +1,9 @@
 import React from 'react';
 import { Swords, Eye, Shield, Heart, Sparkles, Skull, AlertCircle, RefreshCw } from 'lucide-react';
+import { Character } from '../../types/morkborg';
 import { GMState, GMService } from '../../obr/gmService';
 import { OBRService } from '../../obr/obrService';
+import { BadgeService } from '../../obr/badgeService';
 import { SceneCharacterItem } from '../Header';
 import { rollGroupInitiative } from '../../utils/combatRules';
 
@@ -56,6 +58,43 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
     } else {
       await OBRService.selectToken(tokenId);
     }
+  };
+
+  const handleToggleCondition = async (
+    tokenId: string,
+    char: Character,
+    condition: 'broken' | 'infected' | 'starving' | 'dead'
+  ) => {
+    const updated = JSON.parse(JSON.stringify(char)) as Character;
+    if (condition === 'infected') {
+      updated.conditions.infected = !updated.conditions.infected;
+    } else if (condition === 'starving') {
+      updated.conditions.starving = !updated.conditions.starving;
+    } else if (condition === 'broken') {
+      const isNowBroken = !updated.broken?.isBroken;
+      updated.broken = { isBroken: isNowBroken };
+      if (isNowBroken && updated.hp.current > 0) updated.hp.current = 0;
+    } else if (condition === 'dead') {
+      const isDead = updated.broken?.result?.roll === 4;
+      if (isDead) {
+        updated.broken = { isBroken: false };
+      } else {
+        updated.broken = {
+          isBroken: true,
+          result: { roll: 4, title: 'Dead', description: 'Slain in combat.' },
+        };
+        updated.hp.current = 0;
+      }
+    }
+
+    await OBRService.saveCharacter(updated, tokenId);
+    await BadgeService.syncTokenConditionBadges(tokenId, {
+      broken: updated.hp.current <= 0 || Boolean(updated.broken?.isBroken),
+      infected: Boolean(updated.conditions.infected),
+      starving: Boolean(updated.conditions.starving),
+      dead: updated.broken?.result?.roll === 4,
+    });
+    OBRService.notify(`Toggled ${condition.toUpperCase()} on "${char.name}"`);
   };
 
   return (
@@ -175,25 +214,45 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
                       </span>
                     </div>
 
-                    {/* Condition Badges */}
+                    {/* Condition Badges (Interactive Toggles) */}
                     <div className="flex items-center gap-1 shrink-0">
-                      {isBroken && (
-                        <span className="bg-mb-pink text-white text-[8px] font-black uppercase px-1 py-0.5 animate-pulse flex items-center gap-0.5">
-                          <Skull className="w-2.5 h-2.5" />
-                          <span>BROKEN</span>
-                        </span>
-                      )}
-                      {character.conditions.infected && (
-                        <span className="bg-mb-blood text-white text-[8px] font-bold uppercase px-1 py-0.5 flex items-center gap-0.5">
-                          <AlertCircle className="w-2.5 h-2.5" />
-                          <span>INFECTED</span>
-                        </span>
-                      )}
-                      {character.conditions.starving && (
-                        <span className="bg-mb-dark border border-mb-bone/40 text-mb-bone text-[8px] font-bold uppercase px-1 py-0.5">
-                          STARVING
-                        </span>
-                      )}
+                      <button
+                        onClick={() => handleToggleCondition(id, character, 'broken')}
+                        className={`text-[8px] font-black uppercase px-1.5 py-0.5 border flex items-center gap-0.5 transition-colors ${
+                          isBroken
+                            ? 'bg-mb-pink text-white border-black animate-pulse shadow-brutal-sm'
+                            : 'bg-mb-black/40 text-mb-bone/40 border-mb-bone/20 hover:text-white'
+                        }`}
+                        title="Toggle Broken (0 HP)"
+                      >
+                        <Skull className="w-2.5 h-2.5" />
+                        <span>BROKEN</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleToggleCondition(id, character, 'infected')}
+                        className={`text-[8px] font-bold uppercase px-1.5 py-0.5 border flex items-center gap-0.5 transition-colors ${
+                          character.conditions.infected
+                            ? 'bg-mb-blood text-white border-black shadow-brutal-sm'
+                            : 'bg-mb-black/40 text-mb-bone/40 border-mb-bone/20 hover:text-white'
+                        }`}
+                        title="Toggle Infected condition"
+                      >
+                        <AlertCircle className="w-2.5 h-2.5" />
+                        <span>INFECTED</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleToggleCondition(id, character, 'starving')}
+                        className={`text-[8px] font-bold uppercase px-1.5 py-0.5 border transition-colors ${
+                          character.conditions.starving
+                            ? 'bg-mb-bone text-mb-black border-black font-black shadow-brutal-sm'
+                            : 'bg-mb-black/40 text-mb-bone/40 border-mb-bone/20 hover:text-white'
+                        }`}
+                        title="Toggle Starving condition"
+                      >
+                        STARVING
+                      </button>
                     </div>
                   </div>
 

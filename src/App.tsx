@@ -33,6 +33,7 @@ import { ExportImportModal } from './components/ExportImportModal';
 import { GettingBetterModal } from './components/GettingBetterModal';
 import { MiseryNotificationModal } from './components/MiseryNotificationModal';
 import { GMService, TriggeredMisery } from './obr/gmService';
+import { BadgeService } from './obr/badgeService';
 import { 
   loadCharacterFromStorage, 
   saveCharacterToStorage,
@@ -371,6 +372,15 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (isSwitchingRef.current) return;
     OBRService.saveCharacter(character, linkedToken?.id);
+
+    if (linkedToken?.id) {
+      BadgeService.syncTokenConditionBadges(linkedToken.id, {
+        broken: character.hp.current <= 0 || Boolean(character.broken?.isBroken),
+        infected: Boolean(character.conditions.infected),
+        starving: Boolean(character.conditions.starving),
+        dead: character.broken?.result?.roll === 4,
+      });
+    }
   }, [character, linkedToken]);
 
   // Execute and record a roll

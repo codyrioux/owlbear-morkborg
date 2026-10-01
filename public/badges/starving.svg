@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Outer circle -->
+  <circle cx="32" cy="32" r="30" fill="#0a0a0a" stroke="#ded9c5" stroke-width="3" />
+  <circle cx="32" cy="32" r="26" fill="#ded9c5" fill-opacity="0.1" />
+
+  <!-- Spinal Column -->
+  <path d="M 32 10 L 32 44" stroke="#ded9c5" stroke-width="3" stroke-linecap="round" />
+  
+  <!-- Vertebrae notches -->
+  <line x1="30" y1="12" x2="34" y2="12" stroke="#fee700" stroke-width="2" />
+  <line x1="30" y1="19" x2="34" y2="19" stroke="#fee700" stroke-width="2" />
+  <line x1="30" y1="26" x2="34" y2="26" stroke="#fee700" stroke-width="2" />
+  <line x1="30" y1="33" x2="34" y2="33" stroke="#fee700" stroke-width="2" />
+  <line x1="30" y1="40" x2="34" y2="40" stroke="#fee700" stroke-width="2" />
+
+  <!-- Ribs (Pair 1 - top) -->
+  <path d="M 32 14 C 24 12, 18 16, 20 22 C 22 25, 28 24, 32 20" stroke="#ded9c5" stroke-width="2" stroke-linecap="round" fill="none" />
+  <path d="M 32 14 C 40 12, 46 16, 44 22 C 42 25, 36 24, 32 20" stroke="#ded9c5" stroke-width="2" stroke-linecap="round" fill="none" />
+
+  <!-- Ribs (Pair 2 - mid) -->
+  <path d="M 32 21 C 22 19, 16 23, 18 30 C 20 33, 27 32, 32 27" stroke="#ded9c5" stroke-width="2.2" stroke-linecap="round" fill="none" />
+  <path d="M 32 21 C 42 19, 48 23, 46 30 C 44 33, 37 32, 32 27" stroke="#ded9c5" stroke-width="2.2" stroke-linecap="round" fill="none" />
+
+  <!-- Ribs (Pair 3 - low) -->
+  <path d="M 32 28 C 24 26, 18 30, 20 37 C 22 40, 28 39, 32 34" stroke="#ded9c5" stroke-width="2" stroke-linecap="round" fill="none" />
+  <path d="M 32 28 C 40 26, 46 30, 44 37 C 42 40, 36 39, 32 34" stroke="#ded9c5" stroke-width="2" stroke-linecap="round" fill="none" />
+
+  <!-- Ribs (Pair 4 - bottom floating) -->
+  <path d="M 32 35 C 26 34, 22 37, 24 42" stroke="#ded9c5" stroke-width="1.8" stroke-linecap="round" fill="none" />
+  <path d="M 32 35 C 38 34, 42 37, 40 42" stroke="#ded9c5" stroke-width="1.8" stroke-linecap="round" fill="none" />
+
+  <!-- Warning Banner -->
+  <rect x="6" y="48" width="52" height="12" fill="#0a0a0a" stroke="#ded9c5" stroke-width="1.5" rx="1" transform="rotate(-2 32 54)" />
+  <text x="32" y="57" fill="#ded9c5" font-family="monospace, sans-serif" font-weight="900" font-size="7.5" text-anchor="middle" letter-spacing="1" transform="rotate(-2 32 54)">STARVING</text>
+</svg>
