@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Sparkles, Wand2, Coins, Skull } from 'lucide-react';
 import { Character } from '../types/morkborg';
+import { toggleLuckyFeat } from '../utils/morkborgRules';
 import { SectionHeader } from './SectionHeader';
 
 interface VitalsSectionProps {
@@ -46,6 +47,7 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   };
 
   const handleOmenChange = (amount: number) => {
+    if (character.feats?.lucky) return;
     onUpdateCharacter((prev) => {
       const nextOmens = Math.max(0, Math.min(prev.omens.max, prev.omens.current + amount));
       return {
@@ -85,11 +87,19 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
 
       {/* Omens Chip */}
       <div
-        className="flex items-center gap-1 px-1.5 py-0.5 border border-mb-charcoal bg-mb-dark text-[11px] font-mono font-bold text-mb-yellow"
-        title={`Omens: ${character.omens.current}/${character.omens.max} (${character.omens.dieType})`}
+        className={`flex items-center gap-1 px-1.5 py-0.5 border text-[11px] font-mono font-bold ${
+          character.feats?.lucky
+            ? 'border-zinc-700 bg-mb-dark text-zinc-500'
+            : 'border-mb-charcoal bg-mb-dark text-mb-yellow'
+        }`}
+        title={
+          character.feats?.lucky
+            ? 'Omens: 0/0 (Locked by Lucky Feat)'
+            : `Omens: ${character.omens.current}/${character.omens.max} (${character.omens.dieType})`
+        }
       >
-        <Sparkles className="w-3 h-3 text-mb-yellow" />
-        <span>{character.omens.current}/{character.omens.max}</span>
+        <Sparkles className={`w-3 h-3 ${character.feats?.lucky ? 'text-zinc-500' : 'text-mb-yellow'}`} />
+        <span>{character.feats?.lucky ? '0/0 (LOCKED)' : `${character.omens.current}/${character.omens.max}`}</span>
       </div>
 
       {/* Powers Chip */}
@@ -125,7 +135,7 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
       )}
 
       {/* Spend Omen Button if Omens available */}
-      {!isZeroHp && character.omens.current > 0 && (
+      {!isZeroHp && !character.feats?.lucky && character.omens.current > 0 && (
         <button
           onClick={onOpenSpendOmen}
           disabled={isReadOnly}
@@ -286,52 +296,89 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
         </div>
 
         {/* 2. Omens */}
-        <div className="p-2 border border-mb-charcoal bg-mb-dark flex flex-col justify-between shadow-brutal-sm">
+        <div className={`p-2 border bg-mb-dark flex flex-col justify-between shadow-brutal-sm ${
+          character.feats?.lucky ? 'border-zinc-700 bg-zinc-950/60' : 'border-mb-charcoal'
+        }`}>
           <div className="flex items-center justify-between border-b border-mb-charcoal pb-1 mb-1">
-            <div className="flex items-center gap-1 text-mb-yellow">
+            <div className={`flex items-center gap-1 ${character.feats?.lucky ? 'text-zinc-400' : 'text-mb-yellow'}`}>
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <h3 className="font-brutal font-black text-[11px] tracking-wider uppercase">
                 OMENS
               </h3>
             </div>
-            <span className="text-[9px] font-mono text-mb-black bg-mb-yellow px-1 font-bold">
-              {character.omens.dieType}
+            <span className={`text-[9px] font-mono px-1 font-bold ${
+              character.feats?.lucky
+                ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                : 'text-mb-black bg-mb-yellow'
+            }`}>
+              {character.feats?.lucky ? 'LOCKED' : character.omens.dieType}
             </span>
           </div>
 
           <div className="flex items-center justify-center my-0.5 gap-1.5">
             <button
               onClick={() => handleOmenChange(-1)}
-              disabled={isReadOnly || character.omens.current <= 0}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
+              disabled={isReadOnly || Boolean(character.feats?.lucky) || character.omens.current <= 0}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-20 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               -
             </button>
 
-            <div className="text-2xl font-black font-brutal text-mb-yellow">
+            <div className={`text-2xl font-black font-brutal ${
+              character.feats?.lucky ? 'text-zinc-500' : 'text-mb-yellow'
+            }`}>
               {character.omens.current}{' '}
               <span className="text-xs text-mb-white/40 font-normal">/ {character.omens.max}</span>
             </div>
 
             <button
               onClick={() => handleOmenChange(1)}
-              disabled={isReadOnly || character.omens.current >= character.omens.max}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
+              disabled={isReadOnly || Boolean(character.feats?.lucky) || character.omens.current >= character.omens.max}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-20 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               +
             </button>
           </div>
 
-          <button
-            onClick={onOpenSpendOmen}
-            disabled={isReadOnly || character.omens.current <= 0}
-            className={`w-full mb-btn mb-btn-yellow text-[10px] py-1 flex items-center justify-center gap-1 disabled:opacity-30 ${
-              isReadOnly ? 'cursor-not-allowed' : ''
+          {character.feats?.lucky ? (
+            <button
+              disabled={true}
+              className="w-full mb-btn bg-zinc-900 border-zinc-700 text-zinc-500 text-[10px] py-1 flex items-center justify-center gap-1 opacity-50 cursor-not-allowed uppercase font-brutal"
+              title="Omens are lost and locked by Lucky feat"
+            >
+              <span>NO OMENS (LUCKY)</span>
+            </button>
+          ) : (
+            <button
+              onClick={onOpenSpendOmen}
+              disabled={isReadOnly || character.omens.current <= 0}
+              className={`w-full mb-btn mb-btn-yellow text-[10px] py-1 flex items-center justify-center gap-1 disabled:opacity-30 ${
+                isReadOnly ? 'cursor-not-allowed' : ''
+              }`}
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>SPEND OMEN</span>
+            </button>
+          )}
+
+          {/* Lucky Feat Quick Toggle */}
+          <label
+            className={`mt-1 pt-1 border-t border-mb-charcoal flex items-center justify-between cursor-pointer text-[9px] font-mono select-none ${
+              isReadOnly ? 'opacity-50 cursor-not-allowed' : 'text-zinc-400 hover:text-mb-yellow'
             }`}
+            title="Unheroic Feat #51: Lucky. Always roll 2d20 on tests (pick highest, fumble on 1). Omens are locked to 0."
           >
-            <Sparkles className="w-3 h-3" />
-            <span>SPEND OMEN</span>
-          </button>
+            <span className={character.feats?.lucky ? 'text-mb-yellow font-bold truncate' : 'truncate'}>
+              {character.feats?.lucky ? 'Lucky Feat Active' : 'Lucky Feat (#51)'}
+            </span>
+            <input
+              type="checkbox"
+              checked={Boolean(character.feats?.lucky)}
+              disabled={isReadOnly}
+              onChange={() => onUpdateCharacter((prev) => toggleLuckyFeat(prev))}
+              className="w-3 h-3 accent-mb-yellow cursor-pointer ml-1"
+            />
+          </label>
         </div>
 
         {/* 3. Powers */}

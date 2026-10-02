@@ -49,6 +49,11 @@ export const RollResultModal: React.FC<RollResultModalProps> = ({
 
         {/* Roll Title */}
         <div className="mb-2">
+          {roll.isLucky && (
+            <div className="mb-1 inline-block bg-mb-yellow text-mb-black text-[9px] font-brutal font-black px-1.5 py-0.5 uppercase tracking-wider border border-black shadow-brutal-sm">
+              FEAT #51: LUCKY (2d20)
+            </div>
+          )}
           <span className="font-punk text-[10px] tracking-widest text-mb-yellow uppercase block">
             {roll.characterName}
           </span>
@@ -81,6 +86,20 @@ export const RollResultModal: React.FC<RollResultModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* 2d20 Dice Breakdown */}
+        {roll.diceRolls && roll.diceRolls.length === 2 && (
+          <div className="mb-2 flex items-center justify-center gap-1.5 flex-wrap">
+            <span className="bg-mb-dark text-mb-yellow border border-mb-yellow/60 font-mono text-xs font-bold px-2 py-0.5 shadow-brutal-sm">
+              Dice: [{roll.diceRolls[0]}, {roll.diceRolls[1]}]
+            </span>
+            {roll.isFumble && (roll.diceRolls[0] === 1 || roll.diceRolls[1] === 1) && (
+              <span className="bg-mb-pink text-white font-brutal font-black text-[9px] px-1.5 py-0.5 uppercase tracking-wider border border-black animate-pulse shadow-brutal-sm">
+                Fumble on 1!
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Details & Formula */}
         <p className="font-mono text-xs text-mb-yellow/90 mb-2 px-2">

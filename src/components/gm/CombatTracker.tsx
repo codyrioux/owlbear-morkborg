@@ -333,7 +333,7 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
                     </span>
                     <span className="flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-mb-pink" />
-                      <span>Omens: {character.omens.current}/{character.omens.max}</span>
+                      <span>{character.feats?.lucky ? 'Omens: 0 (Lucky)' : `Omens: ${character.omens.current}/${character.omens.max}`}</span>
                     </span>
                     <span>Powers: {character.powers.current}/{character.powers.max}</span>
                     <span>Silver: {character.silver}s</span>

@@ -49,19 +49,109 @@ export function getAbilityDRPenalty(
   return penalty;
 }
 
+export interface D20RollResult {
+  roll: number;
+  diceRolls: number[];
+  isFumble: boolean;
+  isCrit: boolean;
+}
+
+/**
+ * Rolls d20 for tests.
+ * If Lucky feat is active (Unheroic Feat #51):
+ * - Rolls 2d20 and selects highest.
+ * - Automatically fumbles if EITHER die is a 1 (even if the other is a 20).
+ */
+export function rollTestD20(isLucky: boolean = false): D20RollResult {
+  if (!isLucky) {
+    const d20 = rollDie(20);
+    return {
+      roll: d20,
+      diceRolls: [d20],
+      isFumble: d20 === 1,
+      isCrit: d20 === 20,
+    };
+  }
+
+  const d1 = rollDie(20);
+  const d2 = rollDie(20);
+  const diceRolls = [d1, d2];
+  const hasFumble = d1 === 1 || d2 === 1;
+
+  if (hasFumble) {
+    return {
+      roll: 1,
+      diceRolls,
+      isFumble: true,
+      isCrit: false,
+    };
+  }
+
+  const highest = Math.max(d1, d2);
+  return {
+    roll: highest,
+    diceRolls,
+    isFumble: false,
+    isCrit: highest === 20,
+  };
+}
+
+/**
+ * Toggles the Lucky feat (#51) on a character.
+ * When enabled:
+ * - Omens are set to 0 and locked (current: 0, max: 0).
+ * - Tests roll 2d20 (advantage, fumble if either is 1).
+ * When disabled:
+ * - Restores omens to class defaults (d2 = 2, d4 = 4).
+ */
+export function toggleLuckyFeat(character: Character, enabled?: boolean): Character {
+  const isCurrentlyLucky = Boolean(character.feats?.lucky);
+  const nextLucky = enabled !== undefined ? enabled : !isCurrentlyLucky;
+
+  if (nextLucky) {
+    return {
+      ...character,
+      feats: {
+        ...character.feats,
+        lucky: true,
+      },
+      omens: {
+        ...character.omens,
+        current: 0,
+        max: 0,
+      },
+    };
+  }
+
+  const defaultSides = character.omens.dieType === 'd4' ? 4 : 2;
+  return {
+    ...character,
+    feats: {
+      ...character.feats,
+      lucky: false,
+    },
+    omens: {
+      ...character.omens,
+      max: defaultSides,
+      current: defaultSides,
+    },
+  };
+}
+
 export function performAbilityCheck(
   characterName: string,
   ability: AbilityName,
   modifier: number,
   targetDR: number = 12,
   omenLowerDR: number = 0,
-  drPenalty: number = 0
+  drPenalty: number = 0,
+  isLucky: boolean = false
 ): RollResult {
-  const d20 = rollDie(20);
+  const test = rollTestD20(isLucky);
   const effectiveDR = Math.max(2, targetDR - omenLowerDR);
-  const total = d20 + modifier;
-  const isCrit = d20 === 20;
-  const isFumble = d20 === 1;
+  const total = test.roll + modifier;
+  const isCrit = test.isCrit;
+  const isFumble = test.isFumble;
   const success = isCrit ? true : isFumble ? false : total >= effectiveDR;
 
   let flavor = '';
@@ -76,6 +166,12 @@ export function performAbilityCheck(
   }
 
   const penaltyNote = drPenalty > 0 ? ` (+${drPenalty} DR penalty)` : '';
+  const modNote = modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`;
+  const rollNote = isLucky
+    ? isFumble
+      ? `Rolled [${test.diceRolls.join(', ')}] (Lucky: Fumble on 1!)`
+      : `Rolled [${test.diceRolls.join(', ')}] (Lucky: Picked ${test.roll})`
+    : `Rolled [${test.roll}]`;
 
   return {
     id: crypto.randomUUID(),
@@ -83,14 +179,16 @@ export function performAbilityCheck(
     characterName,
     type: 'ability',
     title: `${ability.charAt(0).toUpperCase() + ability.slice(1)} Test`,
-    roll: d20,
+    roll: test.roll,
+    diceRolls: test.diceRolls,
     modifier,
     total,
     targetDR: effectiveDR,
     success,
     isCrit,
     isFumble,
-    details: `Rolled [${d20}] ${modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`} = ${total} vs DR ${effectiveDR}${penaltyNote}`,
+    isLucky,
+    details: `${rollNote} ${modNote} = ${total} vs DR ${effectiveDR}${penaltyNote}`,
     flavor,
   };
 }
@@ -102,15 +200,16 @@ export function performDefend(
   characterName: string,
   agilityModifier: number,
   armorTier: number,
-  targetDR: number = 12
+  targetDR: number = 12,
+  isLucky: boolean = false
 ): RollResult {
-  const d20 = rollDie(20);
+  const test = rollTestD20(isLucky);
   // Medium and Heavy armor add +2 to DR for Agility tests
   const armorPenalty = armorTier >= 2 ? 2 : 0;
   const effectiveDR = targetDR + armorPenalty;
-  const total = d20 + agilityModifier;
-  const isCrit = d20 === 20;
-  const isFumble = d20 === 1;
+  const total = test.roll + agilityModifier;
+  const isCrit = test.isCrit;
+  const isFumble = test.isFumble;
   const success = isCrit ? true : isFumble ? false : total >= effectiveDR;
 
   let flavor = '';
@@ -124,20 +223,29 @@ export function performDefend(
     flavor = 'Defense failed. Prepare to soak damage.';
   }
 
+  const modNote = agilityModifier >= 0 ? `+ ${agilityModifier}` : `- ${Math.abs(agilityModifier)}`;
+  const rollNote = isLucky
+    ? isFumble
+      ? `Rolled [${test.diceRolls.join(', ')}] (Lucky: Fumble on 1!)`
+      : `Rolled [${test.diceRolls.join(', ')}] (Lucky: Picked ${test.roll})`
+    : `Rolled [${test.roll}]`;
+
   return {
     id: crypto.randomUUID(),
     timestamp: Date.now(),
     characterName,
     type: 'defense',
     title: 'Defend Roll',
-    roll: d20,
+    roll: test.roll,
+    diceRolls: test.diceRolls,
     modifier: agilityModifier,
     total,
     targetDR: effectiveDR,
     success,
     isCrit,
     isFumble,
-    details: `Rolled [${d20}] ${agilityModifier >= 0 ? `+ ${agilityModifier}` : `- ${Math.abs(agilityModifier)}`} = ${total} vs DR ${effectiveDR} ${armorPenalty > 0 ? '(+2 DR from armor)' : ''}`,
+    isLucky,
+    details: `${rollNote} ${modNote} = ${total} vs DR ${effectiveDR} ${armorPenalty > 0 ? '(+2 DR from armor)' : ''}`,
     flavor,
   };
 }
@@ -149,12 +257,13 @@ export function performAttack(
   characterName: string,
   weapon: Weapon,
   modifier: number,
-  targetDR: number = 12
+  targetDR: number = 12,
+  isLucky: boolean = false
 ): RollResult {
-  const d20 = rollDie(20);
-  const total = d20 + modifier;
-  const isCrit = d20 === 20;
-  const isFumble = d20 === 1;
+  const test = rollTestD20(isLucky);
+  const total = test.roll + modifier;
+  const isCrit = test.isCrit;
+  const isFumble = test.isFumble;
   const success = isCrit ? true : isFumble ? false : total >= targetDR;
 
   let flavor = '';
@@ -168,20 +277,29 @@ export function performAttack(
     flavor = `Miss. The ${weapon.name} cuts only cold, putrid air.`;
   }
 
+  const modNote = modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`;
+  const rollNote = isLucky
+    ? isFumble
+      ? `Rolled [${test.diceRolls.join(', ')}] (Lucky: Fumble on 1!)`
+      : `Rolled [${test.diceRolls.join(', ')}] (Lucky: Picked ${test.roll})`
+    : `Rolled [${test.roll}]`;
+
   return {
     id: crypto.randomUUID(),
     timestamp: Date.now(),
     characterName,
     type: 'attack',
     title: `Attack: ${weapon.name}`,
-    roll: d20,
+    roll: test.roll,
+    diceRolls: test.diceRolls,
     modifier,
     total,
     targetDR,
     success,
     isCrit,
     isFumble,
-    details: `Rolled [${d20}] ${modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`} = ${total} vs DR ${targetDR}`,
+    isLucky,
+    details: `${rollNote} ${modNote} = ${total} vs DR ${targetDR}`,
     flavor,
   };
 }
@@ -301,27 +419,35 @@ export function performPowerTest(
   characterName: string,
   scroll: Scroll,
   presenceModifier: number,
-  targetDR: number = 12
+  targetDR: number = 12,
+  isLucky: boolean = false
 ): RollResult {
-  const d20 = rollDie(20);
-  const total = d20 + presenceModifier;
-  const isCrit = d20 === 20;
-  const isFumble = d20 === 1;
+  const test = rollTestD20(isLucky);
+  const total = test.roll + presenceModifier;
+  const isCrit = test.isCrit;
+  const isFumble = test.isFumble;
   const success = isCrit ? true : isFumble ? false : total >= targetDR;
 
   let details = '';
   let flavor = '';
 
+  const modNote = presenceModifier >= 0 ? `+ ${presenceModifier}` : `- ${Math.abs(presenceModifier)}`;
+  const rollNote = isLucky
+    ? isFumble
+      ? `Rolled [${test.diceRolls.join(', ')}] (Lucky: Fumble on 1!)`
+      : `Rolled [${test.diceRolls.join(', ')}] (Lucky: Picked ${test.roll})`
+    : `Rolled [${test.roll}]`;
+
   if (isFumble) {
     const cat = rollArcaneCatastrophe();
-    details = `FUMBLE! Rolled 1. ARCANE CATASTROPHE (#${cat.roll} - ${cat.title}): ${cat.effect}`;
+    details = `FUMBLE! ${rollNote}. ARCANE CATASTROPHE (#${cat.roll} - ${cat.title}): ${cat.effect}`;
     flavor = 'The black occult arts recoil horribly into your flesh.';
   } else if (!success) {
     const hpLoss = rollDie(2);
-    details = `FAILED! Rolled [${d20}] ${presenceModifier >= 0 ? `+ ${presenceModifier}` : `- ${Math.abs(presenceModifier)}`} = ${total} vs DR ${targetDR}. You suffer ${hpLoss} HP damage and are dizzy—cannot use Powers for 1 hour!`;
+    details = `FAILED! ${rollNote} ${modNote} = ${total} vs DR ${targetDR}. You suffer ${hpLoss} HP damage and are dizzy—cannot use Powers for 1 hour!`;
     flavor = 'The scroll burns your mind with dizzying cosmic nausea.';
   } else {
-    details = `SUCCESS! Rolled [${d20}] ${presenceModifier >= 0 ? `+ ${presenceModifier}` : `- ${Math.abs(presenceModifier)}`} = ${total} vs DR ${targetDR}. Power activates!`;
+    details = `SUCCESS! ${rollNote} ${modNote} = ${total} vs DR ${targetDR}. Power activates!`;
     flavor = `${scroll.name} unleashes its eerie sorcery.`;
   }
 
@@ -331,13 +457,15 @@ export function performPowerTest(
     characterName,
     type: 'power_test',
     title: `Power: ${scroll.name}`,
-    roll: d20,
+    roll: test.roll,
+    diceRolls: test.diceRolls,
     modifier: presenceModifier,
     total,
     targetDR,
     success,
     isCrit,
     isFumble,
+    isLucky,
     details,
     flavor,
   };
@@ -447,10 +575,16 @@ export function performLongRest(character: Character): {
     restLog += `Night's Sleep: Rolled [${roll}] on d6 -> Healed ${healedHp} HP (${newHp}/${character.hp.max}). `;
   }
 
-  // Reroll Omens (character's omen die)
-  const omenSides = character.omens.dieType === 'd4' ? 4 : 2;
-  const newOmens = rollDie(omenSides);
-  restLog += `Omens rerolled (${character.omens.dieType}): [${newOmens}]. `;
+  // Reroll Omens (character's omen die) - unless Lucky feat is active
+  let newOmens = 0;
+  if (character.feats?.lucky) {
+    newOmens = 0;
+    restLog += 'Omens: None (Locked by Lucky feat). ';
+  } else {
+    const omenSides = character.omens.dieType === 'd4' ? 4 : 2;
+    newOmens = rollDie(omenSides);
+    restLog += `Omens rerolled (${character.omens.dieType}): [${newOmens}]. `;
+  }
 
   // Reroll Powers: Presence modifier + d4 (min 0)
   const powerRoll = rollDie(4);
@@ -733,6 +867,9 @@ export function generateRandomCharacter(): Character {
     },
     broken: {
       isBroken: false,
+    },
+    feats: {
+      lucky: false,
     },
   };
 }

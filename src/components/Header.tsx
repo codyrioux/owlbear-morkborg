@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Moon, Sun, Dices, Download, Upload, Link, Unlink, Users, ChevronDown, ChevronRight, Skull, AlertCircle, Lock, Unlock } from 'lucide-react';
 import { Character } from '../types/morkborg';
+import { toggleLuckyFeat } from '../utils/morkborgRules';
 
 export interface SceneCharacterItem {
   id: string;
@@ -145,6 +146,11 @@ export const Header: React.FC<HeaderProps> = ({
     });
   };
 
+  const handleToggleLucky = () => {
+    if (isReadOnly) return;
+    onUpdateCharacter((prev) => toggleLuckyFeat(prev));
+  };
+
   return (
     <header className="relative bg-mb-dark text-mb-bone p-2.5 border-b-2 border-mb-charcoal border-l-4 border-l-mb-yellow select-none">
       {/* Collapsible Section Header Bar */}
@@ -192,6 +198,11 @@ export const Header: React.FC<HeaderProps> = ({
               {character.conditions.starving && (
                 <span className="bg-mb-bone text-mb-black text-[8px] font-black px-1 py-0.5 uppercase border border-black">
                   STARVING
+                </span>
+              )}
+              {character.feats?.lucky && (
+                <span className="bg-mb-yellow text-mb-black text-[8px] font-black px-1 py-0.5 uppercase border border-black shadow-brutal-sm">
+                  LUCKY (2d20)
                 </span>
               )}
             </div>
@@ -579,7 +590,8 @@ export const Header: React.FC<HeaderProps> = ({
                     omens: {
                       ...prev.omens,
                       dieType: (e.target.value === 'Esoteric Hermit' || e.target.value === 'Heretical Priest') ? 'd4' : 'd2',
-                      max: (e.target.value === 'Esoteric Hermit' || e.target.value === 'Heretical Priest') ? 4 : 2,
+                      max: prev.feats?.lucky ? 0 : ((e.target.value === 'Esoteric Hermit' || e.target.value === 'Heretical Priest') ? 4 : 2),
+                      current: prev.feats?.lucky ? 0 : prev.omens.current,
                     }
                   }))
                 }
@@ -661,6 +673,47 @@ export const Header: React.FC<HeaderProps> = ({
                   STARVING
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Unholy Feats (Feretory / Cult) */}
+          <div className="bg-mb-black p-2 border border-zinc-800">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-brutal text-[10px] font-bold tracking-wider uppercase text-zinc-400">
+                UNHOLY FEATS (FERETORY)
+              </span>
+              {character.feats?.lucky && (
+                <span className="text-[9px] font-mono text-mb-yellow font-bold uppercase">
+                  2d20 Advantage • No Omens • Fumble on 1
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={handleToggleLucky}
+                disabled={isReadOnly}
+                className={`py-1 px-2.5 text-[10px] font-brutal font-bold border transition-all flex items-center gap-1.5 ${
+                  isReadOnly
+                    ? 'opacity-40 cursor-not-allowed bg-zinc-900 text-zinc-500 border-zinc-800'
+                    : character.feats?.lucky
+                    ? 'bg-mb-yellow text-mb-black border-black font-black shadow-brutal-sm'
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white hover:border-zinc-500'
+                }`}
+                title={
+                  isReadOnly
+                    ? 'Sheet is locked (Read-only)'
+                    : 'Unheroic Feat #51: Lucky. Always roll 2d20 on tests (pick highest). Automatically fumbles if either die is a 1. Omens are removed and locked to 0.'
+                }
+              >
+                <span className="text-xs">💀</span>
+                <span>#51 LUCKY</span>
+                {character.feats?.lucky && (
+                  <span className="bg-mb-black text-mb-yellow text-[8px] font-mono px-1 font-black">
+                    ACTIVE
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 

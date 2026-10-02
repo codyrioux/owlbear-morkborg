@@ -83,10 +83,16 @@ export const RestModal: React.FC<RestModalProps> = ({
               </span>
             </li>
             <li className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-mb-yellow shrink-0" />
-              <span>
-                Reroll Omens: roll <strong>{character.omens.dieType}</strong> to replenish daily fate.
-              </span>
+              <Sparkles className={`w-4 h-4 shrink-0 ${character.feats?.lucky ? 'text-zinc-600' : 'text-mb-yellow'}`} />
+              {character.feats?.lucky ? (
+                <span className="text-zinc-400">
+                  Omens: <strong>None</strong> (Locked to 0 by Lucky feat).
+                </span>
+              ) : (
+                <span>
+                  Reroll Omens: roll <strong>{character.omens.dieType}</strong> to replenish daily fate.
+                </span>
+              )}
             </li>
             <li className="flex items-center gap-2">
               <Wand2 className="w-4 h-4 text-mb-pink shrink-0" />

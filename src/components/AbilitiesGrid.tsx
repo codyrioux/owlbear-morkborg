@@ -141,7 +141,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               className={`bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black shadow-brutal-sm flex items-center gap-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
                 isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
               }`}
-              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll ${config.label} (${formatModifier(modifier)}) vs DR ${effectiveDR}`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll ${character.feats?.lucky ? '2d20 (Lucky) ' : ''}${config.label} (${formatModifier(modifier)}) vs DR ${effectiveDR}`}
             >
               <span>{config.shortLabel}</span>
               <span className="font-mono font-black">{formatModifier(modifier)}</span>
@@ -157,7 +157,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
       {/* Standardized Section Header */}
       <SectionHeader
         title="Abilities"
-        subtitle="d20 + mod vs DR"
+        subtitle={character.feats?.lucky ? "2d20 (Lucky) + mod vs DR" : "d20 + mod vs DR"}
         icon={<Dices className="w-3.5 h-3.5 text-mb-yellow" />}
         accentColor="yellow"
         isCollapsed={isCollapsed}
@@ -274,7 +274,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
                 className={`w-full mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 shadow-brutal-sm ${
                   isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
                 }`}
-                title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll d20 ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
+                title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll ${character.feats?.lucky ? '2d20 (Lucky: pick highest, fumble on 1)' : 'd20'} ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
               >
                 <Dices className="w-3 h-3" />
                 <span>ROLL {formatModifier(modifier)}</span>

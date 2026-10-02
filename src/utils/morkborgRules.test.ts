@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import * as dice from './dice';
 import { 
   performAbilityCheck, 
   performLongRest, 
@@ -11,11 +12,15 @@ import {
   generateRandomCharacter,
   performArmorSoak,
   performDefend,
+  performAttack,
+  performPowerTest,
   getAbilityDRPenalty,
   performWeaponDamage,
   CANONICAL_SCROLLS,
   calculateAbilityChange,
-  performGettingBetter
+  performGettingBetter,
+  rollTestD20,
+  toggleLuckyFeat
 } from './morkborgRules';
 import { Character } from '../types/morkborg';
 
@@ -634,6 +639,219 @@ describe('MÖRK BORG Rules Engine', () => {
       );
       const capWith11Chalk = calculateCarryingCapacity(0, invWith11Chalk, 50);
       expect(capWith11Chalk.usedSlots).toBe(6);
+    });
+  });
+
+  describe('Unholy Feat #51: Lucky (Mörk Borg Cult / Feretory)', () => {
+    it('rollTestD20 standard mode rolls 1d20', () => {
+      const result = rollTestD20(false);
+      expect(result.diceRolls).toHaveLength(1);
+      expect(result.roll).toBeGreaterThanOrEqual(1);
+      expect(result.roll).toBeLessThanOrEqual(20);
+      expect(result.isCrit).toBe(result.roll === 20);
+      expect(result.isFumble).toBe(result.roll === 1);
+    });
+
+    it('rollTestD20 lucky mode rolls 2d20 and picks highest', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+
+      // Test pick highest when neither is 1: [14, 18] -> 18
+      spy.mockReturnValueOnce(14).mockReturnValueOnce(18);
+      const res1 = rollTestD20(true);
+      expect(res1.diceRolls).toEqual([14, 18]);
+      expect(res1.roll).toBe(18);
+      expect(res1.isFumble).toBe(false);
+      expect(res1.isCrit).toBe(false);
+
+      // Test crit when highest is 20: [19, 20] -> 20 (Crit)
+      spy.mockReturnValueOnce(19).mockReturnValueOnce(20);
+      const res2 = rollTestD20(true);
+      expect(res2.diceRolls).toEqual([19, 20]);
+      expect(res2.roll).toBe(20);
+      expect(res2.isCrit).toBe(true);
+      expect(res2.isFumble).toBe(false);
+
+      // Test double 20: [20, 20] -> 20 (Crit)
+      spy.mockReturnValueOnce(20).mockReturnValueOnce(20);
+      const res3 = rollTestD20(true);
+      expect(res3.diceRolls).toEqual([20, 20]);
+      expect(res3.roll).toBe(20);
+      expect(res3.isCrit).toBe(true);
+      expect(res3.isFumble).toBe(false);
+
+      spy.mockRestore();
+    });
+
+    it('rollTestD20 lucky mode automatically fumbles if either die is a 1, even if the other is 20', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+
+      // Die 1 is 1, Die 2 is 20 -> Fumble!
+      spy.mockReturnValueOnce(1).mockReturnValueOnce(20);
+      const res1 = rollTestD20(true);
+      expect(res1.diceRolls).toEqual([1, 20]);
+      expect(res1.roll).toBe(1);
+      expect(res1.isFumble).toBe(true);
+      expect(res1.isCrit).toBe(false);
+
+      // Die 1 is 18, Die 2 is 1 -> Fumble!
+      spy.mockReturnValueOnce(18).mockReturnValueOnce(1);
+      const res2 = rollTestD20(true);
+      expect(res2.diceRolls).toEqual([18, 1]);
+      expect(res2.roll).toBe(1);
+      expect(res2.isFumble).toBe(true);
+      expect(res2.isCrit).toBe(false);
+
+      // Both dice are 1 -> Fumble!
+      spy.mockReturnValueOnce(1).mockReturnValueOnce(1);
+      const res3 = rollTestD20(true);
+      expect(res3.diceRolls).toEqual([1, 1]);
+      expect(res3.roll).toBe(1);
+      expect(res3.isFumble).toBe(true);
+      expect(res3.isCrit).toBe(false);
+
+      spy.mockRestore();
+    });
+
+    it('toggleLuckyFeat sets omens to 0 and locked when enabled, and restores when disabled', () => {
+      const baseChar = {
+        ...mockCharacter,
+        omens: { current: 2, max: 2, dieType: 'd2' as const },
+        feats: { lucky: false },
+      };
+
+      // Toggle ON
+      const luckyChar = toggleLuckyFeat(baseChar, true);
+      expect(luckyChar.feats?.lucky).toBe(true);
+      expect(luckyChar.omens.current).toBe(0);
+      expect(luckyChar.omens.max).toBe(0);
+
+      // Toggle OFF
+      const restoredChar = toggleLuckyFeat(luckyChar, false);
+      expect(restoredChar.feats?.lucky).toBe(false);
+      expect(restoredChar.omens.max).toBe(2);
+      expect(restoredChar.omens.current).toBe(2);
+
+      // Toggle OFF for d4 class
+      const d4Char = {
+        ...baseChar,
+        characterClass: 'Heretical Priest',
+        omens: { current: 0, max: 0, dieType: 'd4' as const },
+        feats: { lucky: true },
+      };
+      const restoredD4 = toggleLuckyFeat(d4Char, false);
+      expect(restoredD4.feats?.lucky).toBe(false);
+      expect(restoredD4.omens.max).toBe(4);
+      expect(restoredD4.omens.current).toBe(4);
+    });
+
+    it('performAbilityCheck executes with 2d20 when isLucky is true', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+
+      // Fumble when one die is 1
+      spy.mockReturnValueOnce(1).mockReturnValueOnce(17);
+      const fumbled = performAbilityCheck('Lucky Scum', 'strength', 2, 12, 0, 0, true);
+      expect(fumbled.isLucky).toBe(true);
+      expect(fumbled.diceRolls).toEqual([1, 17]);
+      expect(fumbled.isFumble).toBe(true);
+      expect(fumbled.isCrit).toBe(false);
+      expect(fumbled.success).toBe(false);
+      expect(fumbled.roll).toBe(1);
+      expect(fumbled.details).toContain('Lucky: Fumble on 1!');
+
+      // Success when picking highest
+      spy.mockReturnValueOnce(8).mockReturnValueOnce(15);
+      const passed = performAbilityCheck('Lucky Scum', 'strength', 2, 12, 0, 0, true);
+      expect(passed.isLucky).toBe(true);
+      expect(passed.diceRolls).toEqual([8, 15]);
+      expect(passed.roll).toBe(15);
+      expect(passed.total).toBe(17);
+      expect(passed.success).toBe(true);
+      expect(passed.details).toContain('Lucky: Picked 15');
+
+      spy.mockRestore();
+    });
+
+    it('performDefend executes with 2d20 when isLucky is true', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+
+      // Defend fumble
+      spy.mockReturnValueOnce(19).mockReturnValueOnce(1);
+      const defFumble = performDefend('Lucky Scum', 0, 0, 12, true);
+      expect(defFumble.isLucky).toBe(true);
+      expect(defFumble.diceRolls).toEqual([19, 1]);
+      expect(defFumble.isFumble).toBe(true);
+      expect(defFumble.success).toBe(false);
+
+      // Defend crit
+      spy.mockReturnValueOnce(20).mockReturnValueOnce(14);
+      const defCrit = performDefend('Lucky Scum', 0, 0, 12, true);
+      expect(defCrit.isLucky).toBe(true);
+      expect(defCrit.roll).toBe(20);
+      expect(defCrit.isCrit).toBe(true);
+      expect(defCrit.success).toBe(true);
+
+      spy.mockRestore();
+    });
+
+    it('performAttack executes with 2d20 when isLucky is true', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+      const weapon = { id: 'w1', name: 'Femur', type: 'melee' as const, damageDie: 'd4' };
+
+      // Attack fumble on 1 despite second die 20
+      spy.mockReturnValueOnce(1).mockReturnValueOnce(20);
+      const atkFumble = performAttack('Lucky Scum', weapon, 1, 12, true);
+      expect(atkFumble.isLucky).toBe(true);
+      expect(atkFumble.isFumble).toBe(true);
+      expect(atkFumble.isCrit).toBe(false);
+      expect(atkFumble.success).toBe(false);
+
+      // Attack crit when [18, 20]
+      spy.mockReturnValueOnce(18).mockReturnValueOnce(20);
+      const atkCrit = performAttack('Lucky Scum', weapon, 1, 12, true);
+      expect(atkCrit.isLucky).toBe(true);
+      expect(atkCrit.isCrit).toBe(true);
+      expect(atkCrit.roll).toBe(20);
+      expect(atkCrit.success).toBe(true);
+
+      spy.mockRestore();
+    });
+
+    it('performPowerTest executes with 2d20 when isLucky is true', () => {
+      const spy = vi.spyOn(dice, 'rollDie');
+      const scroll = { id: 's1', name: 'Palms Open the Southern Gate', type: 'unclean' as const, description: 'Flame' };
+
+      // Power fumble on 1
+      spy.mockReturnValueOnce(16).mockReturnValueOnce(1);
+      const powerFumble = performPowerTest('Lucky Scum', scroll, 2, 12, true);
+      expect(powerFumble.isLucky).toBe(true);
+      expect(powerFumble.isFumble).toBe(true);
+      expect(powerFumble.details).toContain('ARCANE CATASTROPHE');
+
+      // Power success
+      spy.mockReturnValueOnce(11).mockReturnValueOnce(14);
+      const powerSuccess = performPowerTest('Lucky Scum', scroll, 2, 12, true);
+      expect(powerSuccess.isLucky).toBe(true);
+      expect(powerSuccess.roll).toBe(14);
+      expect(powerSuccess.success).toBe(true);
+
+      spy.mockRestore();
+    });
+
+    it('performLongRest locks omens to 0 when character has Lucky feat', () => {
+      const luckyChar = {
+        ...mockCharacter,
+        omens: { current: 0, max: 0, dieType: 'd2' as const },
+        feats: { lucky: true },
+      };
+
+      const rest = performLongRest(luckyChar);
+      expect(rest.newOmens).toBe(0);
+      expect(rest.rollsLog).toContain('Omens: None (Locked by Lucky feat)');
+    });
+
+    it('generateRandomCharacter initializes with feats.lucky false', () => {
+      const char = generateRandomCharacter();
+      expect(char.feats?.lucky).toBe(false);
     });
   });
 });

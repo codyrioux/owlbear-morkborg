@@ -62,6 +62,10 @@ export interface CharacterOwner {
   name: string;
 }
 
+export interface CharacterFeats {
+  lucky?: boolean;
+}
+
 export interface Character {
   id: string;
   name: string;
@@ -69,6 +73,7 @@ export interface Character {
   description: string;
   owner?: CharacterOwner;
   isLocked?: boolean;
+  feats?: CharacterFeats;
   abilities: Record<AbilityName, AbilityScore>;
   hp: {
     current: number;
@@ -117,6 +122,7 @@ export interface RollResult {
   success?: boolean;
   isCrit?: boolean; // Natural 20
   isFumble?: boolean; // Natural 1
+  isLucky?: boolean; // Rolled with 2d20 Lucky feat
   details: string;
   flavor?: string;
 }

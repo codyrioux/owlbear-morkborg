@@ -585,7 +585,15 @@ export const App: React.FC = () => {
 
   // Roll Handlers
   const handleRollAbility = (ability: AbilityName, modifier: number, targetDR: number, drPenalty?: number) => {
-    const roll = performAbilityCheck(character.name, ability, modifier, targetDR, 0, drPenalty || 0);
+    const roll = performAbilityCheck(
+      character.name,
+      ability,
+      modifier,
+      targetDR,
+      0,
+      drPenalty || 0,
+      Boolean(character.feats?.lucky)
+    );
     triggerRoll(roll);
   };
 
@@ -594,7 +602,9 @@ export const App: React.FC = () => {
     const roll = performDefend(
       character.name,
       character.abilities.agility.modifier,
-      effectiveTier
+      effectiveTier,
+      12,
+      Boolean(character.feats?.lucky)
     );
     triggerRoll(roll);
 
@@ -617,7 +627,13 @@ export const App: React.FC = () => {
     const mod = isRanged
       ? character.abilities.presence.modifier
       : character.abilities.strength.modifier;
-    const roll = performAttack(character.name, weapon, mod, 12);
+    const roll = performAttack(
+      character.name,
+      weapon,
+      mod,
+      12,
+      Boolean(character.feats?.lucky)
+    );
     triggerRoll(roll);
   };
 
@@ -652,7 +668,8 @@ export const App: React.FC = () => {
       character.name,
       scroll,
       character.abilities.presence.modifier,
-      12
+      12,
+      Boolean(character.feats?.lucky)
     );
     triggerRoll(roll);
 
@@ -678,7 +695,11 @@ export const App: React.FC = () => {
       return {
         ...prev,
         hp: { ...prev.hp, current: newHp },
-        omens: { ...prev.omens, current: newOmens },
+        omens: {
+          ...prev.omens,
+          current: prev.feats?.lucky ? 0 : newOmens,
+          max: prev.feats?.lucky ? 0 : prev.omens.max,
+        },
         powers: { ...prev.powers, current: newPowers, max: Math.max(1, newPowers) },
         broken: { ...prev.broken, isBroken },
         conditions: { ...prev.conditions, broken: isBroken },
@@ -730,7 +751,7 @@ export const App: React.FC = () => {
 
   // Omen Spending Handler
   const handleApplyOmen = (effectTitle: string, details: string) => {
-    if (character.omens.current <= 0) return;
+    if (character.omens.current <= 0 || character.feats?.lucky) return;
 
     setCharacter((prev) => ({
       ...prev,
@@ -754,7 +775,7 @@ export const App: React.FC = () => {
 
   // Reroll from Roll Modal using Omen
   const handleSpendOmenReroll = () => {
-    if (!activeRoll || character.omens.current <= 0) return;
+    if (!activeRoll || character.omens.current <= 0 || character.feats?.lucky) return;
 
     setCharacter((prev) => ({
       ...prev,
@@ -765,7 +786,15 @@ export const App: React.FC = () => {
       const ability = activeRoll.title.split(' ')[0].toLowerCase() as AbilityName;
       const mod = character.abilities[ability]?.modifier ?? 0;
       const targetDR = activeRoll.targetDR ?? 12;
-      const roll = performAbilityCheck(character.name, ability, mod, targetDR);
+      const roll = performAbilityCheck(
+        character.name,
+        ability,
+        mod,
+        targetDR,
+        0,
+        0,
+        Boolean(character.feats?.lucky)
+      );
       roll.details += ' (Rerolled using Omen!)';
       triggerRoll(roll);
     } else if (activeRoll.type === 'defense') {
@@ -778,7 +807,7 @@ export const App: React.FC = () => {
 
   // Lower DR from Roll Modal using Omen
   const handleSpendOmenLowerDR = () => {
-    if (!activeRoll || character.omens.current <= 0 || !activeRoll.targetDR) return;
+    if (!activeRoll || character.omens.current <= 0 || !activeRoll.targetDR || character.feats?.lucky) return;
 
     setCharacter((prev) => ({
       ...prev,
@@ -1108,7 +1137,7 @@ export const App: React.FC = () => {
 
       <SpendOmenModal
         isOpen={isSpendOmenOpen}
-        omensAvailable={character.omens.current}
+        omensAvailable={character.feats?.lucky ? 0 : character.omens.current}
         onClose={() => setIsSpendOmenOpen(false)}
         onApplyOmen={handleApplyOmen}
       />
@@ -1128,7 +1157,7 @@ export const App: React.FC = () => {
 
       <RollResultModal
         roll={activeRoll}
-        omensAvailable={character.omens.current}
+        omensAvailable={character.feats?.lucky ? 0 : character.omens.current}
         onClose={() => setActiveRoll(null)}
         onSpendOmenReroll={handleSpendOmenReroll}
         onSpendOmenLowerDR={handleSpendOmenLowerDR}

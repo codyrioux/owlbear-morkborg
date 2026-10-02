@@ -265,7 +265,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
               className={`mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 ${
                 isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
               }`}
-              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll d20 + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll ${character.feats?.lucky ? '2d20 (Lucky: pick highest, fumble on 1)' : 'd20'} + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
             >
               <Shield className="w-3.5 h-3.5" />
               <span>DEFEND {effectiveTier >= 2 ? '(DR14)' : '(DR12)'}</span>
@@ -332,7 +332,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                         className={`mb-btn mb-btn-yellow text-[9px] py-0.5 px-1.5 ${
                           isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
                         }`}
-                        title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll Attack with ${wep.name}`}
+                        title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll Attack with ${wep.name}${character.feats?.lucky ? ' (2d20 Lucky)' : ''}`}
                       >
                         <Crosshair className="w-2.5 h-2.5" />
                         <span>ATK</span>

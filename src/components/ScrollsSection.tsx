@@ -94,7 +94,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
               className={`bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
                 isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
               }`}
-              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Invoke ${character.scrolls[0].name} (Presence DR12)`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Invoke ${character.scrolls[0].name} (Presence DR12${character.feats?.lucky ? ' • 2d20 Lucky' : ''})`}
             >
               <Wand2 className="w-3 h-3 shrink-0" />
               <span className="truncate">{character.scrolls[0].name}</span>
@@ -110,7 +110,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       {/* Standardized Section Header */}
       <SectionHeader
         title="Scrolls & Powers"
-        subtitle="Presence DR12 to Invoke"
+        subtitle={character.feats?.lucky ? "Presence DR12 (2d20 Lucky)" : "Presence DR12 to Invoke"}
         icon={<ScrollIcon className="w-3.5 h-3.5 text-mb-pink" />}
         accentColor="pink"
         isCollapsed={isCollapsed}
@@ -271,7 +271,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
                       ? 'Sheet is locked (Read-only)'
                       : isArmorRestricted
                       ? 'Cannot invoke powers while wearing Medium or Heavy armor'
-                      : 'Test DR12 Presence to activate this power'
+                      : `Test DR12 Presence to activate this power${character.feats?.lucky ? ' (2d20 Lucky)' : ''}`
                   }
                 >
                   <Wand2 className="w-2.5 h-2.5" />
