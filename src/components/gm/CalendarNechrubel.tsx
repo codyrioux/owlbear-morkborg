@@ -75,8 +75,8 @@ export const CalendarNechrubel: React.FC<CalendarNechrubelProps> = ({
         <div className="bg-mb-pink text-white p-4 border-4 border-mb-yellow shadow-brutal animate-pulse">
           <div className="flex items-center gap-2 mb-1">
             <Skull className="w-6 h-6 text-mb-yellow animate-bounce" />
-            <h3 className="font-gothic text-2xl uppercase tracking-wider text-mb-yellow font-black">
-              PSALM VII: THE LAST (7:7) — THE END IS COME
+            <h3 className="font-gothic text-2xl tracking-wider text-mb-yellow font-black">
+              Psalm VII: The Last (7:7) — The End Is Come
             </h3>
           </div>
           <p className="font-punk text-sm leading-relaxed">

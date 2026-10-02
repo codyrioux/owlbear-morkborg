@@ -33,8 +33,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Skull className="w-4 h-4" />
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="font-gothic text-lg sm:text-xl text-mb-yellow tracking-tight leading-none uppercase font-black">
-            MÖRK BORG
+          <span className="font-gothic text-lg sm:text-xl text-mb-yellow tracking-tight leading-none font-black">
+            Mörk Borg
           </span>
         </div>
 

@@ -39,7 +39,7 @@ export const TokenDesignationModal: React.FC<TokenDesignationModalProps> = ({
               <Skull className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-gothic text-xl sm:text-2xl text-mb-yellow tracking-wide uppercase leading-none">
+              <h2 className="font-gothic text-xl sm:text-2xl text-mb-yellow tracking-wide leading-none">
                 Designate Token
               </h2>
               <span className="font-punk text-xs text-zinc-400">

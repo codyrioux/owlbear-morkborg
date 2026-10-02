@@ -148,3 +148,265 @@ body {
   transform: rotate(-1.5deg);
   letter-spacing: 0.08em;
 }
+
+/* ==========================================================================
+   BAREBONES / ACCESSIBILITY MODE (mb_barebones.pdf aesthetic)
+   ========================================================================== */
+.barebones,
+body.barebones {
+  --mb-yellow: #000000;
+  --mb-black: #ffffff;
+  --mb-dark: #fcfcfc;
+  --mb-charcoal: #d4d4d8;
+  --mb-pink: #000000;
+  --mb-white: #111111;
+  background-color: #ffffff !important;
+  color: #111111 !important;
+}
+
+/* Background overrides: dark surfaces become white or light paper gray */
+.barebones .bg-mb-black,
+.barebones .bg-mb-dark,
+.barebones .bg-zinc-900,
+.barebones .bg-zinc-950,
+.barebones .bg-neutral-900,
+.barebones .bg-purple-950,
+.barebones .bg-purple-950\/80,
+.barebones .bg-purple-950\/30,
+.barebones .bg-purple-900 {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+}
+
+.barebones .bg-zinc-900\/50,
+.barebones .bg-zinc-900\/80,
+.barebones .bg-zinc-800,
+.barebones .bg-zinc-800\/50,
+.barebones .bg-mb-black\/80,
+.barebones .bg-mb-black\/90 {
+  background-color: #f4f4f5 !important;
+  color: #111111 !important;
+}
+
+.barebones .bg-mb-pink\/10,
+.barebones .bg-mb-yellow\/10,
+.barebones .bg-mb-bone\/10,
+.barebones .bg-mb-blood\/10 {
+  background-color: #f4f4f5 !important;
+}
+
+/* Text overrides: high contrast accessible typography */
+.barebones .text-mb-bone,
+.barebones .text-mb-white,
+.barebones .text-white,
+.barebones .text-zinc-100,
+.barebones .text-zinc-200,
+.barebones .text-zinc-300,
+.barebones .text-purple-200,
+.barebones .text-purple-300 {
+  color: #111111 !important;
+}
+
+.barebones .text-mb-white\/50,
+.barebones .text-mb-white\/60,
+.barebones .text-mb-white\/70,
+.barebones .text-zinc-400,
+.barebones .text-zinc-500,
+.barebones .text-zinc-600 {
+  color: #52525b !important;
+}
+
+/* Yellow and Purple accents become high-contrast black */
+.barebones .text-mb-yellow,
+.barebones .text-yellow-300,
+.barebones .text-yellow-400,
+.barebones .text-purple-400 {
+  color: #000000 !important;
+}
+
+/* Warning & Danger accents */
+.barebones .text-mb-pink,
+.barebones .text-mb-blood,
+.barebones .text-red-400,
+.barebones .text-red-500 {
+  color: #991b1b !important;
+  font-weight: 700;
+}
+
+/* Border overrides: minimal, crisp black and gray lines */
+.barebones .border-mb-charcoal,
+.barebones .border-zinc-700,
+.barebones .border-zinc-800,
+.barebones .border-purple-500\/40,
+.barebones .border-purple-500\/30,
+.barebones .border-purple-500\/20,
+.barebones .border-purple-400,
+.barebones .border-purple-900\/60,
+.barebones .border-zinc-900 {
+  border-color: #d4d4d8 !important;
+}
+
+.barebones .border-mb-yellow,
+.barebones .border-mb-yellow\/40,
+.barebones .border-mb-yellow\/30,
+.barebones .border-mb-pink,
+.barebones .border-purple-500,
+.barebones .border-mb-pink\/40,
+.barebones .border-mb-bone\/40,
+.barebones .border-mb-blood\/40 {
+  border-color: #111111 !important;
+}
+
+.barebones .border-l-mb-yellow {
+  border-left-color: #111111 !important;
+}
+
+.barebones .border-distressed,
+.barebones .border-distressed-yellow,
+.barebones .border-distressed-pink {
+  border: 1px solid #111111 !important;
+  box-shadow: none !important;
+}
+
+/* Remove brutalist 3D shadows and tilts for clear accessibility */
+.barebones .shadow-brutal,
+.barebones .shadow-brutal-sm,
+.barebones .shadow-brutal-yellow,
+.barebones .shadow-brutal-pink,
+.barebones .shadow-2xl,
+.barebones .shadow-xl {
+  box-shadow: none !important;
+}
+
+.barebones [class*="rotate-"] {
+  transform: none !important;
+}
+
+.barebones .animate-pulse,
+.barebones .animate-bounce {
+  animation: none !important;
+}
+
+/* Buttons in Barebones mode: clean high-contrast, black on white with black border */
+.barebones button,
+.barebones .mb-btn {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #111111 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.barebones button:hover,
+.barebones .mb-btn:hover {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.barebones button:hover *,
+.barebones .mb-btn:hover * {
+  color: #ffffff !important;
+}
+
+/* Solid buttons in Barebones: black background with white text */
+.barebones button.bg-mb-yellow,
+.barebones button.bg-mb-pink,
+.barebones button.bg-mb-blood,
+.barebones button.bg-purple-700,
+.barebones button.bg-purple-600 {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border: 1px solid #111111 !important;
+}
+
+.barebones button.bg-mb-yellow:hover,
+.barebones button.bg-mb-pink:hover,
+.barebones button.bg-mb-blood:hover,
+.barebones button.bg-purple-700:hover,
+.barebones button.bg-purple-600:hover {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+
+.barebones button.bg-mb-yellow *,
+.barebones button.bg-mb-pink *,
+.barebones button.bg-mb-blood *,
+.barebones button.bg-purple-700 *,
+.barebones button.bg-purple-600 * {
+  color: #ffffff !important;
+}
+
+/* Inputs, textareas, selects */
+.barebones input,
+.barebones textarea,
+.barebones select {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #111111 !important;
+}
+
+.barebones input:focus,
+.barebones textarea:focus,
+.barebones select:focus {
+  outline: 2px solid #111111 !important;
+  border-color: #111111 !important;
+}
+
+/* Badges & tape banners */
+.barebones .badge-stamp,
+.barebones .tape-banner {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #111111 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.barebones .tape-banner::before,
+.barebones .tape-banner::after {
+  display: none !important;
+}
+
+/* Accessible typography: replace typewriter font with clean sans */
+.barebones .font-punk {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Modals */
+.barebones .fixed.inset-0.bg-black\/80,
+.barebones .fixed.inset-0.bg-black\/85,
+.barebones .fixed.inset-0.bg-black\/90 {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Health / Progress bar */
+.barebones .bg-zinc-900.h-2,
+.barebones .bg-zinc-900.h-2\.5 {
+  background-color: #e4e4e7 !important;
+  border: 1px solid #111111 !important;
+}
+
+.barebones .bg-green-500,
+.barebones .bg-amber-500 {
+  background-color: #27272a !important;
+}
+
+/* Scrollbars in Barebones mode */
+.barebones ::-webkit-scrollbar-track,
+body.barebones ::-webkit-scrollbar-track {
+  background: #f4f4f5 !important;
+}
+
+.barebones ::-webkit-scrollbar-thumb,
+body.barebones ::-webkit-scrollbar-thumb {
+  background: #a1a1aa !important;
+  border: 1px solid #71717a !important;
+}
+
+.barebones ::-webkit-scrollbar-thumb:hover,
+body.barebones ::-webkit-scrollbar-thumb:hover {
+  background: #71717a !important;
+}
+

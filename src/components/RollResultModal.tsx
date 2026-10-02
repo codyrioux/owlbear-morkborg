@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { RollResult } from '../types/morkborg';
+import { formatTitleCase } from '../utils/format';
 
 interface RollResultModalProps {
   roll: RollResult | null;
@@ -8,14 +9,6 @@ interface RollResultModalProps {
   onClose: () => void;
   onSpendOmenReroll?: () => void;
   onSpendOmenLowerDR?: () => void;
-}
-
-function formatTitleCase(str: string): string {
-  return str.replace(/\b[a-zA-Z0-9]+\b/g, (word) => {
-    if (/^d\d+$/i.test(word) || /^\d+d\d+.*$/i.test(word)) return word.toLowerCase();
-    if (word.toUpperCase() === 'DR' || word.toUpperCase() === 'HP') return word.toUpperCase();
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  });
 }
 
 export const RollResultModal: React.FC<RollResultModalProps> = ({

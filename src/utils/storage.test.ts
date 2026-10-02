@@ -7,7 +7,10 @@ import {
   loadCollapsedSectionsFromStorage,
   saveCollapsedSectionsToStorage,
   DEFAULT_COLLAPSED_SECTIONS,
-  COLLAPSED_SECTIONS_STORAGE_KEY
+  COLLAPSED_SECTIONS_STORAGE_KEY,
+  loadBarebonesModeFromStorage,
+  saveBarebonesModeToStorage,
+  BAREBONES_STORAGE_KEY
 } from './storage';
 import { generateRandomCharacter } from './morkborgRules';
 import { Character } from '../types/morkborg';
@@ -166,6 +169,28 @@ describe('Local Storage Persistence', () => {
     it('should fallback gracefully on corrupted json in collapsed sections', () => {
       localStorage.setItem(COLLAPSED_SECTIONS_STORAGE_KEY, 'invalid json {');
       expect(loadCollapsedSectionsFromStorage()).toEqual(DEFAULT_COLLAPSED_SECTIONS);
+    });
+  });
+
+  describe('Barebones Mode Persistence', () => {
+    it('should default to false when localStorage is empty', () => {
+      expect(loadBarebonesModeFromStorage()).toBe(false);
+    });
+
+    it('should persist and load barebones mode accurately', () => {
+      saveBarebonesModeToStorage(true);
+      expect(loadBarebonesModeFromStorage()).toBe(true);
+
+      saveBarebonesModeToStorage(false);
+      expect(loadBarebonesModeFromStorage()).toBe(false);
+    });
+
+    it('should read from BAREBONES_STORAGE_KEY correctly', () => {
+      localStorage.setItem(BAREBONES_STORAGE_KEY, 'true');
+      expect(loadBarebonesModeFromStorage()).toBe(true);
+
+      localStorage.setItem(BAREBONES_STORAGE_KEY, 'false');
+      expect(loadBarebonesModeFromStorage()).toBe(false);
     });
   });
 });

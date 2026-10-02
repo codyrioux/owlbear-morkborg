@@ -130,3 +130,35 @@ export function saveCollapsedSectionsToStorage(state: CollapsedSections): void {
   }
 }
 
+export const BAREBONES_STORAGE_KEY = 'morkborg_barebones_mode';
+
+/**
+ * Loads the saved barebones mode preference from browser localStorage.
+ */
+export function loadBarebonesModeFromStorage(): boolean {
+  try {
+    const storage = getStorage();
+    if (!storage) return false;
+
+    const raw = storage.getItem(BAREBONES_STORAGE_KEY);
+    return raw === 'true';
+  } catch (err) {
+    console.warn('Failed to load barebones mode from localStorage:', err);
+  }
+  return false;
+}
+
+/**
+ * Persists the barebones mode preference to browser localStorage.
+ */
+export function saveBarebonesModeToStorage(enabled: boolean): void {
+  try {
+    const storage = getStorage();
+    if (!storage) return;
+
+    storage.setItem(BAREBONES_STORAGE_KEY, String(enabled));
+  } catch (err) {
+    console.warn('Failed to save barebones mode to localStorage:', err);
+  }
+}
+

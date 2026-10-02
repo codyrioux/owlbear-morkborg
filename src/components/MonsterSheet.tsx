@@ -5,6 +5,7 @@ import { rollDie } from '../utils/dice';
 import { OBRService } from '../obr/obrService';
 import { GMService } from '../obr/gmService';
 import { BadgeService } from '../obr/badgeService';
+import { formatTitleCase } from '../utils/format';
 
 interface MonsterSheetProps {
   monster: MonsterTokenData;
@@ -106,8 +107,8 @@ export const MonsterSheet: React.FC<MonsterSheetProps> = ({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="font-gothic text-xl sm:text-2xl text-purple-300 uppercase tracking-wide truncate">
-                {monster.name}
+              <h2 className="font-gothic text-xl sm:text-2xl text-purple-300 tracking-wide truncate">
+                {formatTitleCase(monster.name)}
               </h2>
               {isDead && (
                 <span className="bg-mb-blood text-white font-black text-[10px] px-1.5 py-0.5 uppercase animate-pulse border border-black shrink-0">

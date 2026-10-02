@@ -246,7 +246,7 @@ export const OraclesSection: React.FC = () => {
               <span className="bg-mb-pink text-white font-mono text-xs font-black px-2 py-0.5 border border-black shadow-brutal-sm">
                 {lastResult.rollDisplay}
               </span>
-              <span className="font-gothic text-xs text-mb-bone/70 uppercase">
+              <span className="font-gothic text-xs text-mb-bone/70">
                 {lastResult.category}
               </span>
             </div>

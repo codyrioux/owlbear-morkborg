@@ -351,7 +351,7 @@ export const CombatTracker: React.FC<CombatTrackerProps> = ({
           <div className="flex items-center justify-between border-b border-purple-500/20 pb-2">
             <div className="flex items-center gap-2">
               <Skull className="w-5 h-5 text-purple-400" />
-              <h3 className="font-gothic text-lg text-purple-300 tracking-wide uppercase">
+              <h3 className="font-gothic text-lg text-purple-300 tracking-wide">
                 Enemies & Monsters ({sceneMonsters.length})
               </h3>
             </div>

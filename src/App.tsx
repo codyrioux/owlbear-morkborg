@@ -45,6 +45,8 @@ import {
   saveCharacterToStorage,
   loadCollapsedSectionsFromStorage,
   saveCollapsedSectionsToStorage,
+  loadBarebonesModeFromStorage,
+  saveBarebonesModeToStorage,
   CollapsedSections
 } from './utils/storage';
 
@@ -70,6 +72,24 @@ export const App: React.FC = () => {
     return 'player';
   });
   const [activeMiseryNotification, setActiveMiseryNotification] = useState<TriggeredMisery | null>(null);
+  const [isBarebones, setIsBarebones] = useState<boolean>(() => {
+    return loadBarebonesModeFromStorage();
+  });
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('barebones', isBarebones);
+      document.body.classList.toggle('barebones', isBarebones);
+    }
+  }, [isBarebones]);
+
+  const handleToggleBarebones = () => {
+    setIsBarebones((prev) => {
+      const next = !prev;
+      saveBarebonesModeToStorage(next);
+      return next;
+    });
+  };
 
   const handleToggleView = async (view: 'player' | 'gm') => {
     setActiveView(view);
@@ -833,7 +853,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-mb-black text-mb-white flex flex-col font-brutal">
+    <div className={`min-h-screen flex flex-col font-brutal transition-colors duration-150 ${isBarebones ? 'barebones bg-white text-black' : 'bg-mb-black text-mb-white'}`}>
       <div ref={contentRef} className="w-full flex flex-col">
         {/* TopBar: Persistent across both Player and GM views */}
         <TopBar
@@ -988,6 +1008,17 @@ export const App: React.FC = () => {
       <footer className="bg-mb-dark p-2 border-t-2 border-mb-charcoal flex items-center justify-between text-[10px] text-mb-white/50 font-punk">
         <span>MÖRK BORG is © Ockult Örtmästare Games & Stockholm Kartell.</span>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleBarebones}
+            className={`border px-2 py-0.5 font-bold uppercase font-brutal text-[10px] transition-colors ${
+              isBarebones
+                ? 'text-black bg-white hover:bg-black hover:text-white border-black'
+                : 'text-mb-white/70 hover:text-mb-yellow border-mb-charcoal hover:border-mb-yellow/40'
+            }`}
+            title={isBarebones ? 'Switch to High Color Stylized Mode' : 'Switch to Barebones Accessibility Mode (Black & White)'}
+          >
+            {isBarebones ? 'Stylized Mode' : 'Barebones Mode'}
+          </button>
           <button
             onClick={handleToggleCollapseAll}
             className="text-mb-white/70 hover:text-mb-yellow border border-mb-charcoal hover:border-mb-yellow/40 px-2 py-0.5 font-bold uppercase font-brutal text-[10px]"

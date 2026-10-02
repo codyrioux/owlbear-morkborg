@@ -42,7 +42,7 @@ export const MiseryNotificationModal: React.FC<MiseryNotificationModalProps> = (
             <span className="font-brutal font-black text-xs uppercase tracking-widest text-mb-yellow block">
               {isSeventh ? 'THE SEVENTH SEAL HAS SHATTERED' : 'THE CALENDAR OF NECHRUBEL'}
             </span>
-            <h2 className="font-gothic text-2xl sm:text-3xl uppercase font-black text-white leading-tight">
+            <h2 className="font-gothic text-2xl sm:text-3xl font-black text-white leading-tight">
               {misery.title}
             </h2>
           </div>
