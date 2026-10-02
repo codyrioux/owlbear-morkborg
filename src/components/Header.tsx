@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Moon, Sun, Dices, Download, Upload, Link, Unlink, Users, ChevronDown, ChevronRight, Skull, AlertCircle } from 'lucide-react';
+import { User, Moon, Sun, Dices, Download, Upload, Link, Unlink, Users, ChevronDown, ChevronRight, Skull, AlertCircle, Lock, Unlock } from 'lucide-react';
 import { Character } from '../types/morkborg';
 
 export interface SceneCharacterItem {
@@ -30,6 +30,10 @@ interface HeaderProps {
   userRole?: 'GM' | 'PLAYER';
   activeView?: 'player' | 'gm';
   onToggleView?: (view: 'player' | 'gm') => void;
+  currentUserId?: string;
+  currentUserName?: string;
+  partyPlayers?: Array<{ id: string; name: string; role: 'GM' | 'PLAYER'; color?: string }>;
+  isReadOnly?: boolean;
 }
 
 const CLASSES = [
@@ -59,10 +63,68 @@ export const Header: React.FC<HeaderProps> = ({
   onImport,
   isCollapsed = false,
   onToggleCollapse,
+  userRole = 'PLAYER',
+  currentUserId,
+  currentUserName,
+  partyPlayers,
+  isReadOnly = false,
 }) => {
   const [isRosterOpen, setIsRosterOpen] = useState(false);
 
+  const isOwner = Boolean(
+    character.owner?.id &&
+    character.owner.id === currentUserId
+  );
+  const isGM = userRole === 'GM';
+  const canToggleLock = isOwner || isGM;
+  const isLocked = Boolean(character.isLocked);
+  const isClaimed = Boolean(character.owner?.name);
+
+  const handleClaimSheet = () => {
+    const id = currentUserId || 'standalone-player';
+    const name = currentUserName || 'Local Scvm';
+    onUpdateCharacter((prev) => ({
+      ...prev,
+      owner: { id, name },
+      isLocked: false,
+    }));
+  };
+
+  const handleToggleLock = () => {
+    if (!canToggleLock) return;
+    onUpdateCharacter((prev) => ({
+      ...prev,
+      isLocked: !prev.isLocked,
+    }));
+  };
+
+  const handleReleaseClaim = () => {
+    if (!canToggleLock) return;
+    onUpdateCharacter((prev) => ({
+      ...prev,
+      owner: undefined,
+      isLocked: false,
+    }));
+  };
+
+  const handleGMAssignOwner = (targetId: string) => {
+    if (!isGM) return;
+    if (!targetId) {
+      handleReleaseClaim();
+      return;
+    }
+    const targetPlayer = partyPlayers?.find((p) => p.id === targetId);
+    if (targetPlayer) {
+      onUpdateCharacter((prev) => ({
+        ...prev,
+        owner: { id: targetPlayer.id, name: targetPlayer.name },
+        isLocked: false,
+      }));
+    }
+  };
+
   const handleToggleBroken = () => {
+    if (isReadOnly) return;
     onUpdateCharacter((prev) => {
       const isNowBroken = !prev.conditions.broken;
       return {
@@ -143,8 +205,11 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <button
             onClick={onOpenLongRest}
-            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-            title="Night's Sleep: Heal d6, Reroll Omens, Reroll Powers"
+            disabled={isReadOnly}
+            className={`mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : "Night's Sleep: Heal d6, Reroll Omens, Reroll Powers"}
           >
             <Moon className="w-3 h-3 text-mb-yellow" />
             <span className="hidden sm:inline">LONG REST</span>
@@ -153,8 +218,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onShortRest}
-            className="mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-            title="Catch Breath: Heal d4"
+            disabled={isReadOnly}
+            className={`mb-btn mb-btn-dark text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Catch Breath: Heal d4'}
           >
             <Sun className="w-3 h-3 text-yellow-400" />
             <span className="hidden sm:inline">SHORT REST</span>
@@ -163,8 +231,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onScvmbirther}
-            className="mb-btn mb-btn-pink text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-            title="Generate a random unfortunate character"
+            disabled={isReadOnly}
+            className={`mb-btn mb-btn-pink text-[11px] py-0.5 px-2 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Generate a random unfortunate character'}
           >
             <Dices className="w-3 h-3" />
             <span className="hidden sm:inline">SCVMBIRTHER</span>
@@ -189,8 +260,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onLinkToken}
-            className="mb-btn bg-zinc-900 hover:bg-zinc-800 text-mb-bone border border-zinc-700 text-[11px] py-0.5 px-1.5"
-            title={linkedTokenName ? `Linked to ${linkedTokenName}` : 'Link sheet to selected map token'}
+            disabled={isReadOnly}
+            className={`mb-btn bg-zinc-900 hover:bg-zinc-800 text-mb-bone border border-zinc-700 text-[11px] py-0.5 px-1.5 ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : linkedTokenName ? `Linked to ${linkedTokenName}` : 'Link sheet to selected map token'}
           >
             <Link className="w-3 h-3 text-mb-yellow" />
             <span className="hidden md:inline">{linkedTokenName ? 'BOUND' : 'TOKEN'}</span>
@@ -206,13 +280,128 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onImport}
-            className="p-1 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white"
-            title="Import Character JSON"
+            disabled={isReadOnly}
+            className={`p-1 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Import Character JSON'}
           >
             <Upload className="w-3 h-3" />
           </button>
         </div>
       </div>
+
+      {/* Ownership & Permission Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5 py-1 px-2 mb-2 bg-mb-black border border-mb-charcoal text-[11px] font-mono">
+        <div className="flex items-center gap-2 min-w-0">
+          {isClaimed ? (
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-zinc-400">Claimed by:</span>
+              <strong className="text-mb-yellow truncate">{character.owner?.name}</strong>
+              {isOwner && (
+                <span className="text-[9px] bg-mb-yellow text-mb-black px-1 font-bold font-brutal uppercase">
+                  YOU
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-zinc-400">
+              <span className="italic">Unclaimed Sheet</span>
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={handleClaimSheet}
+                  className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black uppercase active:translate-x-0.5 active:translate-y-0.5 transition-transform"
+                  title="Claim this character sheet as yours"
+                >
+                  CLAIM
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Lock Icon & Actions */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Lock / Unlock Toggle Button or Static Indicator */}
+          {canToggleLock ? (
+            <button
+              type="button"
+              onClick={handleToggleLock}
+              className={`flex items-center gap-1 px-1.5 py-0.5 border text-[10px] font-brutal font-bold uppercase transition-colors ${
+                isLocked
+                  ? 'bg-mb-pink/20 border-mb-pink text-mb-pink hover:bg-mb-pink hover:text-white'
+                  : 'bg-green-950/40 border-green-500/50 text-green-400 hover:bg-green-600 hover:text-white'
+              }`}
+              title={
+                isLocked
+                  ? 'Sheet is LOCKED (Read-only for other players). Click to unlock.'
+                  : 'Sheet is UNLOCKED (Others can help/edit). Click to lock.'
+              }
+            >
+              {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+              <span>{isLocked ? 'LOCKED' : 'UNLOCKED'}</span>
+            </button>
+          ) : (
+            <div
+              className={`flex items-center gap-1 px-1.5 py-0.5 border text-[10px] font-brutal font-bold uppercase ${
+                isLocked
+                  ? 'bg-mb-pink/20 border-mb-pink text-mb-pink'
+                  : 'bg-green-950/40 border-green-500/50 text-green-400'
+              }`}
+              title={
+                isLocked
+                  ? `Sheet is locked by ${character.owner?.name || 'owner'}. Only owner and GM can edit.`
+                  : 'Sheet is unlocked.'
+              }
+            >
+              {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+              <span>{isLocked ? 'LOCKED' : 'UNLOCKED'}</span>
+            </div>
+          )}
+
+          {/* Unclaim / Release Button (if owner or GM) */}
+          {isClaimed && canToggleLock && (
+            <button
+              type="button"
+              onClick={handleReleaseClaim}
+              className="text-[10px] text-zinc-400 hover:text-mb-pink font-mono underline ml-0.5"
+              title="Release ownership of this character sheet"
+            >
+              Release
+            </button>
+          )}
+
+          {/* GM Quick-Assign Dropdown */}
+          {isGM && partyPlayers && partyPlayers.length > 0 && (
+            <select
+              value={character.owner?.id || ''}
+              onChange={(e) => handleGMAssignOwner(e.target.value)}
+              className="bg-zinc-900 text-zinc-300 text-[10px] font-mono border border-zinc-700 px-1 py-0.5 focus:outline-none focus:border-mb-yellow max-w-[110px] truncate"
+              title="GM: Assign owner to this sheet"
+            >
+              <option value="">(Assign Owner...)</option>
+              {partyPlayers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.role === 'GM' ? '(GM)' : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+
+      {/* Read-Only Notice Banner */}
+      {isReadOnly && (
+        <div className="bg-mb-pink/15 border-l-4 border-mb-pink px-2.5 py-1.5 mb-2 flex items-center justify-between text-xs font-mono text-mb-pink">
+          <div className="flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            <span>
+              <strong>SHEET LOCKED</strong> by {character.owner?.name || 'Owner'}. Read-only for non-owners.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Roster Popover Menu */}
       {isRosterOpen && sceneCharacters && (
@@ -364,11 +553,14 @@ export const Header: React.FC<HeaderProps> = ({
               <input
                 type="text"
                 value={character.name}
+                disabled={isReadOnly}
                 onChange={(e) =>
                   onUpdateCharacter((prev) => ({ ...prev, name: e.target.value }))
                 }
                 placeholder="Name your wretched soul..."
-                className="w-full bg-mb-black text-mb-yellow font-punk font-bold px-2 py-1 border border-zinc-700 focus:outline-none focus:border-mb-yellow text-xs"
+                className={`w-full bg-mb-black font-punk font-bold px-2 py-1 border border-zinc-700 text-xs ${
+                  isReadOnly ? 'text-zinc-500 cursor-not-allowed opacity-60' : 'text-mb-yellow focus:outline-none focus:border-mb-yellow'
+                }`}
               />
             </div>
 
@@ -379,6 +571,7 @@ export const Header: React.FC<HeaderProps> = ({
               </label>
               <select
                 value={character.characterClass}
+                disabled={isReadOnly}
                 onChange={(e) =>
                   onUpdateCharacter((prev) => ({
                     ...prev,
@@ -390,7 +583,9 @@ export const Header: React.FC<HeaderProps> = ({
                     }
                   }))
                 }
-                className="w-full bg-mb-black text-mb-bone font-brutal font-bold px-2 py-1 border border-zinc-700 focus:outline-none focus:border-mb-yellow text-xs cursor-pointer truncate"
+                className={`w-full bg-mb-black font-brutal font-bold px-2 py-1 border border-zinc-700 text-xs truncate ${
+                  isReadOnly ? 'text-zinc-500 cursor-not-allowed opacity-60' : 'text-mb-bone focus:outline-none focus:border-mb-yellow cursor-pointer'
+                }`}
               >
                 {CLASSES.map((cls) => (
                   <option key={cls} value={cls}>
@@ -409,12 +604,15 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* BROKEN BUTTON */}
                 <button
                   onClick={handleToggleBroken}
+                  disabled={isReadOnly}
                   className={`flex-1 py-1 px-1 text-[10px] font-brutal font-black border transition-colors flex items-center justify-center gap-0.5 ${
-                    character.conditions.broken
+                    isReadOnly
+                      ? 'opacity-40 cursor-not-allowed bg-zinc-900 text-zinc-500 border-zinc-800'
+                      : character.conditions.broken
                       ? 'bg-mb-pink text-white border-black animate-pulse shadow-brutal-sm'
                       : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white'
                   }`}
-                  title={character.conditions.broken ? 'Broken (0 HP) - click to revive to 1 HP' : 'Healthy - click to drop to 0 HP and mark Broken'}
+                  title={isReadOnly ? 'Sheet is locked (Read-only)' : character.conditions.broken ? 'Broken (0 HP) - click to revive to 1 HP' : 'Healthy - click to drop to 0 HP and mark Broken'}
                 >
                   <Skull className="w-2.5 h-2.5" />
                   <span>BROKEN</span>
@@ -428,12 +626,15 @@ export const Header: React.FC<HeaderProps> = ({
                       conditions: { ...prev.conditions, infected: !prev.conditions.infected }
                     }))
                   }
+                  disabled={isReadOnly}
                   className={`flex-1 py-1 px-1 text-[10px] font-brutal font-bold border transition-colors flex items-center justify-center gap-0.5 ${
-                    character.conditions.infected
+                    isReadOnly
+                      ? 'opacity-40 cursor-not-allowed bg-zinc-900 text-zinc-500 border-zinc-800'
+                      : character.conditions.infected
                       ? 'bg-mb-blood text-white border-black animate-pulse shadow-brutal-sm'
                       : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white'
                   }`}
-                  title="Toggle Infected condition"
+                  title={isReadOnly ? 'Sheet is locked (Read-only)' : "Toggle Infected condition"}
                 >
                   <AlertCircle className="w-2.5 h-2.5" />
                   <span>INFECTED</span>
@@ -447,12 +648,15 @@ export const Header: React.FC<HeaderProps> = ({
                       conditions: { ...prev.conditions, starving: !prev.conditions.starving }
                     }))
                   }
+                  disabled={isReadOnly}
                   className={`flex-1 py-1 px-1 text-[10px] font-brutal font-bold border transition-colors ${
-                    character.conditions.starving
+                    isReadOnly
+                      ? 'opacity-40 cursor-not-allowed bg-zinc-900 text-zinc-500 border-zinc-800'
+                      : character.conditions.starving
                       ? 'bg-mb-bone text-mb-black border-black font-black shadow-brutal-sm'
                       : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white'
                   }`}
-                  title="Toggle Starving condition"
+                  title={isReadOnly ? 'Sheet is locked (Read-only)' : "Toggle Starving condition"}
                 >
                   STARVING
                 </button>
@@ -468,11 +672,14 @@ export const Header: React.FC<HeaderProps> = ({
             <textarea
               rows={2}
               value={character.description}
+              disabled={isReadOnly}
               onChange={(e) =>
                 onUpdateCharacter((prev) => ({ ...prev, description: e.target.value }))
               }
               placeholder="Scars, sins, debts, habits, strange markings..."
-              className="w-full bg-mb-black text-zinc-300 font-punk text-xs px-2 py-1 border border-zinc-700 focus:outline-none focus:border-mb-yellow resize-y min-h-[44px] leading-snug"
+              className={`w-full bg-mb-black font-punk text-xs px-2 py-1 border border-zinc-700 resize-y min-h-[44px] leading-snug ${
+                isReadOnly ? 'text-zinc-500 cursor-not-allowed opacity-60' : 'text-zinc-300 focus:outline-none focus:border-mb-yellow'
+              }`}
             />
           </div>
         </div>

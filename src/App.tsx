@@ -64,6 +64,21 @@ export const App: React.FC = () => {
   const [linkedMonster, setLinkedMonster] = useState<{ id: string; name: string; monster: MonsterTokenData } | null>(null);
   const [unboundDesignationToken, setUnboundDesignationToken] = useState<{ id: string; name: string } | null>(null);
   const [userRole, setUserRole] = useState<'GM' | 'PLAYER'>('PLAYER');
+  const [currentUserId, setCurrentUserId] = useState<string>('standalone-player');
+  const [currentUserName, setCurrentUserName] = useState<string>('Local Scvm');
+  const [partyPlayers, setPartyPlayers] = useState<
+    Array<{ id: string; name: string; role: 'GM' | 'PLAYER'; color?: string }>
+  >([]);
+
+  // Ownership & Permission calculation:
+  // GM and owning player can ALWAYS edit.
+  // When sheet is locked, non-owners are in read-only mode.
+  // When sheet is unlocked, non-owners can edit to assist or collaborate.
+  const isOwner = Boolean(character.owner?.id && character.owner.id === currentUserId);
+  const isGM = userRole === 'GM';
+  const isLocked = Boolean(character.isLocked);
+  const isReadOnly = isLocked && !isOwner && !isGM;
+
   const [activeView, setActiveView] = useState<'player' | 'gm'>(() => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -114,6 +129,9 @@ export const App: React.FC = () => {
   const userRoleRef = useRef(userRole);
   userRoleRef.current = userRole;
 
+  const isReadOnlyRef = useRef(isReadOnly);
+  isReadOnlyRef.current = isReadOnly;
+
   const isSwitchingRef = useRef(false);
 
   // Switch to an existing character bound to a token
@@ -121,9 +139,11 @@ export const App: React.FC = () => {
     if (isSwitchingRef.current) return;
     isSwitchingRef.current = true;
     try {
-      // 1. Auto-persist outgoing character to current linked token if applicable
+      // 1. Auto-persist outgoing character to current linked token if applicable and not read-only
       if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
-        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        if (!isReadOnlyRef.current) {
+          await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        }
       }
       setLinkedMonster(null);
       // 2. Load target character if not provided
@@ -146,9 +166,11 @@ export const App: React.FC = () => {
     if (isSwitchingRef.current) return;
     isSwitchingRef.current = true;
     try {
-      // 1. Auto-persist outgoing character to current linked token
+      // 1. Auto-persist outgoing character to current linked token if not read-only
       if (linkedTokenRef.current && linkedTokenRef.current.id !== tokenId) {
-        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        if (!isReadOnlyRef.current) {
+          await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        }
       }
       setLinkedMonster(null);
       // 2. Generate new scvm
@@ -241,9 +263,11 @@ export const App: React.FC = () => {
     if (isSwitchingRef.current) return;
     isSwitchingRef.current = true;
     try {
-      // 1. Auto-persist current token character if linked
+      // 1. Auto-persist current token character if linked and not read-only
       if (linkedTokenRef.current) {
-        await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        if (!isReadOnlyRef.current) {
+          await OBRService.saveCharacter(characterRef.current, linkedTokenRef.current.id);
+        }
       }
       // 2. Set to standalone mode
       setLinkedToken(null);
@@ -373,6 +397,15 @@ export const App: React.FC = () => {
       setUserRole(role);
       userRoleRef.current = role;
 
+      const myId = await OBRService.getPlayerId();
+      setCurrentUserId(myId);
+
+      const myName = await OBRService.getPlayerName();
+      setCurrentUserName(myName);
+
+      const party = await OBRService.getPartyPlayers();
+      setPartyPlayers(party);
+
       if (activeView === 'gm') {
         await OBRService.setActionWidth(700);
         await OBRService.setActionHeight(680);
@@ -390,8 +423,14 @@ export const App: React.FC = () => {
         } else {
           const tokenMonster = await OBRService.loadMonsterFromToken(selected.id);
           if (tokenMonster) {
-            setLinkedToken(null);
-            setLinkedMonster({ id: selected.id, name: selected.name, monster: tokenMonster });
+            if (role === 'GM') {
+              setLinkedToken(null);
+              setLinkedMonster({ id: selected.id, name: selected.name, monster: tokenMonster });
+            } else {
+              setLinkedToken(null);
+              setLinkedMonster(null);
+              OBRService.notify('Monster sheets are only inspectable and editable by the GM.');
+            }
           } else {
             // Unbound token on startup
             if (role === 'GM') {
@@ -431,14 +470,20 @@ export const App: React.FC = () => {
         setLinkedMonster(null);
         await handleSwitchToToken(selectionData.id, selectionData.name, selectionData.character);
       } else if (selectionData.monster) {
-        // Existing monster on token
-        setLinkedToken(null);
-        setLinkedMonster({
-          id: selectionData.id,
-          name: selectionData.name,
-          monster: selectionData.monster,
-        });
-        OBRService.notify(`Selected monster "${selectionData.monster.name}" (${selectionData.name})`);
+        // Existing monster on token (GM only)
+        if (userRoleRef.current === 'GM') {
+          setLinkedToken(null);
+          setLinkedMonster({
+            id: selectionData.id,
+            name: selectionData.name,
+            monster: selectionData.monster,
+          });
+          OBRService.notify(`Selected monster "${selectionData.monster.name}" (${selectionData.name})`);
+        } else {
+          setLinkedToken(null);
+          setLinkedMonster(null);
+          OBRService.notify('Monster sheets are only inspectable and editable by the GM.');
+        }
       } else {
         // Unbound token on map!
         if (userRoleRef.current === 'GM') {
@@ -501,17 +546,24 @@ export const App: React.FC = () => {
       }
     });
 
+    // Listen to party changes (new players joining, name changes, GM role assignments)
+    const unsubParty = OBRService.subscribeToParty((players) => {
+      setPartyPlayers(players);
+    });
+
     return () => {
       unsubSelection();
       unsubScene();
       unsubRolls();
       unsubGMEvents();
+      unsubParty();
     };
   }, []);
 
   // Auto-persist character changes
   useEffect(() => {
     if (isSwitchingRef.current) return;
+    if (isReadOnly && linkedToken?.id) return;
     OBRService.saveCharacter(character, linkedToken?.id);
 
     if (linkedToken?.id) {
@@ -522,7 +574,7 @@ export const App: React.FC = () => {
         dead: character.broken?.result?.roll === 4,
       });
     }
-  }, [character, linkedToken]);
+  }, [character, linkedToken, isReadOnly]);
 
   // Execute and record a roll
   const triggerRoll = (roll: RollResult) => {
@@ -884,6 +936,7 @@ export const App: React.FC = () => {
               onUpdateMonster={handleUpdateMonster}
               onUnlinkMonster={handleUnlinkMonster}
               onSwitchToCharacterSheet={() => setLinkedMonster(null)}
+              userRole={userRole}
             />
           ) : (
             <>
@@ -905,6 +958,11 @@ export const App: React.FC = () => {
                 onImport={handleImport}
                 isCollapsed={collapsedSections.header}
                 onToggleCollapse={() => handleToggleSection('header')}
+                userRole={userRole}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+                partyPlayers={partyPlayers}
+                isReadOnly={isReadOnly}
               />
               {/* 2. Core Abilities with Roll Buttons */}
               <AbilitiesGrid
@@ -914,6 +972,7 @@ export const App: React.FC = () => {
                 onOpenGettingBetter={() => setIsGettingBetterOpen(true)}
                 isCollapsed={collapsedSections.abilities}
                 onToggleCollapse={() => handleToggleSection('abilities')}
+                isReadOnly={isReadOnly}
               />
 
               {/* 3. Vitals: HP, Omens, Powers, Silver */}
@@ -924,6 +983,7 @@ export const App: React.FC = () => {
                 onOpenBrokenModal={() => setIsBrokenModalOpen(true)}
                 isCollapsed={collapsedSections.vitals}
                 onToggleCollapse={() => handleToggleSection('vitals')}
+                isReadOnly={isReadOnly}
               />
 
               {/* 4. Combat: Armor, Defense, Weapons */}
@@ -936,6 +996,7 @@ export const App: React.FC = () => {
                 onDamage={handleDamage}
                 isCollapsed={collapsedSections.combat}
                 onToggleCollapse={() => handleToggleSection('combat')}
+                isReadOnly={isReadOnly}
               />
 
               {/* 5. Inventory & Encumbrance */}
@@ -944,6 +1005,7 @@ export const App: React.FC = () => {
                 onUpdateCharacter={setCharacter}
                 isCollapsed={collapsedSections.inventory}
                 onToggleCollapse={() => handleToggleSection('inventory')}
+                isReadOnly={isReadOnly}
               />
 
               {/* 6. Scrolls & Occult Powers */}
@@ -953,6 +1015,7 @@ export const App: React.FC = () => {
                 onInvokeScroll={handleInvokeScroll}
                 isCollapsed={collapsedSections.scrolls}
                 onToggleCollapse={() => handleToggleSection('scrolls')}
+                isReadOnly={isReadOnly}
               />
             </>
           )}

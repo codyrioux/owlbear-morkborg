@@ -12,6 +12,7 @@ interface AbilitiesGridProps {
   onOpenGettingBetter?: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isReadOnly?: boolean;
 }
 
 const ABILITY_CONFIG: Record<
@@ -60,6 +61,7 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
   onOpenGettingBetter,
   isCollapsed = false,
   onToggleCollapse,
+  isReadOnly = false,
 }) => {
   const [targetDR, setTargetDR] = useState<number>(12);
 
@@ -135,8 +137,11 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
             <button
               key={key}
               onClick={() => onRollAbility(key, modifier, effectiveDR, penalty)}
-              className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black shadow-brutal-sm flex items-center gap-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-              title={`Roll ${config.label} (${formatModifier(modifier)}) vs DR ${effectiveDR}`}
+              disabled={isReadOnly}
+              className={`bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black shadow-brutal-sm flex items-center gap-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+                isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll ${config.label} (${formatModifier(modifier)}) vs DR ${effectiveDR}`}
             >
               <span>{config.shortLabel}</span>
               <span className="font-mono font-black">{formatModifier(modifier)}</span>
@@ -228,7 +233,8 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               <div className="flex items-center justify-center my-1 gap-1.5">
                 <button
                   onClick={() => handleModifierDirectChange(abilityKey, modifier - 1)}
-                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] border border-mb-black shrink-0"
+                  disabled={isReadOnly}
+                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] border border-mb-black shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Decrease modifier"
                 >
                   -
@@ -248,7 +254,8 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
 
                 <button
                   onClick={() => handleModifierDirectChange(abilityKey, modifier + 1)}
-                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] border border-mb-black shrink-0"
+                  disabled={isReadOnly}
+                  className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] border border-mb-black shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Increase modifier"
                 >
                   +
@@ -263,8 +270,11 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
               {/* Compact ROLL Button */}
               <button
                 onClick={() => onRollAbility(abilityKey, modifier, effectiveDR, penalty)}
-                className="w-full mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 shadow-brutal-sm"
-                title={`Roll d20 ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
+                disabled={isReadOnly}
+                className={`w-full mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 shadow-brutal-sm ${
+                  isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+                }`}
+                title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll d20 ${modifier >= 0 ? `+${modifier}` : modifier} vs DR ${effectiveDR}${penalty > 0 ? ` (Base DR ${targetDR} + ${penalty} penalty)` : ''}`}
               >
                 <Dices className="w-3 h-3" />
                 <span>ROLL {formatModifier(modifier)}</span>
@@ -293,8 +303,11 @@ export const AbilitiesGrid: React.FC<AbilitiesGridProps> = ({
           </div>
           <button
             onClick={onOpenGettingBetter}
-            className="mb-btn mb-btn-yellow text-xs py-1 px-2.5 shadow-brutal-sm shrink-0 flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-            title="Roll Getting Better: HP increase, debris search, and ability score modifications"
+            disabled={isReadOnly}
+            className={`mb-btn mb-btn-yellow text-xs py-1 px-2.5 shadow-brutal-sm shrink-0 flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+              isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+            title={isReadOnly ? 'Sheet is locked (Read-only)' : "Roll Getting Better: HP increase, debris search, and ability score modifications"}
           >
             <Sparkles className="w-3 h-3" />
             <span>GETTING BETTER</span>

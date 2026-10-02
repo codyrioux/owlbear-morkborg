@@ -9,6 +9,7 @@ interface InventorySectionProps {
   onUpdateCharacter: (updater: (prev: Character) => Character) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isReadOnly?: boolean;
 }
 
 export const InventorySection: React.FC<InventorySectionProps> = ({
@@ -16,6 +17,7 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
   onUpdateCharacter,
   isCollapsed = false,
   onToggleCollapse,
+  isReadOnly = false,
 }) => {
   const [newItemName, setNewItemName] = useState('');
   const [newItemSlots, setNewItemSlots] = useState<number>(1);
@@ -286,35 +288,41 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
                       <button
                         type="button"
                         onClick={() => handleUpdateQty(item.id, -1)}
+                        disabled={isReadOnly}
                         title={item.quantity === 1 && isAmmo ? 'Fires last round (empty)' : 'Decrease quantity'}
-                        className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-pink"
+                        className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-pink disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         -
                       </button>
                       <button
                         type="button"
                         onClick={() => handleUpdateQty(item.id, 1)}
+                        disabled={isReadOnly}
                         title="Increase quantity"
-                        className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-yellow hover:text-mb-black"
+                        className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold flex items-center justify-center hover:bg-mb-yellow hover:text-mb-black disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         +
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingItem({ ...item, stackSize: effectiveStackSize, isAmmunition: isAmmo })}
-                        title="Edit Item"
-                        className="p-0.5 text-mb-white/40 hover:text-mb-yellow ml-0.5"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(item.id)}
-                        title="Delete Item"
-                        className="p-0.5 text-mb-white/40 hover:text-mb-pink ml-0.5"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      {!isReadOnly && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setEditingItem({ ...item, stackSize: effectiveStackSize, isAmmunition: isAmmo })}
+                            title="Edit Item"
+                            className="p-0.5 text-mb-white/40 hover:text-mb-yellow ml-0.5"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.id)}
+                            title="Delete Item"
+                            className="p-0.5 text-mb-white/40 hover:text-mb-pink ml-0.5"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
@@ -323,134 +331,138 @@ export const InventorySection: React.FC<InventorySectionProps> = ({
           </div>
 
           {/* Quick Add Ammo & Supplies */}
-          <div className="pt-1.5 pb-1 border-t border-mb-charcoal">
-            <div className="flex items-center justify-between text-[9px] font-mono text-mb-white/50 mb-1">
-              <span className="uppercase tracking-wider">Quick Add Supplies:</span>
+          {!isReadOnly && (
+            <div className="pt-1.5 pb-1 border-t border-mb-charcoal">
+              <div className="flex items-center justify-between text-[9px] font-mono text-mb-white/50 mb-1">
+                <span className="uppercase tracking-wider">Quick Add Supplies:</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Arrows', 20, 1, true)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add quiver of 20 arrows (Ammo, 0 slots for first 20)"
+                >
+                  +20 Arrows
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Crossbow Bolts', 10, 1, true)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add case of 10 bolts (Ammo, 0 slots for first 10)"
+                >
+                  +10 Bolts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Sling Bullets', 20, 1, true)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add bag of 20 bullets (Ammo, 0 slots for first 20)"
+                >
+                  +20 Bullets
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Torches', 4, 1, false)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add bundle of 4 torches (1 slot)"
+                >
+                  +4 Torches
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Dry Rations', 4, 1, false)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add 4 rations of food (1 slot)"
+                >
+                  +4 Rations
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPreset('Chalk', 10, 1, false)}
+                  className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
+                  title="Add box of 10 chalk pieces (1 slot)"
+                >
+                  +10 Chalk
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-1">
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Arrows', 20, 1, true)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add quiver of 20 arrows (Ammo, 0 slots for first 20)"
-              >
-                +20 Arrows
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Crossbow Bolts', 10, 1, true)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add case of 10 bolts (Ammo, 0 slots for first 10)"
-              >
-                +10 Bolts
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Sling Bullets', 20, 1, true)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add bag of 20 bullets (Ammo, 0 slots for first 20)"
-              >
-                +20 Bullets
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Torches', 4, 1, false)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add bundle of 4 torches (1 slot)"
-              >
-                +4 Torches
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Dry Rations', 4, 1, false)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add 4 rations of food (1 slot)"
-              >
-                +4 Rations
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAddPreset('Chalk', 10, 1, false)}
-                className="text-[9px] font-mono px-1.5 py-0.5 bg-mb-dark hover:bg-mb-yellow hover:text-mb-black border border-mb-charcoal hover:border-black text-mb-white transition-colors"
-                title="Add box of 10 chalk pieces (1 slot)"
-              >
-                +10 Chalk
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Add New Item Form */}
-          <form onSubmit={handleAddItem} className="pt-1.5 border-t border-mb-charcoal flex flex-col gap-1">
-            <div className="flex gap-1">
-              <input
-                type="text"
-                placeholder="New item name..."
-                value={newItemName}
-                onChange={(e) => handleNameChange(e.target.value)}
-                className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
-              />
-              <div className="flex items-center gap-0.5 bg-mb-dark border border-mb-charcoal px-1">
-                <span className="text-[9px] font-mono text-mb-white/40">QTY:</span>
+          {!isReadOnly && (
+            <form onSubmit={handleAddItem} className="pt-1.5 border-t border-mb-charcoal flex flex-col gap-1">
+              <div className="flex gap-1">
                 <input
-                  type="number"
-                  min={1}
-                  value={newItemQty}
-                  onChange={(e) => setNewItemQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="w-10 bg-transparent text-mb-white text-xs py-0.5 focus:outline-none text-center font-mono"
-                  title="Quantity"
+                  type="text"
+                  placeholder="New item name..."
+                  value={newItemName}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
                 />
-              </div>
-              <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2">
-                <Plus className="w-3 h-3" />
-                <span>ADD</span>
-              </button>
-            </div>
-
-            {/* Options Row: Slots, Stack Size, Ammunition Toggle */}
-            <div className="flex items-center justify-between gap-1 flex-wrap text-[10px] font-mono text-mb-white/60">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <select
-                  value={newItemSlots}
-                  onChange={(e) => setNewItemSlots(Number(e.target.value))}
-                  className="bg-mb-dark text-mb-white text-[10px] px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer"
-                >
-                  <option value={1}>1 Slot (Normal)</option>
-                  <option value={2}>2 Slots (Heavy)</option>
-                  <option value={0}>0 Slots (Free)</option>
-                </select>
-
-                <div className="flex items-center gap-1 bg-mb-dark border border-mb-charcoal px-1 py-0.5">
-                  <span className="text-[9px] text-mb-white/50">Stack:</span>
+                <div className="flex items-center gap-0.5 bg-mb-dark border border-mb-charcoal px-1">
+                  <span className="text-[9px] font-mono text-mb-white/40">QTY:</span>
                   <input
                     type="number"
                     min={1}
-                    value={newItemStackSize}
-                    onChange={(e) => setNewItemStackSize(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    className="w-8 bg-transparent text-mb-white text-[10px] text-center focus:outline-none font-mono"
-                    title="Number of items that fit into the slot(s)"
+                    value={newItemQty}
+                    onChange={(e) => setNewItemQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-10 bg-transparent text-mb-white text-xs py-0.5 focus:outline-none text-center font-mono"
+                    title="Quantity"
                   />
                 </div>
-
-                <label className="flex items-center gap-1 cursor-pointer bg-mb-dark border border-mb-charcoal px-1.5 py-0.5 hover:border-mb-white/40">
-                  <input
-                    type="checkbox"
-                    checked={newItemIsAmmo}
-                    onChange={(e) => setNewItemIsAmmo(e.target.checked)}
-                    className="accent-mb-yellow w-3 h-3"
-                  />
-                  <span className={newItemIsAmmo ? 'text-mb-yellow font-bold' : 'text-mb-white/70'}>
-                    Ammo (1st stack free)
-                  </span>
-                </label>
+                <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2">
+                  <Plus className="w-3 h-3" />
+                  <span>ADD</span>
+                </button>
               </div>
 
-              {detectedPreset && (
-                <span className="text-[9px] text-mb-yellow flex items-center gap-0.5">
-                  ⚡ Preset: {detectedPreset.stackSize}/stack {detectedPreset.isAmmunition ? '(Ammo)' : ''}
-                </span>
-              )}
-            </div>
-          </form>
+              {/* Options Row: Slots, Stack Size, Ammunition Toggle */}
+              <div className="flex items-center justify-between gap-1 flex-wrap text-[10px] font-mono text-mb-white/60">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <select
+                    value={newItemSlots}
+                    onChange={(e) => setNewItemSlots(Number(e.target.value))}
+                    className="bg-mb-dark text-mb-white text-[10px] px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer"
+                  >
+                    <option value={1}>1 Slot (Normal)</option>
+                    <option value={2}>2 Slots (Heavy)</option>
+                    <option value={0}>0 Slots (Free)</option>
+                  </select>
+
+                  <div className="flex items-center gap-1 bg-mb-dark border border-mb-charcoal px-1 py-0.5">
+                    <span className="text-[9px] text-mb-white/50">Stack:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={newItemStackSize}
+                      onChange={(e) => setNewItemStackSize(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      className="w-8 bg-transparent text-mb-white text-[10px] text-center focus:outline-none font-mono"
+                      title="Number of items that fit into the slot(s)"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-1 cursor-pointer bg-mb-dark border border-mb-charcoal px-1.5 py-0.5 hover:border-mb-white/40">
+                    <input
+                      type="checkbox"
+                      checked={newItemIsAmmo}
+                      onChange={(e) => setNewItemIsAmmo(e.target.checked)}
+                      className="accent-mb-yellow w-3 h-3"
+                    />
+                    <span className={newItemIsAmmo ? 'text-mb-yellow font-bold' : 'text-mb-white/70'}>
+                      Ammo (1st stack free)
+                    </span>
+                  </label>
+                </div>
+
+                {detectedPreset && (
+                  <span className="text-[9px] text-mb-yellow flex items-center gap-0.5">
+                    ⚡ Preset: {detectedPreset.stackSize}/stack {detectedPreset.isAmmunition ? '(Ammo)' : ''}
+                  </span>
+                )}
+              </div>
+            </form>
+          )}
         </>
       )}
 

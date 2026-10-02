@@ -10,6 +10,7 @@ interface ScrollsSectionProps {
   onInvokeScroll: (scroll: Scroll) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isReadOnly?: boolean;
 }
 
 export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
@@ -18,6 +19,7 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
   onInvokeScroll,
   isCollapsed = false,
   onToggleCollapse,
+  isReadOnly = false,
 }) => {
   const [newScrollName, setNewScrollName] = useState('');
   const [newScrollType, setNewScrollType] = useState<'unclean' | 'sacred'>('unclean');
@@ -88,8 +90,11 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
           {character.scrolls.length > 0 && (
             <button
               onClick={() => onInvokeScroll(character.scrolls[0])}
-              className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-              title={`Invoke ${character.scrolls[0].name} (Presence DR12)`}
+              disabled={isReadOnly}
+              className={`bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+                isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Invoke ${character.scrolls[0].name} (Presence DR12)`}
             >
               <Wand2 className="w-3 h-3 shrink-0" />
               <span className="truncate">{character.scrolls[0].name}</span>
@@ -254,15 +259,17 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
               {/* Action buttons */}
               <div className="flex items-center gap-1 shrink-0">
                 <button
-                  disabled={isArmorRestricted}
-                  onClick={() => !isArmorRestricted && onInvokeScroll(scroll)}
+                  disabled={isArmorRestricted || isReadOnly}
+                  onClick={() => !isArmorRestricted && !isReadOnly && onInvokeScroll(scroll)}
                   className={`text-[9px] py-0.5 px-2 flex items-center gap-1 font-brutal font-bold uppercase transition-all ${
-                    isArmorRestricted
+                    isArmorRestricted || isReadOnly
                       ? 'bg-mb-charcoal text-mb-white/30 border border-mb-charcoal cursor-not-allowed'
                       : 'mb-btn mb-btn-yellow'
                   }`}
                   title={
-                    isArmorRestricted
+                    isReadOnly
+                      ? 'Sheet is locked (Read-only)'
+                      : isArmorRestricted
                       ? 'Cannot invoke powers while wearing Medium or Heavy armor'
                       : 'Test DR12 Presence to activate this power'
                   }
@@ -270,13 +277,15 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
                   <Wand2 className="w-2.5 h-2.5" />
                   <span>INVOKE</span>
                 </button>
-                <button
-                  onClick={() => handleRemoveScroll(scroll.id)}
-                  className="p-0.5 text-mb-white/40 hover:text-mb-pink"
-                  title="Discard scroll"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => handleRemoveScroll(scroll.id)}
+                    className="p-0.5 text-mb-white/40 hover:text-mb-pink"
+                    title="Discard scroll"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -284,36 +293,38 @@ export const ScrollsSection: React.FC<ScrollsSectionProps> = ({
       </div>
 
       {/* Add Custom Scroll Form */}
-      <form onSubmit={handleAddScroll} className="pt-1.5 border-t border-mb-charcoal">
-        <fieldset disabled={isArmorRestricted} className={`flex gap-1 ${isArmorRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}>
-          <input
-            type="text"
-            placeholder={isArmorRestricted ? 'Powers disabled in armor...' : 'Scroll name...'}
-            value={newScrollName}
-            onChange={(e) => setNewScrollName(e.target.value)}
-            className="w-1/3 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
-          />
-          <select
-            value={newScrollType}
-            onChange={(e) => setNewScrollType(e.target.value as 'unclean' | 'sacred')}
-            className="bg-mb-black text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
-          >
-            <option value="unclean">Unclean</option>
-            <option value="sacred">Sacred</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Effect description..."
-            value={newScrollDesc}
-            onChange={(e) => setNewScrollDesc(e.target.value)}
-            className="flex-1 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
-          />
-          <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2 shrink-0">
-            <Plus className="w-3 h-3" />
-            <span>ADD</span>
-          </button>
-        </fieldset>
-      </form>
+      {!isReadOnly && (
+        <form onSubmit={handleAddScroll} className="pt-1.5 border-t border-mb-charcoal">
+          <fieldset disabled={isArmorRestricted} className={`flex gap-1 ${isArmorRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}>
+            <input
+              type="text"
+              placeholder={isArmorRestricted ? 'Powers disabled in armor...' : 'Scroll name...'}
+              value={newScrollName}
+              onChange={(e) => setNewScrollName(e.target.value)}
+              className="w-1/3 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
+            />
+            <select
+              value={newScrollType}
+              onChange={(e) => setNewScrollType(e.target.value as 'unclean' | 'sacred')}
+              className="bg-mb-black text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
+            >
+              <option value="unclean">Unclean</option>
+              <option value="sacred">Sacred</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Effect description..."
+              value={newScrollDesc}
+              onChange={(e) => setNewScrollDesc(e.target.value)}
+              className="flex-1 bg-mb-black text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-0"
+            />
+            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-2 shrink-0">
+              <Plus className="w-3 h-3" />
+              <span>ADD</span>
+            </button>
+          </fieldset>
+        </form>
+      )}
         </>
       )}
     </section>

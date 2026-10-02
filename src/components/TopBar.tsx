@@ -44,9 +44,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/50 px-1.5 py-0.5 flex items-center gap-1.5 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse shrink-0" />
               <span className="truncate">
-                MONSTER: <strong>{linkedMonster.monster.name}</strong> ({linkedMonster.name})
+                {userRole === 'GM' ? (
+                  <>MONSTER: <strong>{linkedMonster.monster.name}</strong> ({linkedMonster.name})</>
+                ) : (
+                  <>TOKEN: <strong>{linkedMonster.name}</strong> (GM ONLY)</>
+                )}
               </span>
-              {onUnlinkMonster && (
+              {userRole === 'GM' && onUnlinkMonster && (
                 <button
                   onClick={onUnlinkMonster}
                   className="text-mb-pink hover:text-white uppercase text-[9px] font-bold shrink-0 ml-1"

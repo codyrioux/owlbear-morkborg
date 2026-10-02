@@ -10,6 +10,7 @@ interface VitalsSectionProps {
   onOpenBrokenModal: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isReadOnly?: boolean;
 }
 
 export const VitalsSection: React.FC<VitalsSectionProps> = ({
@@ -19,6 +20,7 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
   onOpenBrokenModal,
   isCollapsed = false,
   onToggleCollapse,
+  isReadOnly = false,
 }) => {
   const hpCurrent = character.hp.current;
   const hpMax = character.hp.max;
@@ -112,8 +114,11 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
       {isZeroHp && (
         <button
           onClick={onOpenBrokenModal}
-          className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-black text-[10px] px-2 py-0.5 border border-black uppercase tracking-wider animate-pulse shadow-brutal-sm"
-          title="Roll on the Broken table (0 HP)"
+          disabled={isReadOnly}
+          className={`bg-mb-pink hover:bg-pink-600 text-white font-brutal font-black text-[10px] px-2 py-0.5 border border-black uppercase tracking-wider animate-pulse shadow-brutal-sm ${
+            isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+          }`}
+          title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Roll on the Broken table (0 HP)'}
         >
           BROKEN
         </button>
@@ -123,8 +128,11 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
       {!isZeroHp && character.omens.current > 0 && (
         <button
           onClick={onOpenSpendOmen}
-          className="bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black uppercase tracking-wider shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-          title="Spend an Omen"
+          disabled={isReadOnly}
+          className={`bg-mb-pink hover:bg-pink-600 text-white font-brutal font-bold text-[10px] px-1.5 py-0.5 border border-black uppercase tracking-wider shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+            isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+          }`}
+          title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Spend an Omen'}
         >
           OMEN
         </button>
@@ -179,6 +187,7 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             <input
               type="number"
               value={hpCurrent}
+              disabled={isReadOnly}
               onChange={(e) => {
                 const nextHp = Math.max(0, parseInt(e.target.value, 10) || 0);
                 const isBroken = nextHp <= 0;
@@ -196,20 +205,23 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
                 }));
               }}
               className={`w-10 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-charcoal focus:outline-none ${
-                isZeroHp ? 'text-mb-pink' : 'text-mb-white'
-              }`}
+                isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+              } ${isZeroHp ? 'text-mb-pink' : 'text-mb-white'}`}
             />
             <span className="text-mb-white/40 text-xs font-bold">/</span>
             <input
               type="number"
               value={hpMax}
+              disabled={isReadOnly}
               onChange={(e) =>
                 onUpdateCharacter((prev) => ({
                   ...prev,
                   hp: { ...prev.hp, max: Math.max(1, parseInt(e.target.value, 10) || 1) },
                 }))
               }
-              className="w-8 text-sm font-bold font-brutal text-mb-white/70 text-center bg-transparent border-b border-mb-charcoal focus:outline-none"
+              className={`w-8 text-sm font-bold font-brutal text-mb-white/70 text-center bg-transparent border-b border-mb-charcoal focus:outline-none ${
+                isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
@@ -227,7 +239,10 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
           {isZeroHp ? (
             <button
               onClick={onOpenBrokenModal}
-              className="w-full mb-btn mb-btn-pink text-[10px] py-1 flex items-center justify-center gap-1 animate-bounce"
+              disabled={isReadOnly}
+              className={`w-full mb-btn mb-btn-pink text-[10px] py-1 flex items-center justify-center gap-1 animate-bounce ${
+                isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
             >
               <Skull className="w-3 h-3" />
               <span>ROLL BROKEN!</span>
@@ -236,28 +251,32 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             <div className="grid grid-cols-4 gap-1">
               <button
                 onClick={() => handleHpChange(-1)}
-                className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                disabled={isReadOnly}
+                className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Lose 1 HP"
               >
                 -1
               </button>
               <button
                 onClick={() => handleHpChange(1)}
-                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                disabled={isReadOnly}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Heal 1 HP"
               >
                 +1
               </button>
               <button
                 onClick={() => handleHpChange(4)}
-                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                disabled={isReadOnly}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Heal 4 HP"
               >
                 +4
               </button>
               <button
                 onClick={() => handleHpChange(6)}
-                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black"
+                disabled={isReadOnly}
+                className="bg-mb-charcoal hover:bg-green-600 text-mb-white text-[10px] font-bold py-0.5 border border-mb-black disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Heal 6 HP"
               >
                 +6
@@ -283,8 +302,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
           <div className="flex items-center justify-center my-0.5 gap-1.5">
             <button
               onClick={() => handleOmenChange(-1)}
-              disabled={character.omens.current <= 0}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
+              disabled={isReadOnly || character.omens.current <= 0}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               -
             </button>
@@ -296,8 +315,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
 
             <button
               onClick={() => handleOmenChange(1)}
-              disabled={character.omens.current >= character.omens.max}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
+              disabled={isReadOnly || character.omens.current >= character.omens.max}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               +
             </button>
@@ -305,8 +324,10 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
 
           <button
             onClick={onOpenSpendOmen}
-            disabled={character.omens.current <= 0}
-            className="w-full mb-btn mb-btn-yellow text-[10px] py-1 flex items-center justify-center gap-1 disabled:opacity-30"
+            disabled={isReadOnly || character.omens.current <= 0}
+            className={`w-full mb-btn mb-btn-yellow text-[10px] py-1 flex items-center justify-center gap-1 disabled:opacity-30 ${
+              isReadOnly ? 'cursor-not-allowed' : ''
+            }`}
           >
             <Sparkles className="w-3 h-3" />
             <span>SPEND OMEN</span>
@@ -330,8 +351,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
           <div className="flex items-center justify-center my-0.5 gap-1.5">
             <button
               onClick={() => handlePowerChange(-1)}
-              disabled={character.powers.current <= 0}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
+              disabled={isReadOnly || character.powers.current <= 0}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-pink text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               -
             </button>
@@ -343,8 +364,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
 
             <button
               onClick={() => handlePowerChange(1)}
-              disabled={character.powers.current >= character.powers.max}
-              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 border border-mb-black shrink-0"
+              disabled={isReadOnly || character.powers.current >= character.powers.max}
+              className="w-4 h-4 flex items-center justify-center bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white font-bold text-[10px] disabled:opacity-30 disabled:cursor-not-allowed border border-mb-black shrink-0"
             >
               +
             </button>
@@ -355,13 +376,16 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             <input
               type="number"
               value={character.powers.max}
+              disabled={isReadOnly}
               onChange={(e) =>
                 onUpdateCharacter((prev) => ({
                   ...prev,
                   powers: { ...prev.powers, max: Math.max(0, parseInt(e.target.value, 10) || 0) },
                 }))
               }
-              className="w-8 text-right bg-transparent font-bold text-mb-yellow focus:outline-none"
+              className={`w-8 text-right bg-transparent font-bold text-mb-yellow focus:outline-none ${
+                isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             />
           </div>
         </div>
@@ -384,13 +408,16 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
             <input
               type="number"
               value={character.silver}
+              disabled={isReadOnly}
               onChange={(e) =>
                 onUpdateCharacter((prev) => ({
                   ...prev,
                   silver: Math.max(0, parseInt(e.target.value, 10) || 0),
                 }))
               }
-              className="w-16 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-yellow text-mb-yellow focus:outline-none"
+              className={`w-16 text-2xl font-black font-brutal text-center bg-transparent border-b border-mb-yellow text-mb-yellow focus:outline-none ${
+                isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             />
             <span className="text-xs text-mb-yellow/70 font-bold ml-1 font-mono">s</span>
           </div>
@@ -403,7 +430,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
                   silver: Math.max(0, prev.silver - 10),
                 }))
               }
-              className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono"
+              disabled={isReadOnly}
+              className="bg-mb-charcoal hover:bg-mb-pink text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono disabled:opacity-30 disabled:cursor-not-allowed"
               title="Lose 10 silver"
             >
               -10
@@ -415,7 +443,8 @@ export const VitalsSection: React.FC<VitalsSectionProps> = ({
                   silver: prev.silver + 10,
                 }))
               }
-              className="bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono"
+              disabled={isReadOnly}
+              className="bg-mb-charcoal hover:bg-mb-yellow hover:text-mb-black text-mb-white text-[10px] font-bold py-0.5 border border-mb-black font-mono disabled:opacity-30 disabled:cursor-not-allowed"
               title="Gain 10 silver"
             >
               +10

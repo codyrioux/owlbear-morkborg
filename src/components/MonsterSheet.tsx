@@ -1,5 +1,5 @@
 import React from 'react';
-import { Swords, Shield, Heart, Unlink, RefreshCw, Dices, ArrowLeft } from 'lucide-react';
+import { Swords, Shield, Heart, Unlink, RefreshCw, Dices, ArrowLeft, Lock } from 'lucide-react';
 import { MonsterTokenData, rollMonsterMorale, rollMonsterAttack } from '../utils/combatRules';
 import { rollDie } from '../utils/dice';
 import { OBRService } from '../obr/obrService';
@@ -14,6 +14,7 @@ interface MonsterSheetProps {
   onUpdateMonster: (updater: (prev: MonsterTokenData) => MonsterTokenData) => void;
   onUnlinkMonster: () => void;
   onSwitchToCharacterSheet?: () => void;
+  userRole?: 'GM' | 'PLAYER';
 }
 
 export const MonsterSheet: React.FC<MonsterSheetProps> = ({
@@ -23,7 +24,29 @@ export const MonsterSheet: React.FC<MonsterSheetProps> = ({
   onUpdateMonster,
   onUnlinkMonster,
   onSwitchToCharacterSheet,
+  userRole,
 }) => {
+  if (userRole && userRole !== 'GM') {
+    return (
+      <div className="bg-mb-dark border-2 border-mb-blood p-6 shadow-brutal font-brutal text-mb-bone text-center space-y-4">
+        <div className="inline-block bg-mb-blood text-white p-3 border-2 border-black rotate-[-3deg] shadow-brutal-sm">
+          <Lock className="w-8 h-8 mx-auto" />
+        </div>
+        <h2 className="font-gothic text-2xl text-mb-blood tracking-wider">GM EYES ONLY</h2>
+        <p className="font-punk text-sm text-zinc-300 max-w-sm mx-auto">
+          The vile stats, hit points, and eldritch attacks of this creature are strictly forbidden to mortal eyes. Only the Game Master may inspect or command monsters.
+        </p>
+        {onSwitchToCharacterSheet && (
+          <button
+            onClick={onSwitchToCharacterSheet}
+            className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-xs uppercase px-3 py-1.5 border-2 border-black shadow-brutal active:translate-x-0.5 active:translate-y-0.5"
+          >
+            Return to Scvm Sheet
+          </button>
+        )}
+      </div>
+    );
+  }
   const hpCurrent = monster.hp.current;
   const hpMax = monster.hp.max;
   const isDead = hpCurrent <= 0;

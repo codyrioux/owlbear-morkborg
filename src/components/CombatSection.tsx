@@ -13,6 +13,7 @@ interface CombatSectionProps {
   onDamage: (weapon: Weapon) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isReadOnly?: boolean;
 }
 
 const ARMOR_TIERS: { tier: ArmorTier; name: string; dr: string; penalty: string }[] = [
@@ -31,6 +32,7 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
   onDamage,
   isCollapsed = false,
   onToggleCollapse,
+  isReadOnly = false,
 }) => {
   const [newWeaponName, setNewWeaponName] = useState('');
   const [newWeaponType, setNewWeaponType] = useState<'melee' | 'ranged'>('melee');
@@ -117,8 +119,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
       {/* Defend Roll Button */}
       <button
         onClick={onDefend}
-        className="bg-mb-bone hover:bg-stone-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-        title="Roll Agility Defence against incoming attack"
+        disabled={isReadOnly}
+        className={`bg-mb-bone hover:bg-stone-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+          isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+        }`}
+        title={isReadOnly ? 'Sheet is locked (Read-only)' : 'Roll Agility Defence against incoming attack'}
       >
         <Shield className="w-3 h-3" />
         <span>DEFEND</span>
@@ -128,8 +133,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
       {character.weapons.length > 0 && (
         <button
           onClick={() => onAttack(character.weapons[0])}
-          className="bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform"
-          title={`Attack with ${character.weapons[0].name} (${character.weapons[0].damageDie})`}
+          disabled={isReadOnly}
+          className={`bg-mb-yellow hover:bg-yellow-300 text-mb-black font-brutal font-bold text-[10px] px-2 py-0.5 border border-black shadow-brutal-sm flex items-center gap-1 truncate max-w-[130px] active:translate-x-0.5 active:translate-y-0.5 transition-transform ${
+            isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+          }`}
+          title={isReadOnly ? 'Sheet is locked (Read-only)' : `Attack with ${character.weapons[0].name} (${character.weapons[0].damageDie})`}
         >
           <Sword className="w-3 h-3 shrink-0" />
           <span className="truncate">{character.weapons[0].name}</span>
@@ -184,8 +192,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                 </label>
                 <select
                   value={armor.tier}
+                  disabled={isReadOnly}
                   onChange={(e) => handleTierChange(Number(e.target.value) as ArmorTier)}
-                  className="w-full bg-mb-dark text-mb-white border border-mb-charcoal font-brutal text-xs py-1 px-1.5 focus:outline-none focus:border-mb-yellow cursor-pointer truncate"
+                  className={`w-full bg-mb-dark text-mb-white border border-mb-charcoal font-brutal text-xs py-1 px-1.5 focus:outline-none focus:border-mb-yellow cursor-pointer truncate ${
+                    isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   {ARMOR_TIERS.map((t) => (
                     <option key={t.tier} value={t.tier}>
@@ -197,10 +208,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
 
               {/* Shield & Degradation */}
               <div className="flex items-center justify-between gap-1 pt-1 border-t border-mb-charcoal/50 text-[11px]">
-                <label className="flex items-center gap-1.5 cursor-pointer text-mb-white select-none">
+                <label className={`flex items-center gap-1.5 cursor-pointer text-mb-white select-none ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <input
                     type="checkbox"
                     checked={armor.hasShield}
+                    disabled={isReadOnly}
                     onChange={(e) =>
                       onUpdateCharacter((prev) => ({
                         ...prev,
@@ -222,7 +234,8 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                         armor: { ...prev.armor, degraded: Math.max(0, prev.armor.degraded - 1) },
                       }))
                     }
-                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink"
+                    disabled={isReadOnly}
+                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     -
                   </button>
@@ -234,7 +247,8 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                         armor: { ...prev.armor, degraded: prev.armor.degraded + 1 },
                       }))
                     }
-                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink"
+                    disabled={isReadOnly}
+                    className="w-4 h-4 bg-mb-charcoal text-mb-white text-[10px] font-bold border border-mb-black flex items-center justify-center hover:bg-mb-pink disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
@@ -247,8 +261,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
           <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-mb-charcoal">
             <button
               onClick={onDefend}
-              className="mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1"
-              title={`Roll d20 + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
+              disabled={isReadOnly}
+              className={`mb-btn mb-btn-yellow text-[11px] py-1 flex items-center justify-center gap-1 ${
+                isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll d20 + Agility vs DR ${12 + (effectiveTier >= 2 ? 2 : 0)} (player rolls to evade attack)`}
             >
               <Shield className="w-3.5 h-3.5" />
               <span>DEFEND {effectiveTier >= 2 ? '(DR14)' : '(DR12)'}</span>
@@ -256,8 +273,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
 
             <button
               onClick={onSoakArmor}
-              className="mb-btn mb-btn-dark text-[11px] py-1 flex items-center justify-center gap-1"
-              title="Roll armor damage reduction (-d2, -d4, -d6) + shield"
+              disabled={isReadOnly}
+              className={`mb-btn mb-btn-dark text-[11px] py-1 flex items-center justify-center gap-1 ${
+                isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+              title={isReadOnly ? 'Sheet is locked (Read-only)' : "Roll armor damage reduction (-d2, -d4, -d6) + shield"}
             >
               <Dices className="w-3.5 h-3.5" />
               <span>SOAK ARMOR</span>
@@ -308,8 +328,11 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => onAttack(wep)}
-                        className="mb-btn mb-btn-yellow text-[9px] py-0.5 px-1.5"
-                        title={`Roll Attack with ${wep.name}`}
+                        disabled={isReadOnly}
+                        className={`mb-btn mb-btn-yellow text-[9px] py-0.5 px-1.5 ${
+                          isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+                        }`}
+                        title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll Attack with ${wep.name}`}
                       >
                         <Crosshair className="w-2.5 h-2.5" />
                         <span>ATK</span>
@@ -317,20 +340,25 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
 
                       <button
                         onClick={() => onDamage(wep)}
-                        className="mb-btn mb-btn-pink text-[9px] py-0.5 px-1.5"
-                        title={`Roll Damage (${wep.damageDie})`}
+                        disabled={isReadOnly}
+                        className={`mb-btn mb-btn-pink text-[9px] py-0.5 px-1.5 ${
+                          isReadOnly ? 'opacity-40 cursor-not-allowed' : ''
+                        }`}
+                        title={isReadOnly ? 'Sheet is locked (Read-only)' : `Roll Damage (${wep.damageDie})`}
                       >
                         <Dices className="w-2.5 h-2.5" />
                         <span>DMG</span>
                       </button>
 
-                      <button
-                        onClick={() => handleRemoveWeapon(wep.id)}
-                        className="p-0.5 text-mb-white/40 hover:text-mb-pink"
-                        title="Remove weapon"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => handleRemoveWeapon(wep.id)}
+                          className="p-0.5 text-mb-white/40 hover:text-mb-pink"
+                          title="Remove weapon"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))
@@ -339,69 +367,71 @@ export const CombatSection: React.FC<CombatSectionProps> = ({
           </div>
 
           {/* Add New Weapon Form */}
-          <form onSubmit={handleAddWeapon} className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-mb-charcoal">
-            <input
-              type="text"
-              placeholder="Weapon name..."
-              value={newWeaponName}
-              onChange={(e) => setNewWeaponName(e.target.value)}
-              className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-[110px]"
-            />
-            <select
-              value={newWeaponType}
-              onChange={(e) => setNewWeaponType(e.target.value as 'melee' | 'ranged')}
-              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
-            >
-              <option value="melee">Melee</option>
-              <option value="ranged">Ranged</option>
-            </select>
-            <select
-              value={isCustomDamage ? 'custom' : newWeaponDamage}
-              onChange={(e) => {
-                if (e.target.value === 'custom') {
-                  setIsCustomDamage(true);
-                } else {
-                  setIsCustomDamage(false);
-                  setNewWeaponDamage(e.target.value);
-                }
-              }}
-              className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none font-mono cursor-pointer shrink-0"
-            >
-              <option value="d4">d4</option>
-              <option value="d6">d6</option>
-              <option value="d8">d8</option>
-              <option value="d10">d10</option>
-              <option value="d12">d12</option>
-              <option value="custom">Custom...</option>
-            </select>
-            {isCustomDamage && (
-              <div className="flex items-center gap-0.5 shrink-0">
-                <input
-                  type="text"
-                  placeholder="2d6, 1d8+1"
-                  value={customDamage}
-                  onChange={(e) => setCustomDamage(e.target.value)}
-                  className="w-20 bg-mb-dark text-mb-yellow placeholder:text-mb-white/30 text-xs px-1.5 py-0.5 border border-mb-yellow focus:outline-none font-mono"
-                  autoFocus
-                  title="Enter custom dice formula (e.g. 2d6, 1d8+1, 2d4-1)"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
+          {!isReadOnly && (
+            <form onSubmit={handleAddWeapon} className="flex flex-wrap items-center gap-1 pt-1.5 border-t border-mb-charcoal">
+              <input
+                type="text"
+                placeholder="Weapon name..."
+                value={newWeaponName}
+                onChange={(e) => setNewWeaponName(e.target.value)}
+                className="flex-1 bg-mb-dark text-mb-white text-xs px-1.5 py-0.5 border border-mb-charcoal focus:outline-none focus:border-mb-yellow min-w-[110px]"
+              />
+              <select
+                value={newWeaponType}
+                onChange={(e) => setNewWeaponType(e.target.value as 'melee' | 'ranged')}
+                className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none cursor-pointer shrink-0"
+              >
+                <option value="melee">Melee</option>
+                <option value="ranged">Ranged</option>
+              </select>
+              <select
+                value={isCustomDamage ? 'custom' : newWeaponDamage}
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    setIsCustomDamage(true);
+                  } else {
                     setIsCustomDamage(false);
-                    setNewWeaponDamage('d6');
-                  }}
-                  className="text-[10px] text-mb-white/40 hover:text-mb-pink px-0.5"
-                  title="Cancel custom damage"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-            <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-1.5 shrink-0">
-              <Plus className="w-3 h-3" />
-            </button>
-          </form>
+                    setNewWeaponDamage(e.target.value);
+                  }
+                }}
+                className="bg-mb-dark text-mb-white text-xs px-1 py-0.5 border border-mb-charcoal focus:outline-none font-mono cursor-pointer shrink-0"
+              >
+                <option value="d4">d4</option>
+                <option value="d6">d6</option>
+                <option value="d8">d8</option>
+                <option value="d10">d10</option>
+                <option value="d12">d12</option>
+                <option value="custom">Custom...</option>
+              </select>
+              {isCustomDamage && (
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <input
+                    type="text"
+                    placeholder="2d6, 1d8+1"
+                    value={customDamage}
+                    onChange={(e) => setCustomDamage(e.target.value)}
+                    className="w-20 bg-mb-dark text-mb-yellow placeholder:text-mb-white/30 text-xs px-1.5 py-0.5 border border-mb-yellow focus:outline-none font-mono"
+                    autoFocus
+                    title="Enter custom dice formula (e.g. 2d6, 1d8+1, 2d4-1)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomDamage(false);
+                      setNewWeaponDamage('d6');
+                    }}
+                    className="text-[10px] text-mb-white/40 hover:text-mb-pink px-0.5"
+                    title="Cancel custom damage"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <button type="submit" className="mb-btn mb-btn-yellow text-xs py-0.5 px-1.5 shrink-0">
+                <Plus className="w-3 h-3" />
+              </button>
+            </form>
+          )}
         </div>
       </div>
       )}

@@ -57,11 +57,18 @@ export interface BrokenStatus {
   };
 }
 
+export interface CharacterOwner {
+  id: string;
+  name: string;
+}
+
 export interface Character {
   id: string;
   name: string;
   characterClass: string;
   description: string;
+  owner?: CharacterOwner;
+  isLocked?: boolean;
   abilities: Record<AbilityName, AbilityScore>;
   hp: {
     current: number;

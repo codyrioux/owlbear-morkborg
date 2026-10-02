@@ -183,6 +183,19 @@ describe('OBRService', () => {
       const party = await OBRService.getPartyPlayers();
       expect(party).toEqual([{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }]);
     });
+
+    it('should return default player name outside OBR environment', async () => {
+      mockOBR.isAvailable = false;
+      const name = await OBRService.getPlayerName();
+      expect(name).toBe('Local Scvm');
+    });
+
+    it('should return no-op unsubscribe function for party subscription outside OBR environment', () => {
+      mockOBR.isAvailable = false;
+      const unsub = OBRService.subscribeToParty(() => {});
+      expect(typeof unsub).toBe('function');
+      expect(() => unsub()).not.toThrow();
+    });
   });
 
   describe('Connected OBR Environment', () => {
@@ -376,6 +389,82 @@ describe('OBRService', () => {
       // unlinkMonsterToken
       await OBRService.unlinkMonsterToken('tok-monster-1');
       expect(mockOBR.scene.items.updateItems).toHaveBeenCalled();
+    });
+
+    it('should return player name from OBR.player.getName in connected mode', async () => {
+      const name = await OBRService.getPlayerName();
+      expect(name).toBe('Test Player');
+    });
+
+    it('should subscribe to party updates via OBR.party.onChange in connected mode', () => {
+      let callbackInvoked = false;
+      const fakeUnsub = vi.fn();
+      mockOBR.party.onChange.mockImplementationOnce((fn: any) => {
+        fn([{ id: 'player-1', name: 'Scum 1', role: 'PLAYER' }]);
+        return fakeUnsub;
+      });
+
+      const unsub = OBRService.subscribeToParty((players) => {
+        callbackInvoked = true;
+        expect(players).toHaveLength(1);
+        expect(players[0].name).toBe('Scum 1');
+      });
+
+      expect(callbackInvoked).toBe(true);
+      unsub();
+      expect(fakeUnsub).toHaveBeenCalled();
+    });
+  });
+
+  describe('Character Sheet Ownership & Lock Permissions', () => {
+    const calculatePermissions = (
+      character: { owner?: { id: string; name: string }; isLocked?: boolean },
+      currentUserId: string,
+      userRole: 'GM' | 'PLAYER'
+    ) => {
+      const isOwner = Boolean(character.owner?.id && character.owner.id === currentUserId);
+      const isGM = userRole === 'GM';
+      const isLocked = Boolean(character.isLocked);
+      const isReadOnly = isLocked && !isOwner && !isGM;
+      return { isOwner, isGM, isLocked, isReadOnly };
+    };
+
+    it('should allow editing when sheet is unlocked, even for non-owners', () => {
+      const char = { owner: { id: 'player-1', name: 'Alice' }, isLocked: false };
+      const { isReadOnly, isOwner, isGM } = calculatePermissions(char, 'player-2', 'PLAYER');
+      expect(isOwner).toBe(false);
+      expect(isGM).toBe(false);
+      expect(isReadOnly).toBe(false);
+    });
+
+    it('should make sheet read-only for non-owner player when sheet is locked', () => {
+      const char = { owner: { id: 'player-1', name: 'Alice' }, isLocked: true };
+      const { isReadOnly, isOwner, isGM } = calculatePermissions(char, 'player-2', 'PLAYER');
+      expect(isOwner).toBe(false);
+      expect(isGM).toBe(false);
+      expect(isReadOnly).toBe(true);
+    });
+
+    it('should always allow owning player to edit, even when sheet is locked', () => {
+      const char = { owner: { id: 'player-1', name: 'Alice' }, isLocked: true };
+      const { isReadOnly, isOwner, isGM } = calculatePermissions(char, 'player-1', 'PLAYER');
+      expect(isOwner).toBe(true);
+      expect(isGM).toBe(false);
+      expect(isReadOnly).toBe(false);
+    });
+
+    it('should always allow GM to edit, even when sheet is locked by another player', () => {
+      const char = { owner: { id: 'player-1', name: 'Alice' }, isLocked: true };
+      const { isReadOnly, isOwner, isGM } = calculatePermissions(char, 'gm-player-id', 'GM');
+      expect(isOwner).toBe(false);
+      expect(isGM).toBe(true);
+      expect(isReadOnly).toBe(false);
+    });
+
+    it('should allow editing on unclaimed unlocked sheets for anyone', () => {
+      const char = { isLocked: false };
+      const { isReadOnly } = calculatePermissions(char, 'player-2', 'PLAYER');
+      expect(isReadOnly).toBe(false);
     });
   });
 });

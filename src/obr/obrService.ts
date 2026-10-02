@@ -550,4 +550,40 @@ export class OBRService {
       return [{ id: 'standalone-player', name: 'Local Scvm', role: 'GM' }];
     }
   }
+
+  /**
+   * Get the current player's display name
+   */
+  public static async getPlayerName(): Promise<string> {
+    if (!OBR.isAvailable || !OBR.player || typeof OBR.player.getName !== 'function') {
+      return 'Local Scvm';
+    }
+    try {
+      const name = await OBR.player.getName();
+      return name || 'Anonymous Scvm';
+    } catch {
+      return 'Local Scvm';
+    }
+  }
+
+  /**
+   * Subscribe to room party player changes
+   */
+  public static subscribeToParty(
+    callback: (players: Array<{ id: string; name: string; role: 'GM' | 'PLAYER'; color?: string }>) => void
+  ): () => void {
+    if (!OBR.isAvailable || !OBR.party || typeof OBR.party.onChange !== 'function') {
+      return () => {};
+    }
+    return OBR.party.onChange((players) => {
+      callback(
+        players.map((p) => ({
+          id: p.id,
+          name: p.name || 'Anonymous Scvm',
+          role: p.role,
+          color: p.color,
+        }))
+      );
+    });
+  }
 }
