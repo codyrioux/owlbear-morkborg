@@ -2,6 +2,7 @@ import OBR from '@owlbear-rodeo/sdk';
 import { BroadcastPayload, Character, RollResult } from '../types/morkborg';
 import { loadCharacterFromStorage, saveCharacterToStorage } from '../utils/storage';
 import { MonsterTokenData, MONSTER_METADATA_KEY } from '../utils/combatRules';
+import { whenReady } from './whenReady';
 
 export const METADATA_KEY = 'com.morkborg.character-sheet/character';
 export { MONSTER_METADATA_KEY };
@@ -117,11 +118,11 @@ export class OBRService {
       return () => {};
     }
 
-    return OBR.broadcast.onMessage(BROADCAST_CHANNEL, (event) => {
+    return whenReady(() => OBR.broadcast.onMessage(BROADCAST_CHANNEL, (event) => {
       if (event.data && typeof event.data === 'object') {
         callback(event.data as BroadcastPayload);
       }
-    });
+    }));
   }
 
   /**
@@ -294,7 +295,7 @@ export class OBRService {
       return () => {};
     }
 
-    return OBR.player.onChange(async (player) => {
+    return whenReady(() => OBR.player.onChange(async (player) => {
       const selection = player.selection;
       // Ignore multi-selections or empty selections
       if (!selection || selection.length !== 1) {
@@ -325,7 +326,7 @@ export class OBRService {
       } catch (err) {
         console.warn('Error handling selection change:', err);
       }
-    });
+    }));
   }
 
   /**
@@ -358,7 +359,7 @@ export class OBRService {
   ): () => void {
     if (!OBR.isAvailable) return () => {};
 
-    return OBR.scene.items.onChange((items) => {
+    return whenReady(() => OBR.scene.items.onChange((items) => {
       const charItems = items.filter((item) => Boolean(item.metadata && item.metadata[METADATA_KEY]));
       const monsterItems = items.filter((item) => Boolean(item.metadata && item.metadata[MONSTER_METADATA_KEY]));
       const itemIds = new Set(items.map((i) => i.id));
@@ -375,7 +376,7 @@ export class OBRService {
         })),
         itemIds,
       });
-    });
+    }));
   }
 
   /**
@@ -575,7 +576,7 @@ export class OBRService {
     if (!OBR.isAvailable || !OBR.party || typeof OBR.party.onChange !== 'function') {
       return () => {};
     }
-    return OBR.party.onChange((players) => {
+    return whenReady(() => OBR.party.onChange((players) => {
       callback(
         players.map((p) => ({
           id: p.id,
@@ -584,6 +585,6 @@ export class OBRService {
           color: p.color,
         }))
       );
-    });
+    }));
   }
 }

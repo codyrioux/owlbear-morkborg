@@ -43,6 +43,9 @@ globalThis.localStorage = new LocalStorageMock();
 
 const mockOBR = {
   isAvailable: false,
+  // A connected Owlbear room has finished its handshake; subscriptions are
+  // deferred until this is true, so the mock must reflect a ready SDK.
+  isReady: true,
   onReady: vi.fn(),
   player: {
     getName: vi.fn().mockResolvedValue('Test Player'),

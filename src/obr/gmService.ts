@@ -1,5 +1,6 @@
 import OBR from '@owlbear-rodeo/sdk';
 import { CampaignDurationDie } from '../data';
+import { whenReady } from './whenReady';
 
 export const GM_METADATA_KEY = 'com.morkborg.character-sheet/gm-state';
 export const GM_BROADCAST_CHANNEL = 'com.morkborg.character-sheet/gm-events';
@@ -116,13 +117,13 @@ export class GMService {
       return () => {};
     }
 
-    return OBR.room.onMetadataChange((metadata) => {
+    return whenReady(() => OBR.room.onMetadataChange((metadata) => {
       if (metadata[GM_METADATA_KEY]) {
         const state = metadata[GM_METADATA_KEY] as GMState;
         localGMState = { ...DEFAULT_GM_STATE, ...state };
         callback(localGMState);
       }
-    });
+    }));
   }
 
   /**
@@ -146,10 +147,10 @@ export class GMService {
       return () => {};
     }
 
-    return OBR.broadcast.onMessage(GM_BROADCAST_CHANNEL, (msg) => {
+    return whenReady(() => OBR.broadcast.onMessage(GM_BROADCAST_CHANNEL, (msg) => {
       if (msg.data && typeof msg.data === 'object') {
         callback(msg.data as GMEvent);
       }
-    });
+    }));
   }
 }
